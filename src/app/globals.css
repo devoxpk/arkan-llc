@@ -1,19 +1,12 @@
+/* Import Ionicons globally */
+@import url('https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css');
+
+/* Tailwind CSS setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Custom Styles */
 body {
   color: var(--foreground);
   background: var(--background);
@@ -23,5 +16,23 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* Fade-in animation for the page */
+html {
+  opacity: 0;
+  background-color: black;
+  animation: fadeInBlack 1.5s ease-in forwards;
+}
+
+@keyframes fadeInBlack {
+  0% {
+    opacity: 0;
+    background-color: black;
+  }
+  100% {
+    opacity: 1;
+    background-color: transparent;
   }
 }

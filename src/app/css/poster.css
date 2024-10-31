@@ -1,0 +1,206 @@
+/* Poster Container */
+.poster-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 79vh;
+  background-color: #e0e0e0; /* Match the color in the uploaded image */
+  overflow-x: hidden;
+  font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;
+  position: relative;
+ 
+}
+/*Magical css for poster
+.poster-container {
+  position: relative;
+  background-image: url('/public/poster/poster.png');
+  background-attachment: fixed; 
+  height: 500px;
+  background-size: cover;
+}
+
+
+/* Poster Image Styling */
+.poster-image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1; /* Make sure the image is below the text */
+}
+
+#posterImg {
+  position: absolute;
+  top: 27%; /* Adjusted to use top instead of margin */
+  left: 50%;
+  transform: translateX(-50%) scale(1.7);
+  filter: grayscale(100%);
+  transition: all 0.3s ease;
+  z-index: 1; /* Ensure it's behind the text */
+}
+
+/* Poster Text Overlay */
+.poster-text-overlay {
+  position: absolute;
+  top: 10%; /* Adjusted this value to fine-tune text position */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2; /* Make sure the text stays above the image */
+  text-align: center;
+}
+
+/* Poster Text Styling */
+.poster-title {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: black; /* Match the text color */
+}
+
+.poster-subtitle {
+  font-size: 150px;
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: black;
+  margin-top: -30px; /* Adjust to position text behind the head */
+}
+
+.poster-text-container p {
+  font-size: 218%;
+  width: 102%;
+}
+
+.poster-text-container {
+  margin-top: -97%;
+}
+
+.poster-volume {
+  margin-left: 65%;
+  margin-top: -25%;
+  font-size: 40px;
+  font-weight: 500;
+  color: black;
+}
+
+/* Bottom Spacing */
+.poster-bottom-space {
+  height: 20px;
+  background-color: #e0e0e0; /* Same as background color */
+}
+
+/* Responsiveness for Laptop Screens */
+@media screen and (max-width: 1440px) {
+  .poster-title {
+    font-size: 36px;
+  }
+
+  .poster-subtitle {
+    font-size: 120px;
+  }
+
+  .poster-volume {
+    font-size: 36px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .poster-title {
+    font-size: 32px;
+  }
+
+  .poster-subtitle {
+    font-size: 100px;
+  }
+
+  .poster-volume {
+    font-size: 32px;
+  }
+
+  #posterImg {
+    top: 30%; /* Adjusted for smaller screens */
+    transform: translateX(-50%) scale(1.5); /* Scale down the image */
+  }
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .poster-title {
+    font-size: 28px;
+  }
+
+  .poster-subtitle {
+    font-size: 80px;
+  }
+
+  .poster-volume {
+    font-size: 28px;
+  }
+
+  #posterImg {
+    top: 33%;
+    transform: translateX(-50%) scale(1.6); /* Scale down further for mobile */
+  }
+}
+
+@media (min-width: 992px) {
+  .poster-volume {
+    margin-top: -12%;
+  }
+.poster-content{
+  margin-top: -15%;
+}
+
+  .poster-container {
+    min-height: 135vh;
+  }
+
+  .poster-text-container {
+    margin-top: -87%;
+    font-size: 129%;
+  }
+
+  #posterImg {
+    top: 31%;
+        transform: translateX(-50%) scale(1.7);
+        height: auto;
+        width: 43%;
+  }
+}
+/* Poster Image Fade-In Animation */
+@keyframes fadeInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20%) scale(1.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.7);
+  }
+}
+
+#posterImg {
+  
+  transition: all 0.3s ease;
+  z-index: 1; /* Ensure it's behind the text */
+  animation: fadeInFromTop 1s ease-out forwards; /* Added animation */
+}
+
+/* Poster Text Container Fade-In Animation */
+@keyframes fadeInTextFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.poster-text-container {
+  
+  animation: fadeInTextFromTop 1s ease-out forwards; /* Added animation */
+}

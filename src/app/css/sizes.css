@@ -1,0 +1,166 @@
+#disappear button{
+   background-color: white;
+   color: black;
+   border:1px solid black;
+   
+}
+#disappear button{
+    min-width: 86px;
+}
+.custom-dropdown{
+    display: none;
+}
+@media screen and (max-width: 767px){
+    .Sizes{
+        width: 80px;
+    }
+    #disappear{
+        display: flex;
+    justify-content: center;
+    }
+    .number-control{
+        display: flex;
+    justify-content: center;
+    }
+    .custom-dropdown{
+        width: 100%;
+        height: 34%;
+        position: fixed;
+        background: #ffffff;
+        margin-top: 98%;
+        border-top: 2px solid black;
+        z-index: 99;
+    }
+    .custom-dropdown h4{
+        color: black;
+        font-size: 11px;
+        margin-top: 1%;
+        margin-left: 1%;
+    }
+    .custom-dropdown hr{
+        margin-top: 2%;
+        margin-bottom: 2%;
+        background: black;
+     
+    }
+  
+}
+
+/* From Uiverse.io by Cybercom682 */ 
+.number-control {
+    display: flex;
+    align-items: center;
+  }
+  
+  .number-left::before,
+  .number-right::after {
+    content: attr(data-content);
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+    width: 20px;
+    color: white;
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  
+  .number-left::before {
+    content: "-";
+  }
+  
+  .number-right::after {
+    content: "+";
+  }
+  
+  .number-quantity {
+    padding: 0.25rem;
+    border: 0;
+    width: 50px;
+    -moz-appearance: textfield;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+  }
+  
+  .number-left:hover::before,
+  .number-right:hover::after {
+    background-color: #666666;
+  }
+  
+
+
+  /* From Uiverse.io by vinodjangid07 */ 
+.cartBtn {
+    width: 85%;
+    height: 40px;
+    border: none;
+    border-radius: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: white;
+    font-weight: 500;
+    position: relative;
+    background-color: rgb(29, 29, 29);
+    box-shadow: 0 20px 30px -7px rgba(27, 27, 27, 0.219);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    overflow: hidden;
+    left: 7%;
+    top: -8%;
+  }
+  
+  .cart {
+    z-index: 2;
+  }
+  
+  .cartBtn:active {
+    transform: scale(0.96);
+  }
+  
+  .productx {
+    position: absolute;
+    width: 12px;
+    border-radius: 3px;
+    content: "";
+    left: 23px;
+    bottom: 23px;
+    opacity: 0;
+    z-index: 1;
+    fill: rgb(211, 211, 211);
+  }
+  
+  .cartBtn:hover .productx {
+    animation: slide-in-top 1.2s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    left: 43%;
+  }
+  
+  @keyframes slide-in-top {
+    0% {
+      transform: translateY(-30px);
+      opacity: 1;
+    }
+  
+    100% {
+      transform: translateY(0) rotate(-90deg);
+      opacity: 1;
+    }
+  }
+  
+  .cartBtn:hover .cart {
+    animation: slide-in-left 1s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  }
+  
+  @keyframes slide-in-left {
+    0% {
+      transform: translateX(-10px);
+      opacity: 0;
+    }
+  
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }

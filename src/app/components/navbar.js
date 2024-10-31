@@ -1,0 +1,196 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import '../css/navbar.css';
+import Sizes from "./sizes";
+import Cart from './cart'
+function Navbar() {
+  const [isNavActive, setNavActive] = useState(false);
+  const headerRef = useRef(null);
+  const overlayRef = useRef(null);
+
+  const handleScroll = () => {
+    if (headerRef.current) {
+      if (window.scrollY >= 200) {
+        headerRef.current.classList.add('active');
+      } else {
+        headerRef.current.classList.remove('active');
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const toggleNavbar = () => {
+    setNavActive((prev) => !prev);
+  };
+
+  return (
+    <>
+
+<Cart/>
+    
+      <div
+        className="free"
+        style={{
+          backgroundColor: 'black',
+          fontSize: 'smaller',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            color: '#a5a5a5',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          id="freetext"
+        >
+          FREE DELIVERY NATIONWIDE
+        </span>
+      </div>
+
+      <div className="input__container input__container--variant" style={{ display: 'none' }}>
+        <div id="wifi-loader" data-text="Searching" className="text" style={{ display: 'none' }}></div>
+
+        <div className="shadow__input shadow__input--variant"></div>
+        <input
+          type="text"
+          name="text"
+          className="input__search input__search--variant"
+          placeholder="Search..."
+        />
+
+        <button
+          onClick={() => {
+            const searchTerm = document.querySelector('.input__search--variant').value;
+            const textElement = document.querySelector('.text');
+
+            // Show the loader (no change in text)
+            textElement.style.display = 'block';
+
+            // Perform the search in the .section only
+            const sectionElements = document.querySelectorAll('.section *');
+            let found = false;
+
+            sectionElements.forEach((element) => {
+              if (element.innerText.includes(searchTerm)) {
+                found = true;
+                // Scroll to the found element
+                element.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                });
+              }
+            });
+
+            // Hide the loader after a delay
+            setTimeout(() => {
+            
+              textElement.style.display = 'none';
+              document.querySelector('.input__container--variant').style.display = 'none';
+            }, 1000);
+          }}
+          className="input__button__shadow input__button__shadow--variant"
+        >
+          <svg
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            height="1.5em"
+            width="13em"
+          >
+            <path
+              d="M4 9a5 5 0 1110 0A5 5 0 014 9zm5-7a7 7 0 104.2 12.6.999.999 0 00.093.107l3 3a1 1 0 001.414-1.414l-3-3a.999.999 0 00-.107-.093A7 7 0 009 2z"
+              fillRule="evenodd"
+              fill="#FFF"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <header className="header" data-header ref={headerRef}>
+        <div className="container">
+          <div className={`overlay ${isNavActive ? 'active' : ''}`} data-overlay ref={overlayRef}></div>
+
+          <a href="/" className="logo">
+            <img id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
+          </a>
+          <span>
+            <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>N O U V E</h1>
+          </span>
+
+          <div className="header-actions">
+            <button className="header-action-btn">
+              <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+              <p className="header-action-label">Sign in</p>
+            </button>
+
+            <button
+              onClick={() => {
+                document.querySelector('.input__container--variant').style.display = 'block';
+              }}
+              className="header-action-btn"
+            >
+              <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+              <p className="header-action-label">Search</p>
+            </button>
+
+            <button id='cart-icon' className="header-action-btn" onClick={() => document.querySelector('.cart-card').style.display = 'block'}>
+             <ion-icon name='cart-outline'></ion-icon>
+              <p className="header-action-label" >Cart</p>
+              <div className="btn-badge green" aria-hidden="true">0</div>
+            </button> 
+
+
+            <button className="header-action-btn">
+              <button className="chatBtn">
+                <svg height="1.6em" fill="grey" xmlSpace="preserve" viewBox="0 0 1000 1000" y="0px" x="0px" version="1.1">
+                  <path d="M881.1,720.5H434.7L173.3,941V720.5h-54.4C58.8,720.5,10,671.1,10,610.2v-441C10,108.4,58.8,59,118.9,59h762.2C941.2,59,990,108.4,990,169.3v441C990,671.1,941.2,720.5,881.1,720.5L881.1,720.5z M935.6,169.3c0-30.4-24.4-55.2-54.5-55.2H118.9c-30.1,0-54.5,24.7-54.5,55.2v441c0,30.4,24.4,55.1,54.5,55.1h54.4h54.4v110.3l163.3-110.2H500h381.1c30.1,0,54.5-24.7,54.5-55.1V169.3L935.6,169.3z M717.8,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.5,24.7,54.5,55.2C772.2,420.2,747.8,444.8,717.8,444.8L717.8,444.8z M500,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.4,24.7,54.4,55.2C554.4,420.2,530.1,444.8,500,444.8L500,444.8z M282.2,444.8c-30.1,0-54.5-24.7-54.5-55.1c0-30.4,24.4-55.2,54.5-55.2c30.1,0,54.4,24.7,54.4,55.2C336.7,420.2,312.3,444.8,282.2,444.8L282.2,444.8z" />
+                </svg>
+                <span className="tooltip">Chat</span>
+              </button>
+              <p className="header-action-label">Chat</p>
+              <div className="btn-badge" aria-hidden="true">2</div>
+            </button>
+          </div>
+
+          <button className="nav-open-btn" onClick={toggleNavbar} aria-label="Open Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <nav className={`navbar ${isNavActive ? 'active' : ''}`} data-navbar>
+            <div className="navbar-top">
+              <a href="#" className="logo">
+                <img src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
+              </a>
+              <button className="nav-close-btn" onClick={toggleNavbar} aria-label="Close Menu">
+                <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+              </button>
+            </div>
+
+            <ul className="navbar-list">
+              <li><a href="#" className="navbar-link" data-nav-link>Home</a></li>
+              <li><a href="#" className="navbar-link" data-nav-link>Shop</a></li>
+              <li><a href="#" className="navbar-link" data-nav-link>Contact Us</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <Sizes/>
+    </>
+  );
+}
+
+export default Navbar;

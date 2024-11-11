@@ -61,7 +61,7 @@ const Cart = ({cartStyle = false}) => {
         // Retrieve cart items from localStorage
         const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
-        // Calculate total quantity
+        // Calculate total quantityf
         const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
 console.log(`Total Quantity: ${totalQuantity}`);
 
@@ -253,7 +253,22 @@ console.log(`Total Quantity: ${totalQuantity}`);
                             <div style={{ fontWeight: "bolder" }} className="col">TOTAL PRICE</div>
                             <div style={{ fontWeight: "bolder" }} className="col text-right">Rs. {totalAmount + shippingAmount}</div>
                         </div>
-                        <button className="cart-btn">CHECKOUT</button>
+                        <button
+  className="cart-btn"
+  style={{
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'black',
+    color: 'white',
+    height: '28px',
+    borderRadius: '10px'
+  }}
+>
+  CHECKOUT
+</button>
+
                     </div>
                 </div>
                 }

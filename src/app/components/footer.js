@@ -12,7 +12,7 @@ function Footer() {
     const fetchCategories = async () => {
       const collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
       const fetchedCategories = [];
-
+console.log(collectionsToFetch)
       for (const collection of collectionsToFetch) {
         try {
           const docRef = doc(db, `${collection}/headers`);
@@ -93,7 +93,7 @@ function Footer() {
             <ul className="footer-list">
               <li><p className="footer-list-title">Information</p></li>
               <li>
-  <Link href="/about">
+  <Link href="/about" legacyBehavior>
     <a className="footer-link">About Brand</a>
   </Link>
 </li>

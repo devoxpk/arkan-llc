@@ -1,4 +1,4 @@
-export default function aboutComponent() {
+export default function AboutComponent() {
     return (
         <>
             <div

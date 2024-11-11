@@ -1,0 +1,32 @@
+{
+  "hosting": {
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/about",
+        "destination": "/about/page"
+      },
+      {
+        "source": "/checkout",
+        "destination": "/checkout/page"
+      },
+      {
+        "source": "/categories",
+        "destination": "/categories/page"
+      },
+      {
+        "source": "/purchase",
+        "destination": "/purchase/page"
+      },
+      {
+        "source": "/**",
+        "destination": "/index"
+      }
+    ]
+  }
+}

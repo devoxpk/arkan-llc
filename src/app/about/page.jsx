@@ -1,15 +1,14 @@
-import Navbar from "../components/navbar";
-import Aboutcomponents from '../components/about'
-import Footer from '../components/footer'
-export default function About(){
+// pages/about/page.jsx
+import Navbar from "../components/navbar"; // Adjust import path if necessary
+import AboutComponent from "../components/about"; // Adjust import path if necessary
+import Footer from "../components/footer"; // Adjust import path if necessary
 
-return(<>
-<Navbar/>
-<Aboutcomponents/>
-<Footer/>
-</>
-
-);
-
-
+export default function About() {
+    return (
+        <>
+            <Navbar />
+            <AboutComponent />
+            <Footer />
+        </>
+    );
 }

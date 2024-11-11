@@ -6,8 +6,7 @@ import { db, storage } from '../firebase'; // Import Firestore and Storage insta
 import { doc,updateDoc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
 import { ref, getDownloadURL } from 'firebase/storage'; // Storage methods
 
-
-
+import fetchTrackingData from '../utilis/fetchtracking';
 
 function toggleSidebar() {
     var sidebar = document.querySelector('.sidebar');
@@ -21,10 +20,12 @@ function toggleSidebar() {
     
 
 export default function dashboardComponent() {
-  console.log("dashboar running")
-
   
+    
 
+    
+        fetchTrackingData();
+    
   useEffect(()=>{
     let sortedDocs;
     let editButtons;
@@ -2554,9 +2555,9 @@ function incrementStock(orderData) {
     
     
     
+ sendData();
     
-    
-    /* async function sendData(docid, customerName, productName, userCity, userAddress, userContact, selectedSize, quantity) {
+     async function sendData(docid, customerName, productName, userCity, userAddress, userContact, selectedSize, quantity) {
     // Function to format contact number
     const formatContact = (contact) => {
     if (contact.startsWith("92")) {
@@ -2597,7 +2598,7 @@ function incrementStock(orderData) {
     const encodedMessage = encodeURIComponent(message).replace(/%0A/g, '%0A');
     
     // Construct the URL
-    const url = `https://basimain-polished-hill-4595.fly.dev/send-message?num=${encodedContact}&msg=${encodedMessage}`;
+    const url = `http://16.171.1.112:8080/send-message?num=${encodedContact}&msg=${encodedMessage}`;
     
     // Log the URL to the console
     console.log(`Sending request to: ${url}`);
@@ -2663,9 +2664,9 @@ function incrementStock(orderData) {
     
     async function processFirestoreData() {
     // First, make sure the server is awake
-    const serverAwake = await wakeUpServer();
+  //  const serverAwake = await wakeUpServer();
     
-    if (serverAwake) {
+   
     try {
         const querySnapshot = await getDocs(collection(db, 'orders'));
     
@@ -2704,14 +2705,12 @@ function incrementStock(orderData) {
     } catch (error) {
         console.error('Error processing Firestore data:', error);
     }
-    } else {
-    console.log("Cannot proceed with Firestore data processing as the server is not awake.");
-    }
+    
     }
     
     
     processFirestoreData();
-    */
+    
     async function editField(docId, fieldName, isDropdown = false, event) {
     const selectedDv = document.querySelector(".select");
     const crossBtn = document.querySelector(".cross-button");

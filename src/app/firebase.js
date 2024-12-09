@@ -3,9 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-console.log('All environment variables:', process.env);
-console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY);
-
+import { getAuth } from "firebase/auth";
 
 // Your Firebase configuration (using environment variables for security)
 const firebaseConfig = {
@@ -26,3 +24,4 @@ const storage = getStorage(app);
 
 // Export the Firebase app, Firestore, and Storage for use in other files
 export { app, db, storage };
+export const auth = getAuth(app);

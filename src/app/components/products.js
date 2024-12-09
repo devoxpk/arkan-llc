@@ -6,8 +6,8 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } f
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // Storage methods
 import {handleCart} from "./cart.js"
 import Link from "next/link";
-
-
+import '../css/products.css'
+import {fetchSizeChart} from './sizes'
 
 let fetchedHeaders = 0;
 let cachedHeaders = null;
@@ -180,186 +180,372 @@ async function inlistDaddy() {
   }
 }
 
-export default function Products({ collectionsToFetch: propCollectionsToFetch, styleHead = 'grid',productsStyle = false }) {
+export default function Products({ collectionsToFetch: propCollectionsToFetch, styleHead = 'grid', productsStyle = false, trending = false }) {
   const [collectionsData, setCollectionsData] = useState({});
   const [headersData, setHeadersData] = useState({}); // State for headers
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
   const [cartItems, setCartItems] = useState([]); // State for cart items
+  useEffect(()=>{
+
+    const scrollLeftBtn = document.querySelector('.scroll-button-left');
+    const scrollRightBtn = document.querySelector('.scroll-button-right');
+    const productList = document.querySelector('.product-list'); // Assuming this is your scrollable element
+    
+    if (scrollLeftBtn && scrollRightBtn && productList) {
+        // Function to smoothly scroll a specific distance
+        function smoothScroll(element, distance, duration) {
+            const start = element.scrollLeft;
+            const target = start + distance;
+            const startTime = performance.now();
+    
+            function animateScroll(currentTime) {
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1); // Cap progress at 1
+                const easeInOut = 0.5 - Math.cos(progress * Math.PI) / 2; // Ease-in-out effect
+    
+                element.scrollLeft = start + distance * easeInOut;
+    
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            }
+    
+            requestAnimationFrame(animateScroll);
+        }
+    
+        // Scroll to the left
+        scrollLeftBtn.addEventListener('click', () => {
+            smoothScroll(productList, -250, 500); // Scroll left 250px over 500ms
+        });
+    
+        // Scroll to the right
+        scrollRightBtn.addEventListener('click', () => {
+            smoothScroll(productList, 250, 500); // Scroll right 250px over 500ms
+        });
+    } else {
+        console.warn('Scroll buttons or product list element are not available.');
+    }
+    
+
+    
+    
+    });
+    
 
   // Function to sequentially fetch and render collections
-   fetchAndRenderCollections = async () => {
-      setLoading(true); // Start loading
-      setCollectionsData({}); // Reset data
-      setHeadersData({}); // Reset headers
-           
-      try {
-        if (!propCollectionsToFetch || propCollectionsToFetch.length === 0) {
-          await inlistDaddy(); // Run inlistDaddy if no collections are passed in props
-        } else {
-          collectionsToFetch = propCollectionsToFetch; // Use collections passed in props
-        }
-          // Fetch collections one by one and update the state
-          for (const collectionId of collectionsToFetch) {
-              const { collectionData, headers } = await inlist(collectionId); // Fetch collection and headers
-              
-              // Update collection data and headers for each collection
-              setCollectionsData((prevData) => ({
-                  ...prevData,
-                  [collectionId]: collectionData,
-              }));
-              
-              setHeadersData((prevHeaders) => ({
-                  ...prevHeaders,
-                  [collectionId]: headers,
-              }));
-          }
-      } catch (error) {
-          console.error("Error fetching data:", error);
-      } finally {
-          setLoading(false); // Stop loading once data is fetched
+  const fetchAndRenderCollections = async () => {
+    setLoading(true); // Start loading
+    setCollectionsData({}); // Reset data
+    setHeadersData({}); // Reset headers
+
+    try {
+      if (!propCollectionsToFetch || propCollectionsToFetch.length === 0) {
+        await inlistDaddy(); // Run inlistDaddy if no collections are passed in props
+      } else {
+        collectionsToFetch = propCollectionsToFetch; // Use collections passed in props
       }
+      // Fetch collections one by one and update the state
+      for (const collectionId of collectionsToFetch) {
+        const { collectionData, headers } = await inlist(collectionId); // Fetch collection and headers
+
+        // Update collection data and headers for each collection
+        setCollectionsData((prevData) => ({
+          ...prevData,
+          [collectionId]: collectionData,
+        }));
+
+        setHeadersData((prevHeaders) => ({
+          ...prevHeaders,
+          [collectionId]: headers,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false); // Stop loading once data is fetched
+    }
   };
 
   useEffect(() => {
-      fetchAndRenderCollections();
-  }, [refresh]); 
+    fetchAndRenderCollections();
+  }, [refresh]);
+
   useEffect(() => {
-      const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                  entry.target.classList.add('fade-in');
-                  observer.unobserve(entry.target); // Stop observing once the effect has been applied
-              }
-          });
-      }, { threshold: 0.1 });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          observer.unobserve(entry.target); // Stop observing once the effect has been applied
+        }
+      });
+    }, { threshold: 0.1 });
 
-      const products = document.querySelectorAll('.product-card');
-      products.forEach((product) => observer.observe(product));
+    const products = document.querySelectorAll('.product-card');
+    products.forEach((product) => observer.observe(product));
 
-      return () => {
-          products.forEach((product) => observer.unobserve(product));
-      };
+    return () => {
+      products.forEach((product) => observer.unobserve(product));
+    };
   }, [collectionsData]);
 
   if (loading) {
-      console.log("Loading..");
+    console.log("Loading..");
   }
 
-    
-
   return (
-      <section className="section product">
-          <div className="container">
-              
-              {/* Dynamically render sections for each collection */}
-              {Object.keys(collectionsData).map((collectionId) => (
-                  <React.Fragment key={collectionId}>
-                      <div style={{ display: styleHead, alignItems: 'center', justifyContent: 'center' }} id="headers/">
-                          <h4 style={{ width:"100%",display:"flex",justifyContent:"center"}}>
-                              {headersData[collectionId]?.header[0] || 'Wait is over'}
-                          </h4>
-                          <h1
-                              style={{
-                                  width: '100%',
-                                  fontSize: '20px',
-                                  color: 'black',
-                                  fontWeight: '600',
-                              }}
+    <>
+      {trending && <div className="trending-items-heading">Trending Products</div>}
+  
+      <section className={`section product ${trending ? 'trending-items' : ''}`}>
+        <div className="container">
+          {trending ? (<>
+             <button className="scroll-button-left" aria-label="Scroll left">&lt;</button>
+            <ul className={`product-list ${productsStyle ? 'responsive-grid' : ''}`}>
+              {Object.keys(collectionsData).map((collectionId) =>
+                Array.isArray(collectionsData[collectionId]) &&
+                collectionsData[collectionId].map((product) => (
+                  <li key={product.id} className="product-card">
+                    {/* Product card content */}
+                    <div className="product-card">
+                      <figure className="card-banner">
+                        <Link
+                          href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                          legacyBehavior
+                        >
+                          <a onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                            <img
+                              src={product.pic}
+                              alt={product.productName}
+                              loading="lazy"
+                              width="800"
+                              height="1034"
+                              className="w-100"
+                            />
+                          </a>
+                        </Link>
+                        {product.dPrice ? (
+                          <div className="card-badge red">
+                            -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
+                          </div>
+                        ) : (
+                          <div className="card-badge green">New</div>
+                        )}
+                        <div className="card-actions">
+                          <Link
+                            href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
                           >
-                              {headersData[collectionId]?.header[1] || 'Winter Collection'}
-                          </h1>
-                          <hr style={{ border: '1px solid black', margin: '10px 0' }} />
-                      </div>
-                      <div id={collectionId}>
-                      <ul className={`product-list ${productsStyle ? 'responsive-grid' : ''}`}>
-                              {/* Check if collectionsData[collectionId] is an array before calling map */}
-                              {Array.isArray(collectionsData[collectionId]) &&
-    collectionsData[collectionId].map((product) => (
-        <li key={product.id} className="product-card">
-            <div className="product-card">
-                <figure className="card-banner">
-                  <Link href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`} legacyBehavior>
-                    <a >
-                        <img
-                            src={product.pic}
-                            alt={product.productName}
-                            loading="lazy"
-                            width="800"
-                            height="1034"
-                            className="w-100"
-                        />
-                    </a></Link>
-                    {product.dPrice ? (
-    <div className="card-badge red">
-        -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
-    </div>
-) : (
-    <div className="card-badge green">New</div>
-)}
-
-
-                    <div className="card-actions">
-                    <Link
-  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}>
-  <button className="card-action-btn" aria-label="Quick view">
-    <ion-icon name="eye-outline"></ion-icon>
-  </button>
-</Link>
-
-                        <button className="card-action-btn cart-btn" onClick={(event) => handleCart(event, product, cartItems, setCartItems)}>
+                            <button
+                              className="card-action-btn"
+                              aria-label="Quick view"
+                              onClick={() => document.querySelector('.loader').style.display = 'block'}
+                            >
+                              <ion-icon name="eye-outline"></ion-icon>
+                            </button>
+                          </Link>
+                          <button
+  className="card-action-btn cart-btn"
+  onClick={(event) => {
+    fetchSizeChart(collectionId); // Call the function here if needed
+    handleCart(event, product, cartItems, setCartItems);
+  }}
+>
                             <ion-icon name="cart-outline"></ion-icon>
                             <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
-                        </button>
-                        <button className="card-action-btn" aria-label="Quick Buy" onClick={(event) => {
-        const params = new URLSearchParams(window.location.search);
-        document.querySelector(".cartBtn").innerText= "checkout";
-        // Extract product details and trim "Rs. " from the price
-        const product = {
-            pic: params.get("ImageSrc"),
-            productName: params.get("pname"),
-            price: params.get("pprice")?.replace("Rs. ", ""), 
-            id: Date.now() 
-        };
+                          </button>
+                          <button
+  className="card-action-btn"
+  aria-label="Quick Buy"
+  onClick={(event) => {
+    let params;
+    if (typeof window !== 'undefined') {
+      params = new URLSearchParams(window.location.search);
+    }
 
-        // Call handleCart with the product and cart items
-        handleCart(event, product, cartItems, setCartItems);
-        localStorage.setItem("purchase","0010");
-        
-        
-    }}>
+    // Change button text to indicate checkout
+    document.querySelector('.cartBtn').innerText = 'checkout';
+
+    if (params && params.get('ImageSrc')) {
+      // Product details from URL parameters
+
+      const product = {
+        pic: params.get('ImageSrc'),
+        productName: params.get('pname'),
+        price: params.get('pprice')?.replace('Rs. ', ''),
+        id: Date.now(),
+      };
+
+      handleCart(event, product, cartItems, setCartItems);
+      localStorage.setItem('purchase', '0010');
+    } else {
+      
+
+      handleCart(event, product, cartItems, setCartItems);
+      localStorage.setItem('purchase', '0010');
+    }
+  }}
+>
                             <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                        </button>
-                    </div>
-                </figure>
-                <div className="card-content">
-                    <h3 className="h4 card-title">
-                        <a href="#">{product.productName}</a>
-                    </h3>
-                    <div className="card-price">
-                        <data value={product.price}>
+                          </button>
+                        </div>
+                      </figure>
+                      <div className="card-content">
+                        <h3 className="h4 card-title">
+                          <a>{product.productName}</a>
+                        </h3>
+                        <div className="card-price">
+                          <data style={{ fontWeight: 'bolder' }} value={product.price}>
                             {`Rs. ${product.price}`}
-                        </data>
-                        {product.dPrice && (
-    <data className='dcard-price' value={product.dPrice} >Rs. {product.dPrice}</data>
-)}
-
-                    </div>
-                </div>
-            </div>
-        </li>
-    ))
-}
-
-
-                          </ul>
+                          </data>
+                          {product.dPrice && (
+                            <data className="dcard-price" value={product.dPrice}>
+                              Rs. {product.dPrice}
+                            </data>
+                          )}
+                        </div>
                       </div>
-                  </React.Fragment>
-              ))}
-          </div>
+                    </div>
+                  </li>
+                ))
+              )}
+              <button className="scroll-button-right" aria-label="Scroll right">&gt;</button>
+            </ul></>
+          ) : (
+            Object.keys(collectionsData).map((collectionId) => (
+              <React.Fragment key={collectionId}>
+                <div
+                  style={{ display: styleHead, alignItems: 'center', justifyContent: 'center' }}
+                  className="headersection"
+                  id={`headers/${collectionId}`}
+                >
+                  <h4 style={{ display: 'flex', justifyContent: 'center' }}>
+                    {headersData[collectionId]?.header[0] || 'Wait is over'}
+                  </h4>
+                  <h1 style={{ fontSize: '20px', fontWeight: '600' }}>
+                    {headersData[collectionId]?.header[1] || 'Winter Collection'}
+                  </h1>
+                  <hr style={{ border: '1px solid black', margin: '10px 0' }} />
+                </div>
+
+
+                <div id={collectionId} className="collections">
+                  <ul className={`product-list ${productsStyle ? 'responsive-grid' : ''}`}>
+                    {Array.isArray(collectionsData[collectionId]) &&
+                      collectionsData[collectionId].map((product) => (
+                        <li key={product.id} className="product-card">
+                        {/* Product card content */}
+                        <div className="product-card">
+                          <figure className="card-banner">
+                            <Link
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                              legacyBehavior
+                            >
+                              <a onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                                <img
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                />
+                              </a>
+                            </Link>
+                            {product.dPrice ? (
+                              <div className="card-badge red">
+                                -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
+                              </div>
+                            ) : (
+                              <div className="card-badge green">New</div>
+                            )}
+                            <div className="card-actions">
+                              <Link
+                                href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                              >
+                                <button
+                                  className="card-action-btn"
+                                  aria-label="Quick view"
+                                  onClick={() => document.querySelector('.loader').style.display = 'block'}
+                                >
+                                  <ion-icon name="eye-outline"></ion-icon>
+                                </button>
+                              </Link>
+                              <button
+      className="card-action-btn cart-btn"
+      onClick={(event) => {
+        fetchSizeChart(collectionId); // Call the function here if needed
+        handleCart(event, product, cartItems, setCartItems);
+      }}
+    >
+                                <ion-icon name="cart-outline"></ion-icon>
+                                <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
+                              </button>
+                              <button
+      className="card-action-btn"
+      aria-label="Quick Buy"
+      onClick={(event) => {
+        let params;
+        if (typeof window !== 'undefined') {
+          params = new URLSearchParams(window.location.search);
+        }
+    
+        // Change button text to indicate checkout
+        document.querySelector('.cartBtn').innerText = 'checkout';
+    
+        if (params && params.get('ImageSrc')) {
+          // Product details from URL parameters
+    
+          const product = {
+            pic: params.get('ImageSrc'),
+            productName: params.get('pname'),
+            price: params.get('pprice')?.replace('Rs. ', ''),
+            id: Date.now(),
+          };
+    
+          handleCart(event, product, cartItems, setCartItems);
+          localStorage.setItem('purchase', '0010');
+        } else {
+          
+    
+          handleCart(event, product, cartItems, setCartItems);
+          localStorage.setItem('purchase', '0010');
+        }
+      }}
+    >
+                                <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
+                              </button>
+                            </div>
+                          </figure>
+                          <div className="card-content">
+                            <h3 className="h4 card-title">
+                              <a>{product.productName}</a>
+                            </h3>
+                            <div className="card-price">
+                              <data style={{ fontWeight: 'bolder' }} value={product.price}>
+                                {`Rs. ${product.price}`}
+                              </data>
+                              {product.dPrice && (
+                                <data className="dcard-price" value={product.dPrice}>
+                                  Rs. {product.dPrice}
+                                </data>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                      ))}
+                  </ul>
+                </div>
+              </React.Fragment>
+            ))
+          )}
+        </div>
       </section>
+    </>
   );
-}
+  
+}  
+
 
 
 
@@ -432,10 +618,25 @@ async function edittor(divID) {
   console.log("Before fetching");
 
   // Check for URL parameter 'edit' and correct local storage key
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasEditParam = urlParams.has('edit');
-  const correctLocalStorageKey = localStorage.getItem('A98398HBFBB93BNABSN') === 'fabfbuygi328y902340';
-  let mainEditButton;
+  let urlParams;
+
+  urlParams = new URLSearchParams(window.location.search);
+
+let hasEditParam = false;
+let correctLocalStorageKey = false;
+let mainEditButton;
+
+
+  // Safely access window.location and localStorage on the client-side
+   urlParams = new URLSearchParams(window.location.search);
+  hasEditParam = urlParams.has('edit');
+
+  correctLocalStorageKey = localStorage.getItem('A98398HBFBB93BNABSN') === 'fabfbuygi328y902340';
+  
+  // You can initialize `mainEditButton` if needed
+  mainEditButton = document.getElementById('editButton'); // Example of getting an element
+
+
 
   if (hasEditParam && correctLocalStorageKey) {
     try {
@@ -667,7 +868,7 @@ function mainEdit(divID) {
     });
 
     // Create and position the pencil button for the price
-    const priceContainer = card.querySelector('.card-price');
+    const priceContainer = card.querySelector('.upper-card-price');
     const pricePencilButton = document.createElement('button');
     pricePencilButton.textContent = '✎';
     pricePencilButton.style.position = 'absolute';
@@ -679,7 +880,7 @@ function mainEdit(divID) {
     pricePencilButton.style.cursor = 'pointer';
     priceContainer.style.position = 'relative';
     priceContainer.appendChild(pricePencilButton);
-
+   
     // Event listener for the price pencil button
     pricePencilButton.addEventListener('click', async () => {
       const newPrice = prompt('Enter new price:');
@@ -690,30 +891,190 @@ function mainEdit(divID) {
       }
     });
 
-
 // Create and position the pencil button for the price
-const dpriceContainer = card.querySelector('.dcard-price');
-const dpricePencilButton = document.createElement('button');
-dpricePencilButton.textContent = '✎';
-dpricePencilButton.style.position = 'absolute';
-dpricePencilButton.style.top = '0';
-dpricePencilButton.style.right = '0';
-dpricePencilButton.style.backgroundColor = 'transparent'; // Remove background color
-dpricePencilButton.style.border = 'none';
-dpricePencilButton.style.padding = '5px';
-dpricePencilButton.style.cursor = 'pointer';
-dpriceContainer.style.position = 'relative';
-dpriceContainer.appendChild(pricePencilButton);
+try {
+  const dpriceContainer = card.querySelector('.dcard-price');
+  
+  if (dpriceContainer) {
+    // Create and style the pencil button
+    const dpricePencilButton = document.createElement('button');
+    dpricePencilButton.textContent = '✎';
+    dpricePencilButton.style.position = 'absolute';
+    dpricePencilButton.style.top = '0';
+    dpricePencilButton.style.right = '0';
+    dpricePencilButton.style.backgroundColor = 'transparent';
+    dpricePencilButton.style.border = 'none';
+    dpricePencilButton.style.padding = '5px';
+    dpricePencilButton.style.cursor = 'pointer';
+    
+    // Ensure container has relative positioning for proper button placement
+    dpriceContainer.style.position = 'relative';
+    dpriceContainer.appendChild(dpricePencilButton);
 
-// Event listener for the price pencil button
-dpricePencilButton.addEventListener('click', async () => {
-  const newPrice = prompt('Enter new price:');
-  if (newPrice) {
-    const divId = firstContainer.id;
-    await updateFirestoreDocument(divId, index + 1, { price: newPrice });
-    dpriceContainer.querySelector('data').textContent = `Rs. ${newPrice}`;
+    // Add click event listener for updating price
+    dpricePencilButton.addEventListener('click', async () => {
+      const newPrice = prompt('Update cutted price:');
+      if (newPrice) {
+        const divId = card.id; // Assuming `card` represents the parent container with an ID
+        await updateFirestoreDocument(divId, index + 1, { dPrice: newPrice });
+        dpriceContainer.textContent = `Rs. ${newPrice}`;
+      }
+    });
+  } else {
+    // Handle case where price container does not exist
+    const parentPriceContainer = card.querySelector('.card-price');
+    if (parentPriceContainer) {
+      // Create a new container for the price
+      const dataElement = document.createElement('div');
+      dataElement.classList.add('dcard-price');
+      dataElement.textContent = 'Add Cutted Price';
+      dataElement.style.position = 'relative';
+      parentPriceContainer.appendChild(dataElement);
+
+      // Create and style the pencil button
+      const dataElementButton = document.createElement('button');
+      dataElementButton.textContent = '✎';
+      dataElementButton.style.position = 'absolute';
+      dataElementButton.style.top = '0';
+      dataElementButton.style.right = '0';
+      dataElementButton.style.backgroundColor = 'transparent';
+      dataElementButton.style.border = 'none';
+      dataElementButton.style.padding = '5px';
+      dataElementButton.style.cursor = 'pointer';
+      dataElement.appendChild(dataElementButton);
+
+      // Add click event listener for adding new price
+      dataElementButton.addEventListener('click', async () => {
+        const dataElementNewPrice = prompt('Add cutted price:');
+        if (dataElementNewPrice) {
+          const divId = firstContainer.id; 
+          
+          await updateFirestoreDocument(divID, index + 1, { dPrice: dataElementNewPrice });
+          dataElement.textContent = `Rs. ${dataElementNewPrice}`;
+        }
+      });
+    } else {
+      console.error('Parent price container (.card-price) not found.');
+    }
   }
-});
+} catch (err) {
+  console.error(`Error processing dprice for product at index ${index}:`, err);
+}
+
+
+
+// Ensure the 'Add Cost Price' button and field exist for each product
+try {
+  const priceContainer = card.querySelector('.card-price');
+  if (priceContainer) {
+    // Check if the cost price field already exists
+    let costPriceContainer = priceContainer.querySelector('.cost-price');
+    if (!costPriceContainer) {
+      // Create and append cost price field
+      costPriceContainer = document.createElement('div');
+      costPriceContainer.className = 'cost-price';
+      costPriceContainer.style.position = 'relative';
+      costPriceContainer.textContent = 'Add Cost Price';
+      priceContainer.appendChild(costPriceContainer);
+
+      // Create and append pencil button for editing cost price
+      const costPriceButton = document.createElement('button');
+      costPriceButton.textContent = '✎';
+      costPriceButton.style.position = 'absolute';
+      costPriceButton.style.top = '0';
+      costPriceButton.style.right = '0';
+      costPriceButton.style.backgroundColor = 'transparent';
+      costPriceButton.style.border = 'none';
+      costPriceButton.style.padding = '5px';
+      costPriceButton.style.cursor = 'pointer';
+      costPriceContainer.appendChild(costPriceButton);
+
+      // Event listener for the cost price button
+      costPriceButton.addEventListener('click', async () => {
+        const newCostPrice = prompt('Add or update cost price:');
+        if (newCostPrice) {
+          const divId = firstContainer.id; 
+          await updateFirestoreDocument(divId, index + 1, { productCP: newCostPrice });
+          costPriceContainer.textContent = `Cost Price: Rs. ${newCostPrice}`;
+        }
+      });
+    }
+  } else {
+    console.error('Price container not found for the product.');
+  }
+} catch (err) {
+  console.error(`Error appending cost price field for product at index ${index}:`, err);
+}
+
+
+
+
+
+try {
+  // Select the container
+  const headersContainer = document.getElementById(`headers/${firstContainer.id}`);
+
+  if (!headersContainer) {
+    console.error(`No container found with ID headers/${firstContainer.id}`);
+    return;
+  }
+
+  // Function to create and attach pencil buttons
+  const attachPencilButton = (tag, index) => {
+    const element = headersContainer.querySelector(tag);
+    if (!element) return;
+
+    // Check if the wrapper already exists to prevent duplication
+    if (element.parentNode && element.parentNode.classList.contains('pencil-wrapper')) {
+      return;
+    }
+
+    // Create a wrapper to hold the heading and pencil button
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('pencil-wrapper');
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+
+    // Insert the wrapper and move the heading inside it
+    element.parentNode.insertBefore(wrapper, element);
+    wrapper.appendChild(element);
+
+    // Create pencil button
+    const pencilButton = document.createElement('button');
+    pencilButton.textContent = '✎';
+    pencilButton.style.marginLeft = '10px';
+    pencilButton.style.backgroundColor = 'transparent';
+    pencilButton.style.border = 'none';
+    pencilButton.style.cursor = 'pointer';
+
+    // Append pencil button to the wrapper
+    wrapper.appendChild(pencilButton);
+
+    // Add event listener for editing
+    pencilButton.addEventListener('click', () => {
+      const newText = prompt(`Update text for ${tag.toUpperCase()}:`, element.textContent);
+      if (newText) {
+        // Use updateFirestoreDocument to handle Firestore logic
+        const updateData = {};
+        updateData[`headerIndex`] = index; // Use index to determine h4 (0) or h1 (1)
+        updateData[`headerText`] = newText;
+
+        updateFirestoreDocument(firstContainer.id, 'headers', updateData);
+
+        // Update UI
+        element.textContent = newText;
+      }
+    });
+  };
+
+  // Attach pencil buttons to h4 and h1
+  attachPencilButton('h4', 0);
+  attachPencilButton('h1', 1);
+
+} catch (err) {
+  console.error('Error attaching pencil button to headers:', err);
+}
+
 
 
 
@@ -845,106 +1206,93 @@ productTitle = productTitle.replace(/✎/g, '').trim();
 }
 
 async function updateFirestoreDocument(divId, docId, updateData) {
-  
-  const credsColRef = collection(db, "creds");
-const querySnapshot = await getDocs(credsColRef);
-await setDoc(doc(db, "creds", divId), {
-TimeStamp:serverTimestamp(),
-});
-
-  console.log(divId, docId, updateData);
-  document.querySelector(".loader").style.display = 'block';
-
+  // Ensure divId and docId are strings
   const divIdStr = String(divId);
   const docIdStr = String(docId);
 
+  // Loader visibility
+  document.querySelector(".loader").style.display = 'block';
+
   try {
-      const categoriesRef = doc(db, divIdStr, docIdStr);
-      const categoriesSnapshot = await getDoc(categoriesRef);
+    const categoriesRef = doc(db, divIdStr, docIdStr);
+    const categoriesSnapshot = await getDoc(categoriesRef);
 
-      if (!categoriesSnapshot.exists()) {
-          console.warn(`No document found for docId: ${docIdStr}. Creating a new document.`);
+    // Create document if it doesn't exist
+    if (!categoriesSnapshot.exists()) {
+      console.warn(`No document found for docId: ${docIdStr}. Creating a new document.`);
+      await setDoc(categoriesRef, { createdAt: serverTimestamp(), ...updateData }, { merge: true });
+      console.log(`New document created with docId: ${docIdStr}.`);
+      return;
+    }
 
-          const newData = {};
-          newData.createdAt = serverTimestamp();
+    // Existing document data
+    const currentData = categoriesSnapshot.data();
+    const previousProductName = currentData?.productName;
 
-          if (updateData.productName) newData.productName = updateData.productName;
-          if (updateData.pic) newData.pic = updateData.pic;
-          if (updateData.sizes) newData.sizes = updateData.sizes;
-          if (updateData.price) newData.price = updateData.price;
-
-          await setDoc(categoriesRef, newData, { merge: true });
-          console.log(`New document created with docId: ${docIdStr}.`);
-          document.querySelector(".loader").style.display = 'none';
-          return;
-      }
-
-      console.log(`Document with docId: ${docIdStr} already exists.`);
-
-      document.querySelector(".loader").style.display = 'none';
-      const currentData = categoriesSnapshot.data();
-      const previousProductName = currentData?.productName;
-      console.log(previousProductName)
+    // Case: Update productName and handle related documents
+    if (updateData.productName) {
       if (!previousProductName) {
-  alert("Please set a name first");
-  return;
-}
-
-      if (updateData.productName) {
-          await setDoc(categoriesRef, { productName: updateData.productName }, { merge: true });
-
-          const previousClothsimsRef = doc(db, 'clothsims', previousProductName);
-          const previousClothsimsSnapshot = await getDoc(previousClothsimsRef);
-
-          if (previousClothsimsSnapshot.exists()) {
-              const previousData = previousClothsimsSnapshot.data();
-              console.log('Previous document data:', previousData);
-
-              const newClothsimsRef = doc(db, 'clothsims', updateData.productName);
-              await setDoc(newClothsimsRef, { ...previousData, productName: updateData.productName }, { merge: true });
-
-              await deleteDoc(previousClothsimsRef);
-              console.log('Old document deleted.');
-          } else {
-              console.error('No document found for the previous product name.');
-          }
-      } else if (updateData.pic) {
-          await setDoc(categoriesRef, { pic: updateData.pic }, { merge: true });
-      } else if (updateData.sizes) {
-          const { s, m, l } = updateData.sizes;
-          const sizesRef = doc(db, 'clothsims', previousProductName);
-          await setDoc(sizesRef, { s: s || '0', m: m || '0', l: l || '0' }, { merge: true });
-      } else if (updateData.price) {
-          await setDoc(categoriesRef, { price: updateData.price }, { merge: true });
-      } else if (updateData.priority) {
-          const newPriorityDocId = String(updateData.priority);
-          const collectionRef = collection(db, divIdStr);
-          const newPriorityRef = doc(db, divIdStr, newPriorityDocId);
-          const newPrioritySnapshot = await getDoc(newPriorityRef);
-
-          if (newPrioritySnapshot.exists()) {
-              const newPriorityData = newPrioritySnapshot.data();
-              console.log('New priority document data:', newPriorityData);
-
-              const currentDataCopy = { ...currentData };
-              await setDoc(newPriorityRef, currentDataCopy);
-              await setDoc(categoriesRef, newPriorityData);
-
-              console.log('Data swapped between documents.');
-              await edittor(divId);
-              await mainEdit(divId);
-          } else {
-              console.error(`Document with priority ID: ${newPriorityDocId} does not exist.`);
-              alert(`You cannot set a priority for a document that doesn't exist in the collection.`);
-          }
-      } else {
-          console.error('No valid field found to update.');
+        alert("Please set a name first");
+        return;
       }
-  } catch (error) {
-      console.error('Error updating Firestore document:', error);
-  }
 
-  document.querySelector(".loader").style.display = 'none';
+      await setDoc(categoriesRef, { productName: updateData.productName }, { merge: true });
+
+      const previousClothsimsRef = doc(db, 'clothsims', previousProductName);
+      const newClothsimsRef = doc(db, 'clothsims', updateData.productName);
+
+      const previousClothsimsSnapshot = await getDoc(previousClothsimsRef);
+      if (previousClothsimsSnapshot.exists()) {
+        const previousData = previousClothsimsSnapshot.data();
+        await setDoc(newClothsimsRef, { ...previousData, productName: updateData.productName }, { merge: true });
+        await deleteDoc(previousClothsimsRef);
+        console.log('Old document deleted and new one created.');
+      }
+    }
+    // Case: Update specific fields
+    else if (updateData.pic) {
+      await setDoc(categoriesRef, { pic: updateData.pic }, { merge: true });
+    } else if (updateData.sizes) {
+      const { s, m, l } = updateData.sizes;
+      const sizesRef = doc(db, 'clothsims', previousProductName);
+      await setDoc(sizesRef, { s: s || '0', m: m || '0', l: l || '0' }, { merge: true });
+    } else if (updateData.price || updateData.dPrice || updateData.productCP) {
+      await setDoc(categoriesRef, updateData, { merge: true });
+    }
+    // Case: Update headers array
+    else if (updateData.headerIndex !== undefined && updateData.headerText) {
+      const headersRef = doc(db, divIdStr, 'headers');
+      const headersSnapshot = await getDoc(headersRef);
+      const updatedHeader = headersSnapshot.exists() ? headersSnapshot.data().header || [] : [];
+      updatedHeader[updateData.headerIndex] = updateData.headerText;
+      await setDoc(headersRef, { header: updatedHeader }, { merge: true });
+    }
+    // Case: Swap priorities
+    else if (updateData.priority) {
+      const newPriorityDocId = String(updateData.priority);
+      const newPriorityRef = doc(db, divIdStr, newPriorityDocId);
+      const newPrioritySnapshot = await getDoc(newPriorityRef);
+
+      if (newPrioritySnapshot.exists()) {
+        const newPriorityData = newPrioritySnapshot.data();
+        await setDoc(newPriorityRef, { ...currentData });
+        await setDoc(categoriesRef, newPriorityData);
+        console.log('Data swapped between documents.');
+        await edittor(divId);
+        await mainEdit(divId);
+      } else {
+        console.error(`Document with priority ID: ${newPriorityDocId} does not exist.`);
+        alert(`You cannot set a priority for a document that doesn't exist.`);
+      }
+    } else {
+      console.error('No valid field found to update.');
+    }
+  } catch (error) {
+    console.error('Error updating Firestore document:', error);
+  } finally {
+    // Ensure loader is hidden
+    document.querySelector(".loader").style.display = 'none';
+  }
 }
 
 
@@ -1016,10 +1364,22 @@ checkVisibility(); // Initial check
 
 
 let checkFetch = true;
-const urlParams = new URLSearchParams(window.location.search);
-  const hasEditParam = urlParams.has('edit');
-  const correctLocalStorageKey = localStorage.getItem('A98398HBFBB93BNABSN') === 'fabfbuygi328y902340';
- 
+let urlParams;
+
+  urlParams = new URLSearchParams(window.location.search);
+
+
+let hasEditParam = false;
+if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+  const urlParams = new URLSearchParams(window.location.search);
+  hasEditParam = urlParams.has('edit');
+}
+
+  let correctLocalStorageKey = false;
+  if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+    correctLocalStorageKey = localStorage.getItem('A98398HBFBB93BNABSN') === 'fabfbuygi328y902340';
+  }
+  
   if (hasEditParam && correctLocalStorageKey) {
 console.log("Edittor mode ")
 setTimeout(async () => {

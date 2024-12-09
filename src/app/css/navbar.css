@@ -234,7 +234,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    background: var(--white);
+    
     width: 100%;
     padding-block: 20px;
     z-index: 4;
@@ -243,13 +243,14 @@
   
   .header.active {
     position: fixed;
-    box-shadow: 0 2px 20px hsla(0, 0%, 0%, 0.1);
+    
   }
   
   .header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: fixed;
   }
   
   .nav-open-btn {
@@ -274,17 +275,19 @@
   .nav-open-btn:is(:hover, :focus) span:nth-child(2) { transform: scaleX(1); }
   
   .header-actions {
-    background: var(--white);
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
+   
+    left: 29%;
+    width: 52%;
+    display: flex
+;
     justify-content: space-evenly;
     align-items: center;
+    color: black;
     gap: 5px;
+   
     padding-block: 16px 10px;
-    box-shadow: 0 -2px 20px hsla(0, 0%, 0%, 0.1);
+    
     z-index: 1;
   }
   
@@ -302,6 +305,7 @@
   
   .header-action-label {
     color: var(--sonic-silver);
+    display: none;
     font-size: var(--fs-10);
     transition: var(--transition-1);
   }
@@ -323,7 +327,7 @@
     border-radius: 50%;
   }
   
-  .header-action-btn .btn-badge.green { --background: var(--middle-blue-green); }
+  .header-action-btn .btn-badge.green { --background: black; }
   
   .navbar {
     background: var(--white);
@@ -558,6 +562,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100%;
   gap: 8px;
   background: var(--white);
   color: var(--eerie-black);
@@ -1031,8 +1036,19 @@
   /**
    * responsive for larger than 992px screen
    */
-  
+  #brandNameSpan{
+    display: none;
+  }
   @media (min-width: 992px) {
+    .header .container{
+      position: relative;
+    }
+    #brandNameSpan{
+      display: block;
+    }
+    .header-action-label{
+      display: block;
+    }
     #logoimg{
         display: none;
     }
@@ -1454,7 +1470,7 @@
   border-radius: 50%;
   border: none;
   color: black;
-  background-color: white;
+  
   
   cursor: pointer;
   padding-top: 3px;
@@ -1613,6 +1629,16 @@ h1, h4, p {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
   }
+  .header-action-btn .btn-badge{
+    height: 18px;
+        width: 19px;
+  }
+  .chatBtnHeader{
+    bottom: 18px;
+    right: 10px;
+    position: fixed;
+    
+  }
 }
 
  
@@ -1658,4 +1684,23 @@ h1, h4, p {
   100% {
     clip-path: inset(0 0 0 100%);
   }
+}
+
+
+#navCategories{
+  display: flex
+;
+    justify-content: space-between;
+    width: 100%;
+    color: black;
+    font-weight: bold;
+    padding: 10px;
+    /* background: rgb(240, 240, 240); */
+    /* border-bottom: 1px solid black; */
+    /* border-radius: 5px; */
+    cursor: pointer;
+}
+
+#navCategories:hover{
+  border-bottom: 1px solid black;
 }

@@ -2,6 +2,7 @@
 import React from 'react';
 import '../css/poster.css';
 
+
 const Video = () => {
   return (
     <div className="poster-container" style={{minHeight:'0vh',backgroundColor:'white'}}>

@@ -1,14 +1,20 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import '../css/cart.css'; // Import your CSS file
-import { FaTrash, FaWeight } from 'react-icons/fa'; // Importing a delete icon from react-icons
 
+import Link from 'next/link';
 let handleCart;
 let updateCartBadge;
 let totalAmount;
 const Cart = ({cartStyle = false}) => {
     const [cartItems, setCartItems] = useState(() => {
-        const storedCartItems = localStorage.getItem('cartItems');
+        let storedCartItems = null;
+
+
+  // Safe access to localStorage on the client-side
+  storedCartItems = localStorage.getItem('cartItems');
+
+
         return storedCartItems ? JSON.parse(storedCartItems) : [];
     });
 
@@ -17,13 +23,23 @@ const Cart = ({cartStyle = false}) => {
     // Load cart items from localStorage when the cart is opened
     const handleCartOpen = () => {
         // Always fetch the most recent cart items from localStorage
-        const storedCartItems = localStorage.getItem('cartItems');
+        let storedCartItems = null;
+
+       
+          // Safe access to localStorage on the client-side
+          storedCartItems = localStorage.getItem('cartItems');
+        
+        
         if (storedCartItems) {
             console.log("Fetching the latest cart items on open");
             setCartItems(JSON.parse(storedCartItems)); // Update state with fresh cart items
         } else {
             console.log("No stored cart items found, initializing empty cart");
-            localStorage.setItem("preCartItems", JSON.stringify([])); // Initialize if not present
+          
+                // Safe access to localStorage on the client-side
+                localStorage.setItem("preCartItems", JSON.stringify([]));
+              
+              // Initialize if not present
             setCartItems([]); // Ensure the state is empty if no items are found
         }
         document.querySelector(".cart-card").style.display = "block"; // Open the cart UI
@@ -50,8 +66,11 @@ const Cart = ({cartStyle = false}) => {
 
     // Save cart items to localStorage whenever cartItems changes and update badge
     useEffect(() => {
-        
-        localStorage.setItem('preCartItems', JSON.stringify(cartItems));
+      
+            // Safe access to localStorage on the client-side
+            localStorage.setItem("preCartItems", JSON.stringify([]));
+          
+          
     }, [cartItems]);
     
 
@@ -59,8 +78,10 @@ const Cart = ({cartStyle = false}) => {
         console.log("Updating Cart Badge number");
 
         // Retrieve cart items from localStorage
-        const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-
+        let cartItems = null;
+    
+         cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        
         // Calculate total quantityf
         const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
 console.log(`Total Quantity: ${totalQuantity}`);
@@ -84,38 +105,43 @@ console.log(`Total Quantity: ${totalQuantity}`);
         };
     }, []);}
 
-    handleCart = (event, product) => {
+    handleCart = (event, product, cartItems, setCartItems) => {
         event.preventDefault();
+    
         console.log("Current Cart Items:", cartItems);
     
-        const uniqueId = Date.now() + Math.random(); // Simple unique ID generation
+        // Retrieve existing `preCartItems` from localStorage or initialize as an empty array
+        const preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
     
-        const existingProductIndex = cartItems.findIndex(item => item.productName === product.productName);
+        // Check if the product already exists in `preCartItems`
+        const existingProductIndex = preCartItems.findIndex(item => item.productName === product.productName);
     
         if (existingProductIndex !== -1) {
-            // If product already exists, update its quantity
-            const updatedCartItems = cartItems.map((item, index) =>
-                index === existingProductIndex
-                    ? { ...item,}
-                    : item
-            );
-            console.log("Updated existing product quantity:", updatedCartItems[existingProductIndex]);
-            setCartItems(JSON.stringify([]));
-            setCartItems(updatedCartItems);
-            
+            // If the product exists, update its quantity
+            preCartItems[existingProductIndex].quantity = (preCartItems[existingProductIndex].quantity || 1) + 1;
+            console.log("Updated product quantity in preCartItems:", preCartItems[existingProductIndex]);
         } else {
-            // If product does not exist, create a new product object and add it to the cart
+            // If the product doesn't exist, add it as a new product
             const newProduct = {
                 ...product,
-                id: uniqueId,
-                
+                id: Date.now() + Math.random(), // Generate a unique ID
+                quantity: 1, // Set initial quantity
             };
-            console.log("Adding new product to cart:", newProduct);
-            setCartItems([...cartItems, newProduct]); // Update state with the new product
+            preCartItems.push(newProduct);
+            console.log("Added new product to preCartItems:", newProduct);
         }
-    document.querySelector(".custom-dropdown").style.display='block';
-        updateCartBadge(); 
+    
+        // Update `preCartItems` in localStorage
+        localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
+    
+        // Update `cartItems` state to reflect changes in the UI
+        const updatedCartItems = [...preCartItems];
+        setCartItems(updatedCartItems);
+    
+       
+        updateCartBadge(); // Ensure this function updates the badge count correctly
     };
+    
     
     const increaseQuantity = (id) => {
         const updatedCartItems = cartItems.map(item =>
@@ -159,13 +185,10 @@ console.log(`Total Quantity: ${totalQuantity}`);
 }
     return (
 <div
-    ref={cartRef}
-    className={`cart-card ${cartStyle ? 'purchase-cart' : ''}`}
-    style={{
-        display: cartStyle ? "block" : "none",
-       
-    }}
->
+      ref={cartRef}
+      className={`cart-card ${cartStyle ? "purchase-cart" : ""}`}
+      style={{ display: cartStyle ? "block" : "none" }}
+    >
 
             <div className="row-both" >
                 <div className="col-md-8 cart-cart">
@@ -253,7 +276,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
                             <div style={{ fontWeight: "bolder" }} className="col">TOTAL PRICE</div>
                             <div style={{ fontWeight: "bolder" }} className="col text-right">Rs. {totalAmount + shippingAmount}</div>
                         </div>
-                        <button
+                        <Link href='/purchase'><button
   className="cart-btn"
   style={{
     width: '100%',
@@ -267,7 +290,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
   }}
 >
   CHECKOUT
-</button>
+</button></Link>
 
                     </div>
                 </div>

@@ -7,8 +7,15 @@ export const metadata = {
 
 export default function DashboardLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
+    <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "100vh",
+      margin: 0,
+      padding: 0,
+    }}
+  >
         {children}
         
         {/* Adding Canvas for Charts */}
@@ -35,7 +42,6 @@ export default function DashboardLayout({ children }) {
           src="https://www.gstatic.com/firebasejs/7.7.0/firebase-storage.js"
           strategy="lazyOnload"
         />
-      </body>
-    </html>
+     </div>
   );
 }

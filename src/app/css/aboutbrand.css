@@ -1,0 +1,60 @@
+.about-brand {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.image-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;  /* Ensures the container scales to the image size */
+  margin: 0 auto;
+  overflow: hidden;  /* Ensures no overflow if image scales */
+}
+
+.responsive-image {
+  width: 100%;
+  height: auto;  /* Ensures the aspect ratio is maintained */
+  object-fit: cover;  /* Fills the container without distortion */
+  display: block;
+}
+
+.center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;  /* Matches the font color from the image */
+  font-size: 3rem;  /* Adjust font size if needed to match your image */
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);  /* Adds a shadow for readability */
+  z-index: 10;  /* Ensures text appears on top of the image */
+}
+
+.edit-button {
+  position: relative;
+
+  top: 10px;
+  right: 42%;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 10px;
+  z-index: 999;
+}
+#our-brand{
+  font-size: 31px;
+    font-weight: bolder;
+    color: white;
+    font-family: serif;
+    position: absolute;
+}

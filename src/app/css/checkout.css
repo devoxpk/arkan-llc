@@ -151,26 +151,8 @@ width: 100%;
 .reviews strong{
     color: black;
 }
-.review {
-padding: 20px;
-border: 1px solid #ddd;
-border-radius: 5px;
-background: #fafafa;
-display: flex;
-flex-direction: column;
-align-items: center;
-}
 
-.review img {
-max-width: 100px;
-max-height: 100px;
 
-margin-bottom: 10px;
-}
-
-.review .rating {
-color: orange;
-}
 
 @media (min-width: 600px) {
 .reviews {
@@ -670,99 +652,14 @@ width: 70%
 
 /*invoice*/
 /* Product Section */
-thead {
-color: var(--white);
-background: var(--dark);
-}
 
-.table td,
-.table th {
-text-align: center;
-vertical-align: middle;
-}
-
-tr th:first-child,
-tr td:first-child {
-text-align: left;
-}
-
-.media img {
-height: 60px;
-width: 60px;
-}
-#invoice p{
-color: white;
-}
-#invoice{
-
-padding: 20px;
-border-radius: 10px;
-width: 11cm;
-height: 500px;
-position: fixed;
-top: 44%;
-left: 50%;
-transform: translate(-50%, -50%);
-display: block;
-z-index: 9999;
-overflow: visible;
-max-height: 100vh;
-padding-bottom: 20px;
-
-/* Custom scrollbar styles */
-scrollbar-width: thin;
-scrollbar-color: transparent transparent;     
-}
-.media p {
-font-weight: 400;
-margin: 0;
-}
-
-.media p.title {
-font-weight: 600;
-margin-top: 10px;
-}
-
-/* Balance Info Section */
-.balance-info .table td,
-.balance-info .table th {
-padding: 0;
-border: 0;
-}
-
-.balance-info tr td:first-child {
-font-weight: 600;
-}
-.page[size="A4"] {
-width: 415.5px;
-height: 537px;
-overflow: hidden;
-}
 
 
 .top-content {
 padding-bottom: 15px;
 }
 /* Font Include */
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&display=swap');
-.balance-info .row {
-padding: 20px;
-}
 
-.balance-info table {
-width: 100%;
-border-collapse: collapse;
-}
-#mr-3{
-max-width: 100px;
-height: auto;
-margin-top: 12px;
-z-index: 1000;
-}
-
-.balance-info table{
-font-size: 11pX;
-}
 #desc td{
 color: white;
 }
@@ -911,21 +808,7 @@ font-weight: 400;
 }
 
 /* Product Section */
-thead {
-color: var(--white);
-background: var(--dark);
-}
 
-.table td,
-.table th {
-text-align: center;
-vertical-align: middle;
-}
-
-tr th:first-child,
-tr td:first-child {
-text-align: left;
-}
 
 .media img {
 height: 60px;
@@ -1117,10 +1000,7 @@ margin-top: -108px;
 .product-area {
 margin-top: -25px;
 }
-thead {
-color: var(--white);
-background: var(--dark);
-}
+
 tr th:first-child, tr td:first-child {
 text-align: left;
 }
@@ -1357,7 +1237,7 @@ h2 {
 font-size: 32px
 }
 
-h1{
+:not(.custom-dropdown)h1{
 font-size: 38px
 }
 
@@ -1427,7 +1307,7 @@ border-bottom: 1px solid black;
     margin-left: -13%;
 }
 #prodetails .single-pro-details h2{
-    margin-top: -7%;
+   
     font-size: 89%;
     font-weight: bolder;
 }
@@ -1786,26 +1666,7 @@ margin-left: 111px;
     gap: 10px;
 }
 
-.review {
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #fafafa;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
-.review img {
-    max-width: 100px;
-    max-height: 100px;
-    
-    margin-bottom: 10px;
-}
-
-.review .rating {
-    color: #f39c12;
-}
 
 @media (min-width: 600px) {
     .reviews {
@@ -1843,7 +1704,7 @@ margin-left: 111px;
 #rating input:checked ~ label,
 #rating label:hover,
 #rating label:hover ~ label {
-  color:goldenrod;
+  color:black;
   transition: color 0.3s;
 }
 
@@ -1946,20 +1807,6 @@ margin-left: 111px;
 
   
 
-.review strong {
-    font-size: 16px;
-}
-
-.review .rating {
-    color: #ffb400;
-    font-size: 18px;
-}
-
-.review img {
-    max-width: 100px;
-    max-height: 100px;
-    margin-bottom: 10px;
-}
 
 
 
@@ -2236,3 +2083,54 @@ margin-left: 111px;
     font-weight: 700;
   }
   
+
+  /* CSS for Headers in the Description Section */
+.description-header {
+  cursor: pointer;
+    font-weight: lighter;
+    font-size: 17px;
+    margin-top: -7%;
+   
+    padding: 10px;
+    font-family: auto;
+    color: black;
+    
+
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+    
+    transition: background-color 0.3s ease;
+}
+
+.description-header:hover {
+ border-bottom:1px solid black;
+ font-weight: bolder;
+}
+
+@media (min-width: 770px) {
+  .description-header{
+    margin-top: -5%;
+  }
+}
+
+.description-header .expand-symbol {
+  font-size: 18px; /* Adjust size of the +/- symbol */
+  font-weight: bold;
+}
+
+/* Content Section */
+.description-content {
+  
+    padding: 10px;
+    margin-top: 5px;
+    font-family: auto;
+   
+    font-size: 18px;
+   
+    color: #333333;
+}
+
+
+

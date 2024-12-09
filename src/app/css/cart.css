@@ -151,16 +151,7 @@
     color: transparent;
 }
 
-.cartBtn {
-    background-color: #000;
-    border-color: #000;
-    color: white;
-    width: 89%;
-    font-size: 0.7rem;
-    margin-top: 4vh;
-    padding: 1vh;
-    border-radius: 0;
-}
+
 
 .cart-btn:focus {
     box-shadow: none;

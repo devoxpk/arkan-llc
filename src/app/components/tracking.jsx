@@ -1,12 +1,49 @@
 'use client';
 import '../css/tracking.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TrackingComponent() {
     const [trackingData, setTrackingData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [trackingNumber, setTrackingNumber] = useState('');
     const [contact, setContact] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('Track Your Parcel Here');
+
+    const loadingMessages = [
+        'Connecting to courier API...',
+        'Validating tracking credentials...',
+        'Syncing with network nodes...',
+        'Retrieving encrypted data packets...',
+        'Resolving DNS for courier service...',
+        'Decrypting response payload...',
+        'Analyzing tracking data streams...',
+        'Optimizing data retrieval pipeline...',
+        'Please wait...',
+        'You are on it...',
+        'Just a second...',
+    ];
+
+    // Message index to avoid repetition
+    let messageIndex = 0;
+
+    // Function to rotate loading messages
+    useEffect(() => {
+        let messageInterval;
+        if (loading) {
+            messageInterval = setInterval(() => {
+                // Only show new message if index is within bounds
+                if (messageIndex < loadingMessages.length - 2) {
+                    setLoadingMessage(loadingMessages[messageIndex]);
+                    messageIndex++;
+                }
+            }, 1500); // Change message every 1.5 seconds
+        } else {
+            setLoadingMessage('Track Your Parcel Here');
+            messageIndex = 0; // Reset message index
+        }
+
+        return () => clearInterval(messageInterval); // Clear interval on unmount or when loading ends
+    }, [loading]);
 
     const handleTracking = async () => {
         setLoading(true);
@@ -42,18 +79,26 @@ export default function TrackingComponent() {
 
     return (
         <>
-            <h3 style={{
-                fontWeight: 'bolder',
-                color: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                backgroundColor: 'black',
-                padding: '10px',
-            }}>
+            <h1
+                style={{
+                    width: '100%',
+                    fontSize: '24px',
+                    color: 'black',
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginTop: '10%',
+                }}
+            >
                 Tracking
-            </h3>
+            </h1>
+            <hr
+                style={{
+                    border: '1px solid black',
+                    margin: '10px auto',
+                    width: '16ch',
+                }}
+            />
+
             <div className="tracking-container">
                 <div className="tracking-input">
                     <input
@@ -82,7 +127,7 @@ export default function TrackingComponent() {
                     </div>
                 ) : (
                     <div className="tracking-placeholder">
-                        <span>Track Your Parcel Here</span>
+                        <span>{loading ? loadingMessage : 'Track Your Parcel Here'}</span>
                     </div>
                 )}
             </div>

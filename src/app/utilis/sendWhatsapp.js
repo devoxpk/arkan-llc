@@ -1,7 +1,7 @@
 async function sendWhatsapp(contact, msg) {
-    const auth = "Devox-332cewad2";  // Replace with your actual auth token
-    const baseUrl = "http://16.171.1.112:8080/send-message";
-    const url = `${baseUrl}?num=${contact}&msg=${encodeURIComponent(msg)}&auth=${auth}`;
+    const auth =process.env.NEXT_PUBLIC_OWNER_AUTH;  // Replace with your actual auth token
+    const baseUrl = process.env.NEXT_PUBLIC_SERVER_API+"/send-message";
+    const url = `${baseUrl}?num=${contact}&msg=${encodeURIComponent(msg)}&auth=${auth}&ownerContact=${process.env.NEXT_PUBLIC_OWNER_CONTACT}`;
 
     try {
         console.log(url)

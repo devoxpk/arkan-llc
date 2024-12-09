@@ -57,18 +57,25 @@ function ContactComponent() {
 
     return (
         <>
-            <h1 style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 'larger',
-                fontWeight: 'bolder',
-                color: 'white',
-                backgroundColor: 'black',
-                width: '100%'
-            }}>
-                Contact
-            </h1>
+                     <h1
+    style={{
+        width: '100%',
+        fontSize: '24px',
+        color: 'black',
+        fontWeight: '600',
+        textAlign: 'center',
+        marginTop:'10%',
+    }}
+>
+    Contact
+</h1>
+<hr
+    style={{
+        border: '1px solid black',
+        margin: '10px auto',
+        width: '16ch', 
+    }}
+/>
             <div id="contact-form">
                 <div className="input-group">
                     <input

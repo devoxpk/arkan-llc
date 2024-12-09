@@ -5,30 +5,132 @@ import '../css/navbar.css';
 import Sizes from "./sizes";
 import Cart from './cart';
 import Chatbot from './chatbot.jsx';
+import Link from 'next/link'
+
+import { useAuth, useSignOut } from '../context/AuthContext';
+import { db, storage } from '../firebase'; // Import Firestore and Storage instances
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
+
+import Fetcher from '../utilis/dashboardWorker'
+import fetchTracking from '../utilis/fetchtracking'
+
+  
+
+
 function Navbar() {
   const [isNavActive, setNavActive] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
-  
+  const { signIn} = useAuth();
+  const [userSession, setUserSession] = useState(
+    JSON.parse(localStorage.getItem('userSession'))
+  );
+  const handleSignout=useSignOut();
+ 
   const headerRef = useRef(null);
   const overlayRef = useRef(null);
 
-  const handleScroll = () => {
-    if (headerRef.current) {
-      if (window.scrollY >= 200) {
-        headerRef.current.classList.add('active');
+Fetcher();
+fetchTracking();
+
+  const [categories, setCategories] = useState([]);
+  const [expandedCollections, setExpandedCollections] = useState(false);
+
+
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      let collectionsToFetch = [];
+
+      // Retrieve collections from localStorage if available
+      collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
+
+      const fetchedCategories = [];
+
+      // If collectionsToFetch is empty, find numeric collections from the database
+      if (collectionsToFetch.length === 0) {
+        console.log("Fetching numeric collections from the database...");
+        let i = 1;
+        while (true) {
+          try {
+            const docRef = doc(db, `${i}/headers`);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+              console.log(`Collection ${i} exists.`);
+              collectionsToFetch.push(i.toString());
+            } else {
+              console.log(`Collection ${i} does not exist. Stopping search.`);
+              break;
+            }
+          } catch (error) {
+            console.error(`Error checking collection ${i}:`, error);
+            break;
+          }
+          i++;
+        }
+
+        // Save the collections to localStorage for future use
+        localStorage.setItem("collectionsToFetch", JSON.stringify(collectionsToFetch));
       } else {
-        headerRef.current.classList.remove('active');
+        console.log("Using collections from localStorage:", collectionsToFetch);
       }
-    }
+
+      // Fetch headers for the collections
+      for (const collection of collectionsToFetch) {
+        try {
+          const docRef = doc(db, `${collection}/headers`);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const header = docSnap.data().header[1]; // Adjust as per your data structure
+            fetchedCategories.push({
+              id: collection,
+              name: header,
+            });
+          } else {
+            console.log(`No header document found for collection ${collection}`);
+          }
+        } catch (error) {
+          console.error(`Error fetching category for collection ${collection}:`, error);
+        }
+      }
+
+      console.log("Fetched categories:", fetchedCategories);
+      setCategories(fetchedCategories);
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Toggle visibility of categories for a specific collection
+  const toggleCollection = (collectionID) => {
+    setExpandedCollections((prev) => ({
+      ...prev,
+      [collectionID]: !prev[collectionID],
+    }));
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
+      const handleScroll = () => {
+        if (headerRef.current) {
+          if (window.scrollY >= 200) {
+            headerRef.current.classList.add('active');
+          } else {
+            headerRef.current.classList.remove('active');
+          }
+        }
+      };
+
+      window.addEventListener("scroll", handleScroll);
+
+      // Cleanup event listener on component unmount
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+      };
+    
+  }, []);
+  
   const toggleNavbar = () => {
     setNavActive((prev) => !prev);
   };
@@ -128,15 +230,61 @@ function Navbar() {
           <a href="/" className="logo">
             <img id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
           </a>
-          <span>
+          <span id='brandNameSpan'>
             <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>N O U V E</h1>
           </span>
 
           <div className="header-actions">
-            <button className="header-action-btn">
-              <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
-              <p className="header-action-label">Sign in</p>
-            </button>
+          
+
+<button
+  className="header-action-btn"
+  onClick={() => {
+    const userSession = JSON.parse(localStorage.getItem('userSession'));
+    if (userSession) {
+      handleSignout().then(() => {
+      
+        alert(`You have signed out, ${userSession.displayName}`);
+        localStorage.removeItem('userSession'); // Clear session on sign-out
+        setUserSession(null); // Update state to reflect changes
+      });
+    } else {
+      signIn().then((user) => {
+        // Example: After sign-in, save user data to localStorage and state
+        const newUserSession = {
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        };
+        signIn();
+        localStorage.setItem('userSession', JSON.stringify(newUserSession));
+        setUserSession(newUserSession); // Update state to reflect changes
+      })
+    }
+  }}
+>
+  {userSession ? (
+    <>
+      <img
+        src={userSession.photoURL}
+        alt="User Avatar"
+        style={{
+          width: '30px',
+          height: '30px',
+          borderRadius: '50%',
+          marginRight: '8px',
+        }}
+      />
+      <p className="header-action-label">{userSession.displayName}</p>
+    </>
+  ) : (
+    <>
+      <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+      <p className="header-action-label">Sign in</p>
+    </>
+  )}
+</button>
+
+
 
             <button
               onClick={() => {
@@ -156,11 +304,11 @@ function Navbar() {
 
 
             <button
-  className="header-action-btn"
+  className="header-action-btn  chatBtnHeader"
   onClick={() => setIsChatVisible((prev) => !prev)}
 >
-  <div className="chatBtn">
-    <svg height="1.6em" fill="grey" xmlSpace="preserve" viewBox="0 0 1000 1000" y="0px" x="0px" version="1.1">
+  <div className="chatBtn" >
+    <svg height="1.6em" fill="black" xmlSpace="preserve" viewBox="0 0 1000 1000" y="0px" x="0px" version="1.1">
       <path d="M881.1,720.5H434.7L173.3,941V720.5h-54.4C58.8,720.5,10,671.1,10,610.2v-441C10,108.4,58.8,59,118.9,59h762.2C941.2,59,990,108.4,990,169.3v441C990,671.1,941.2,720.5,881.1,720.5L881.1,720.5z M935.6,169.3c0-30.4-24.4-55.2-54.5-55.2H118.9c-30.1,0-54.5,24.7-54.5,55.2v441c0,30.4,24.4,55.1,54.5,55.1h54.4h54.4v110.3l163.3-110.2H500h381.1c30.1,0,54.5-24.7,54.5-55.1V169.3L935.6,169.3z M717.8,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.5,24.7,54.5,55.2C772.2,420.2,747.8,444.8,717.8,444.8L717.8,444.8z M500,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.4,24.7,54.4,55.2C554.4,420.2,530.1,444.8,500,444.8L500,444.8z M282.2,444.8c-30.1,0-54.5-24.7-54.5-55.1c0-30.4,24.4-55.2,54.5-55.2c30.1,0,54.4,24.7,54.4,55.2C336.7,420.2,312.3,444.8,282.2,444.8L282.2,444.8z" />
     </svg>
     <span className="tooltip">Chat</span>
@@ -193,10 +341,54 @@ function Navbar() {
             </div>
 
             <ul className="navbar-list">
-              <li><a href="#" className="navbar-link" data-nav-link>Home</a></li>
+              <li><Link href='/' legacyBehavior><a  className="navbar-link" data-nav-link>Home</a></Link></li>
               <li><a href="#" className="navbar-link" data-nav-link>Shop</a></li>
-              <li><a href="#" className="navbar-link" data-nav-link>Contact Us</a></li>
+              <li><Link href='/contact' legacyBehavior><a  className="navbar-link" data-nav-link>Contact Us</a></Link></li>
+              <li>
+      <button
+        id="navCategories"
+        onClick={() => setExpandedCollections((prev) => !prev)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          background: "none",
+          border: "none",
+          color: "black",
+          cursor: "pointer",
+          fontSize: "16px",
+        }}
+      >
+        <span>Categories</span>
+        <span
+          style={{
+            marginLeft: "8px",
+            transform: expandedCollections ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s",
+          }}
+        >
+          ▼
+        </span>
+      </button>
+      {expandedCollections && (
+        <ul style={{ borderRadius:"6px",position:"fixed",marginLeft: "6px", listStyleType: "none", padding: "0" }}>
+          {categories.map((category) => (
+            <li key={category.id}>
+              <Link href={`/categories?cat=${category.id}`}>
+                {category.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
             </ul>
+            
+            
+  
+
+  {/* Show collections when the button is clicked */}
+  
+
           </nav>
         </div>
       </header>

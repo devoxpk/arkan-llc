@@ -6,9 +6,36 @@ import { db, storage } from '../firebase'; // Import Firestore and Storage insta
 import { doc, getDoc, updateDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp, arrayUnion } from 'firebase/firestore'; // Firestore methods including arrayUnion
 import { ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage'; // Storage methods including deleteObject
 import Sizes from "./sizes";
+import Reviews from './reviews'
 import { handleCart } from './cart';
 import Description from "./description"
+import { useReviewVisibility } from './reviews';
+import {checkReviewAvailability} from './reviews';
+import Edit from './editmode'
+import { fetchSizeChart } from './sizes';
+let isAvailable;
 export default function Checkout() {
+    const [renderReviews, setRenderReviews] = useState(isAvailable);
+
+ // Use the custom hook
+  
+ // Delay the execution by 5 seconds
+
+ function openSizeChart(){
+    fetchSizeChart(getQueryParameter("cat"));
+ }
+setTimeout(() => {
+   isAvailable = checkReviewAvailability();
+  console.log("after 5 sec"+" "+isAvailable); // For debugging
+  setRenderReviews(isAvailable)
+}, 5000); // 5000 milliseconds = 5 seconds
+
+  const handleClick = () => {
+    useReviewVisibility(true)
+  };
+
+
+
    useEffect(()=>{document.getElementById('image-details').addEventListener('scroll', function () {
     let element = this;
     let scrollTop = element.scrollTop; // How much has been scrolled from the top
@@ -253,21 +280,6 @@ export default function Checkout() {
     }
   }
 
-  async function deleteReview(productName, docId) {
-    try {
-        // Reference to the document to delete in the "userReviews" subcollection
-      
-        const docRef = doc(db, "reviews", productName, "userReviews", docId);
-
-        // Delete the document
-        await deleteDoc(docRef);
-
-        // Reload reviews after deletion
-        loadReviews(productName);
-    } catch (error) {
-        console.error("Error deleting document: ", error);
-    }
-}
 
     
          
@@ -419,7 +431,7 @@ export default function Checkout() {
       
           if (productName) {
             updateSizeOptions(productName);
-            loadReviews(productName);
+            
           } else {
             console.error("Product name is empty or undefined.");
           }
@@ -432,125 +444,7 @@ export default function Checkout() {
       
     
 
-      async function loadReviews(productName, priority = "new") {
-        console.log("Loading Reviews");
-    
-        const reviewsContainer = document.getElementById("reviews");
-        const urlParams = new URLSearchParams(window.location.search);
-        const isEditMode = urlParams.has('edit');
-    
-        let countReviews = 0;
-        let totalRating = 0;
-        const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-        let reviews = []; // Array to store reviews for sorting later
-    
-        try {
-           
-            // Clear the reviews container
-            reviewsContainer.innerHTML = '';
-    
-            // Fetch the document references from the "userReviews" subcollection for the given product
-            const querySnapshot = await getDocs(collection(db, "reviews", productName, "userReviews"));
-    
-            if (querySnapshot.empty) {
-                const noReviewsMessage = document.createElement('p');
-                noReviewsMessage.textContent = 'No reviews available because this functionality is added recently';
-                reviewsContainer.appendChild(noReviewsMessage);
-            } else {
-                querySnapshot.forEach((docSnap) => {
-                    if (docSnap.exists()) {
-                        countReviews++;
-                        const data = docSnap.data();
-                        const rating = data.rating;
-                        const timestamp = new Date(data.timestamp); // Assuming timestamp is in the format you provided
-    
-                        // Update total rating and rating counts for average calculation and breakdown
-                        totalRating += rating;
-                        ratingCounts[rating] = (ratingCounts[rating] || 0) + 1;
-    
-                        // Prepare review data for sorting
-                        reviews.push({
-                            id: docSnap.id,
-                            data,
-                            timestamp,
-                            rating,
-                            hasImage: Boolean(data.imgSrc)
-                        });
-                    } else {
-                        console.log("No such document!");
-                    }
-                });
-    
-                // Sort reviews based on priority
-                if (priority === "new") {
-                    reviews.sort((a, b) => b.timestamp - a.timestamp); // Newest to oldest
-                } else if (priority === "photo") {
-                    reviews.sort((a, b) => b.hasImage - a.hasImage || b.timestamp - a.timestamp); // Photos first, then by newest
-                } else if (priority === "ratings") {
-                    reviews.sort((a, b) => b.rating - a.rating); // High to low ratings
-                } else if (priority === "lowestratings") {
-                    reviews.sort((a, b) => a.rating - b.rating); // Low to high ratings
-                }
-    
-                // Render sorted reviews
-                reviews.forEach((review) => {
-                    const { id, data, rating, hasImage } = review;
-                    const reviewDiv = document.createElement('div');
-                    reviewDiv.value = id;
-                    reviewDiv.classList.add('review');
-    
-                    const imgSrc = hasImage ? `<img src="${data.imgSrc}" alt="Review Image">` : '';
-                    const ratingStars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-    
-                    reviewDiv.innerHTML = `
-                        ${imgSrc}
-                        <strong>${data.name}</strong>
-                        <div class="rating">${ratingStars}</div>
-                        <p>${data.review}</p>
-                    `;
-    
-                    // Only add the delete button if in edit mode and authenticated
-                    if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Delete';
-                        deleteButton.style.position = 'absolute';
-                        deleteButton.style.top = '-3%';
-                        deleteButton.style.backgroundColor = 'red';
-                        deleteButton.style.height = '19px';
-                        deleteButton.style.cursor = 'pointer';
-    
-                        deleteButton.onclick = async () => {
-                            await deleteReview(productName, id);
-                            await loadReviews(productName); // Reload reviews after deletion
-                        };
-                        reviewDiv.style.position = 'relative';
-                        reviewDiv.appendChild(deleteButton);
-                    }
-    
-                    reviewsContainer.appendChild(reviewDiv);
-                });
-            }
-    
-            // Calculate average rating and set the totalReviews text
-            const averageRating = countReviews > 0 ? (totalRating / countReviews).toFixed(1) : 0.0;
-            
-            document.querySelector(".countRevs").innerText = countReviews > 0 ? countReviews : 0;
-            // Update the main rating display
-            document.querySelector("#averageRating").innerText = averageRating;
-            document.querySelector(".countRates").innerText = averageRating;
-            document.querySelector("#ratingStars").innerText = '★'.repeat(Math.round(averageRating)) + '☆'.repeat(5 - Math.round(averageRating));
-    
-            // Update the meter lines for each star rating
-            [5, 4, 3, 2, 1].forEach(star => {
-                const percentage = countReviews > 0 ? (ratingCounts[star] / countReviews) * 100 : 0;
-                document.querySelector(`#star${star}Meter`).style.width = `${percentage}%`;
-                document.querySelector(`#star${star}Count`).innerText = ratingCounts[star];
-            });
-        } catch (error) {
-            console.error("Error fetching documents: ", error);
-        }
-    }
-    
+     
     
 
 
@@ -593,68 +487,6 @@ function updateSizeOptions(productName) {
 }
 
 
-useEffect(()=>{    document.getElementById('reviewForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        document.getElementById("postReview").innerHTML = 'Please Wait';
-    
-        const name = document.getElementById('name').value;
-        const product = localStorage.getItem("filteredProduct");
-        console.log(product);
-        
-        const review = document.getElementById('review').value;
-    
-        // Get the selected rating value from the radio buttons
-        const ratingInputs = document.querySelectorAll('#rating input[name="rating"]');
-        let rating = 0;
-        for (const input of ratingInputs) {
-            if (input.checked) {
-                rating = input.value;
-                break;
-            }
-        }
-        
-        // Generate stars based on the rating
-        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-        console.log('Submitted Stars:', stars); // Log stars
-    
-        let imgSrc = null;
-        const imageFile = document.getElementById('image').files[0];
-        if (imageFile) {
-            imgSrc = await uploadImage(imageFile);
-        }
-     
-    
-    
-          // Set document first
-          
-          await setDoc(doc(db, "reviews", product, "userReviews", `${name}_${generateRandom6Digit().toString()}`), {
-            name: name,
-            review: review,
-            imgSrc: imgSrc,
-            rating: parseInt(rating),
-            timestamp: serverTimestamp()
-        });
-        
-      
-          // Once document is set, proceed with other actions
-          showMessageBox("Posted","Thanks for your feedback",true)
-          document.getElementById('reviewFormContainer').style.display = 'none';
-          loadReviews(product);
-      });
-      
-      async function uploadImage(file) {
-        const storageRef = ref(storage, 'productReviews/' + file.name); // Create a reference to the storage location
-        const snapshot = await uploadBytes(storageRef, file); // Upload the file
-        const downloadURL = await getDownloadURL(snapshot.ref); // Get the download URL
-        return downloadURL;
-    }
-    
-      function generateRandom6Digit() {
-          return Math.floor(100000 + Math.random() * 900000);
-      }
-
-}, []);
-    
 
 
     
@@ -740,15 +572,13 @@ useEffect(()=>{    document.getElementById('reviewForm').addEventListener('submi
 
    
 
-    function displayReviewForm() {
-        document.getElementById("reviewFormContainer").style.display = 'block';
-    }
-
+    
     
 
     return (
         <>
-        
+        {/* <Edit/> */}
+        <Sizes/>
         
             <section id="prodetails" className="section-p1">
 
@@ -778,7 +608,7 @@ useEffect(()=>{    document.getElementById('reviewForm').addEventListener('submi
 
                 <div className="single-pro-image" id="image-details" style={{ display: 'none',borderRadius:"0"}}>
                     <div className='slide'>
-                    <img src="" width="100%" id="MainImg" alt="T shirts"  /></div>
+                    <img  width="100%" id="MainImg" alt="T shirts"  /></div>
                     
                 </div>
 
@@ -843,282 +673,70 @@ useEffect(()=>{    document.getElementById('reviewForm').addEventListener('submi
                                     
 
                     <br />
+                  
                     <Description/>
                    
                    
 
 
 
+                    <div>
+     
+
+                    <span
+  onClick={() => {
+    openSizeChart();
+  }}
+
+
+  
+  style={{
+    textDecoration: "none",
+    color: "black",
+    fontWeight: "lighter",
+    display: "flex",
+    fontSize: "18px",
+    columnGap: "2%",
+    height: "auto",
+  }}
+>
+  <img
+    alt="T shirts"
+    src="/logo/sizecharticon.png"
+    style={{ width: "10%" }}
+  />
+  SIZE GUIDE
+</span>
 
 
 
-                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-    <h2 style={{ marginTop: "20px" ,color:"black",fontWeight:"bolder"}}>Customer Reviews</h2>
 
+   
+        <Reviews
+          productName={(function () {
+            const value = localStorage.getItem("filteredProduct");
+            console.log("Value fetched from localStorage:", value);
+            return value || "";
+          })()}
+        />
 
-
-
-    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-        <h1 id="averageRating" style={{color:"black",fontWeight:"bolder",fontSize:"20px"}}></h1>
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-            <span id="ratingStars" style={{ color: "orange",fontSize:"27px" }}></span><br />
-            
-        </div>
-
-
-        <div class="cardx">
-  <div class="stats-wrapper">
-    <p class="heading">Rating</p>
-    <div class="bottom-wrapper">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="star">
-        <g data-name="Layer 2">
-          <g data-name="star">
-            <rect
-              opacity="0"
-              transform="rotate(90 12 12)"
-              height="24"
-              width="24"
-            ></rect>
-            <path
-              d="M17.56 21a1 1 0 0 1-.46-.11L12 18.22l-5.1 2.67a1 1 0 0 1-1.45-1.06l1-5.63-4.12-4a1 1 0 0 1-.25-1 1 1 0 0 1 .81-.68l5.7-.83 2.51-5.13a1 1 0 0 1 1.8 0l2.54 5.12 5.7.83a1 1 0 0 1 .81.68 1 1 0 0 1-.25 1l-4.12 4 1 5.63a1 1 0 0 1-.4 1 1 1 0 0 1-.62.18z"
-            ></path>
-          </g>
-        </g>
-      </svg>
-      <p class="countRates">4.5</p>
-    </div>
-  </div>
-  <div class="stats-wrapper">
-    <p class="heading">Review</p>
-    <div class="bottom-wrapper">
-      <svg
-        viewBox="0 0 512 512"
-        xmlns="http://www.w3.org/2000/svg"
-        class="thumb"
+     {renderReviews && <span
+        style={{ textDecoration: "underline", cursor: "pointer",color:"black",marginLeft:"6px" }}
+        onClick={handleClick}
       >
-        <path
-          d="M472.06 334l-144.16-6.13c-4.61-.36-23.9-1.21-23.9-25.87 0-23.81 19.16-25.33 24.14-25.88L472.06 270c12.67.13 23.94 14.43 23.94 32s-11.27 31.87-23.94 32zM330.61 202.33L437.35 194C450 194 464 210.68 464 227.88v.33c0 16.32-11.14 29.62-24.88 29.79l-108.45-1.73C304 253 304 236.83 304 229.88c0-22.88 21.8-27.15 26.61-27.55zM421.85 480l-89.37-8.93C308 470.14 304 453.82 304 443.59c0-18.38 13.41-24.6 26.67-24.6l91-3c14.54.23 26.32 14.5 26.32 32s-11.67 31.67-26.14 32.01zm34.36-71.5l-126.4-6.21c-9.39-.63-25.81-3-25.81-26.37 0-12 4.35-25.61 25-27.53l127.19-3.88c13.16.14 23.81 13.49 23.81 31.4s-10.65 32.43-23.79 32.58z"
-        ></path>
-        <path
-          fill="none"
-          d="M133.55 238.06A15.85 15.85 0 01126 240a15.82 15.82 0 007.51-1.92zM174.14 168.78l.13-.23-.13.23c-20.5 35.51-30.36 54.95-33.82 62 3.47-7.07 13.34-26.51 33.82-62z"
-        ></path>
-        <path
-          d="M139.34 232.84l1-2a16.27 16.27 0 01-6.77 7.25 16.35 16.35 0 005.77-5.25z"
-        ></path>
-        <path
-          d="M316.06 52.62C306.63 39.32 291 32 272 32a16 16 0 00-14.31 8.84c-3 6.07-15.25 24-28.19 42.91-18 26.33-40.35 59.07-55.23 84.8l-.13.23c-20.48 35.49-30.35 54.93-33.82 62l-1 2a16.35 16.35 0 01-5.79 5.22 15.82 15.82 0 01-7.53 2h-25.31A84.69 84.69 0 0016 324.69v38.61a84.69 84.69 0 0084.69 84.7h48.79a17.55 17.55 0 019.58 2.89C182 465.87 225.34 480 272 480c7.45 0 14.19-.14 20.27-.38a8 8 0 006.2-12.68l-.1-.14C289.8 454.41 288 441 288 432a61.2 61.2 0 015.19-24.77 17.36 17.36 0 000-14.05 63.81 63.81 0 010-50.39 17.32 17.32 0 000-14 62.15 62.15 0 010-49.59 18.13 18.13 0 000-14.68A60.33 60.33 0 01288 239c0-8.2 2-21.3 8-31.19a15.63 15.63 0 001.14-13.64c-.38-1-.76-2.07-1.13-3.17a24.84 24.84 0 01-.86-11.58c3-19.34 9.67-36.29 16.74-54.16 3.08-7.78 6.27-15.82 9.22-24.26 6.14-17.57 4.3-35.2-5.05-48.38z"
-        ></path>
-      </svg>
-      <p style={{width:"50%"}} class="countRevs">1.1k</p>
+        Reviews
+      </span> }   
     </div>
-  </div>
-  <div class="stats-wrapper">
-    <p class="heading">Sells</p>
-    <div class="bottom-wrapper">
-      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" class="tag">
-        <path
-          d="M448 183.8v-123A44.66 44.66 0 00403.29 16H280.36a30.62 30.62 0 00-21.51 8.89L13.09 270.58a44.86 44.86 0 000 63.34l117 117a44.84 44.84 0 0063.33 0l245.69-245.61A30.6 30.6 0 00448 183.8zM352 144a32 32 0 1132-32 32 32 0 01-32 32z"
-        ></path>
-        <path
-          d="M496 64a16 16 0 00-16 16v127.37L218.69 468.69a16 16 0 1022.62 22.62l262-262A29.84 29.84 0 00512 208V80a16 16 0 00-16-16z"
-        ></path>
-      </svg>
-      <p class="count">2.1k</p>
-    </div>
-  </div>
-</div>
 
 
 
 
-        <div style={{ width: "200px", marginTop: "10px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>5 Star</span>
-                <span id="star5Count">0</span>
-            </div>
-            <div id="star5Meter" style={{ height: "10px", backgroundColor: "orange", width: "0%",borderRadius:"12%" }}></div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>4 Star</span>
-                <span id="star4Count">0</span>
-            </div>
-            <div id="star4Meter" style={{ height: "10px", backgroundColor: "gold", width: "0%",borderRadius:"12%" }}></div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>3 Star</span>
-                <span id="star3Count">0</span>
-            </div>
-            <div id="star3Meter" style={{ height: "10px", backgroundColor: "grey", width: "0%",borderRadius:"12%" }}></div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>2 Star</span>
-                <span id="star2Count">0</span>
-            </div>
-            <div id="star2Meter" style={{ height: "10px", backgroundColor: "lightgray", width: "0%",borderRadius:"12%" }}></div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>1 Star</span>
-                <span id="star1Count">0</span>
-            </div>
-            <div id="star1Meter" style={{ height: "10px", backgroundColor: "lightgray", width: "0%",borderRadius:"12%" }}></div>
-        </div>
-        
-
-
-
-        
-
-        
-        <div style={{display:"flex"}}>
-
-
-
-            
-        <button onClick={displayReviewForm} style={{ marginTop: "10px", marginBottom: "7%" }}>Write a Review</button> 
-        <label className="popup">
-  <input type="checkbox" />
-  <div
-    className="burger"
-    tabIndex="0"
-    style={{
-      background: "white",
-      marginTop: "37%",
-      border: "1px solid black",
-      borderRadius: "0",
-      marginLeft: "22%",
-      transform: "scale(1.2)",
-      
-    }} 
-  >
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <nav className="popup-window" style={{maringLeft:"-18%",marginTop:"50%"}}>
-    <legend>Sort by</legend>
-    <ul>
-      <li>
-        <button onClick={()=>{loadReviews(localStorage.getItem("filteredProduct"),"photo")}}>
-          {/* Icon for Photo Priority */}
-          <svg
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 24 24"
-            height="14"
-            width="14"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M20 5H4v14h16V5zM10 15l-2.5-3h5L10 15z"></path>
-          </svg>
-          <span>Photo Priority</span>
-        </button>
-      </li>
-      <li>
-        <button onClick={()=>{loadReviews(localStorage.getItem("filteredProduct"),"new")}}>
-          {/* Icon for Newest */}
-          <svg
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 24 24"
-            height="14"
-            width="14"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M13 4l-1 1h-3l1-1h3zM6 10h3l-1 1H6zm6 7l-1 1h-3l1-1h3zM19 10h-3l1-1h3z"></path>
-          </svg>
-          <span>Newest</span>
-        </button>
-      </li>
-      <li>
-        <button onClick={()=>{loadReviews(localStorage.getItem("filteredProduct"),"ratings")}}>
-          {/* Icon for Highest Ratings */}
-          <svg
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 24 24"
-            height="14"
-            width="14"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77l-6.18 3.26L7 14.14l-5-4.87 6.91-1.01L12 2z"></path>
-          </svg>
-          <span>Highest Ratings</span>
-        </button>
-      </li>
-      <li>
-        <button onClick={()=>{loadReviews(localStorage.getItem("filteredProduct"),"lowestratings")}}>
-          {/* Icon for Lowest Ratings */}
-          <svg
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 24 24"
-            height="14"
-            width="14"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M12 15l-3.09-6.26L2 9.27l5-4.87-1.18-6.86L12 6.23l6.18-3.26L17 9.14l5 4.87-6.91 1.01L12 15z"></path>
-          </svg>
-          <span>Lowest Ratings</span>
-        </button>
-      </li>
-    </ul>
-  </nav>
-</label>
-
-</div>
-
-    </div>
-    
-    <hr/><br/> <div className="reviews" id="reviews"></div>
-</div><br/>
-<hr/>
 
                 </div>
             </section>
-            <div className="review-form" id="reviewFormContainer" style={{ display: 'none', width: '100%', position: 'fixed', maxWidth: '320px', padding: '15px', border: '3px solid grey', textAlign: 'left', top: '100px', left: '8%', background: '#fff', borderRadius: '20px', margin: '0 auto' }}>
-  <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#333' }}>Post Review</h2>
-  <form id="reviewForm" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-    <input type="hidden" id="product" name="product" />
-    
-    <label htmlFor="name" style={{ margin: '0' }}>Name:</label>
-    <input type="text" placeholder="Your Name" id="name" name="name" required style={{ outline: '0', background: '#fff', padding: '0.6em', borderRadius: '14px', border: '1px solid #333', color: 'black' }} />
-    
-    <label htmlFor="review" style={{ margin: '0' }}>Review:</label>
-    <textarea id="review" name="review" required placeholder="Feedback" style={{ outline: '0', background: '#fff', padding: '0.6em', borderRadius: '14px', border: '1px solid #333', color: 'black' }}></textarea>
-    
-    <label htmlFor="image" style={{ margin: '0' }}>Upload Image (optional):</label>
-    <input type="file" id="image" name="image" accept="image/*" style={{ outline: '0', background: '#fff', padding: '0.6em', borderRadius: '14px', border: '1px solid #333', color: 'black' }} />
-    
-    <h3>Rate:</h3>
-    <div id="rating">
-      <input value="5" name="rating" id="star5" type="radio" />
-      <label htmlFor="star5"></label>
-      <input value="4" name="rating" id="star4" type="radio" />
-      <label htmlFor="star4"></label>
-      <input value="3" name="rating" id="star3" type="radio" />
-      <label htmlFor="star3"></label>
-      <input value="2" name="rating" id="star2" type="radio" />
-      <label htmlFor="star2"></label>
-      <input value="1" name="rating" id="star1" type="radio" />
-      <label htmlFor="star1"></label>
-    </div>
 
-    <button type="submit" id="postReview" style={{ border: '0', background: '#111', color: '#fff', padding: '0.68em', borderRadius: '14px', fontWeight: 'bold' }}>Submit</button>
-  </form>
-</div>
+            
+       
 
         </>
     );

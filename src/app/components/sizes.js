@@ -2,9 +2,224 @@
 import "../css/sizes.css"
 import { useEffect,useState } from "react";
 import {updateCartBadge} from "./cart"
+import {db} from '../firebase'
+import { collection, getDocs,doc,updateDoc,setDoc,getDoc,deleteField } from "firebase/firestore";
+
+
+
+let fetchSizeChart;
 
 export default function Sizes(){
-    
+    const [isOpen, setIsOpen] = useState(false);
+    const [editedFieldName, setEditedFieldName] = useState("");
+    const [editedValues, setEditedValues] = useState([]);
+    const [newFieldName, setNewFieldName] = useState("");
+    const [newValues, setNewValues] = useState(["", "", "", ""]); // For indices 0-3
+    const [canEdit, setCanEdit] = useState(false);
+    const [colID, setColID] = useState("");
+
+    useEffect(() => {
+      const quantityBar = document.getElementById("quantityBar");
+      if (quantityBar) {
+        if (isOpen) {
+          quantityBar.style.display = 'flex';
+        } else {
+          quantityBar.style.display = 'none';
+        }
+      }
+    }, [isOpen]);
+
+    useEffect(() => {
+        // Check for edit mode
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("edit")) {
+          const storedValue = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
+          if (storedValue === process.env.NEXT_PUBLIC_EDIT_VALUE) {
+            setCanEdit(true);
+          }
+        }
+      }, []);
+
+
+      const handleValueChange = (index, value) => {
+        const updatedValues = [...newValues];
+        updatedValues[index] = value;
+        setNewValues(updatedValues);
+      };
+
+      
+
+      const handleEditFieldValue = (fieldIndex, valueIndex, newValue) => {
+        const updatedValues = [...sizeChart[Object.keys(sizeChart)[fieldIndex]]];
+        updatedValues[valueIndex] = newValue;
+        setEditedValues(updatedValues);
+      };
+      
+
+      const handleUpdate = async (fieldName, docID, updatedValues) => {
+        try {
+          // Reference the document within the "sizeChart" collection
+          const docRef = doc(db, colID, docID);
+          console.log(colID)
+      
+          // Use Firestore's updateDoc to update the field
+          await updateDoc(docRef, {
+            [fieldName]: updatedValues, // Update the field with new values
+          });
+      
+          console.log(`Field "${fieldName}" updated successfully`);
+          // Optionally, update the local state to reflect changes
+          const updatedChart = { ...sizeChart };
+          updatedChart[fieldName] = updatedValues;
+          setSizeChart(updatedChart);
+        } catch (error) {
+          console.error("Error updating field: ", error);
+        }
+      };
+
+      
+      const handleDelete = async (fieldName, docID) => {
+        try {
+          // Reference the document within the "sizeChart" collection
+          const docRef = doc(db, colID, docID);
+      
+          // Use Firestore's updateDoc to remove a specific field
+          await updateDoc(docRef, {
+            [fieldName]: deleteField(), // Firestore function to delete a field
+          });
+      
+          console.log(`Field "${fieldName}" deleted successfully`);
+          // Optionally, update the local state to reflect changes
+          const updatedChart = { ...sizeChart };
+          delete updatedChart[fieldName];
+          setSizeChart(updatedChart);
+        } catch (error) {
+          console.error("Error deleting field: ", error);
+        }
+      };
+
+
+
+      
+      
+      
+      const handleSubmit = async (colID) => {
+        console.log("colID:", colID);
+        console.log("newFieldName:", newFieldName);
+        console.log("newValues:", newValues);
+      
+        if (typeof newFieldName === "string" && newFieldName.trim() !== "" && Array.isArray(newValues)) {
+          try {
+            // Update the sizeChart state with the new field
+            const updatedChart = {
+              ...sizeChart,
+              [newFieldName]: newValues,
+            };
+            console.log("Updated chart:", updatedChart);
+            setSizeChart(updatedChart);
+      
+            // Firestore reference to the sizechart document
+            const sizeChartRef = doc(db, colID, "sizechart");
+      
+            // Check if the document exists
+            const docSnapshot = await getDoc(sizeChartRef);
+      
+            if (docSnapshot.exists()) {
+              const existingData = docSnapshot.data() || {};
+              console.log("Existing data from Firestore:", existingData);
+      
+              // Attempt to update the existing document
+              try {
+                await updateDoc(sizeChartRef, {
+                  ...existingData,
+                  [newFieldName]: newValues,
+                });
+                console.log("Field updated in Firestore successfully!");
+              } catch (updateError) {
+                console.error("Error while updating Firestore document:", updateError);
+              }
+            } else {
+              // Attempt to create a new document
+              try {
+                await setDoc(sizeChartRef, {
+                  [newFieldName]: newValues,
+                });
+                console.log("Sizechart document created and field added successfully!");
+              } catch (setError) {
+                console.error("Error while creating Firestore document:", setError);
+              }
+            }
+      
+            // Optionally reset the input fields after successful update
+            setNewFieldName("");
+            setNewValues(["", "", "", ""]);
+          } catch (error) {
+            console.error("Unexpected error in handleSubmit:", error);
+          }
+        } else {
+          alert("Please provide a valid field name and ensure values are an array.");
+        }
+      };
+      
+      
+
+
+    // Define state for size chart
+  const [sizeChart, setSizeChart] = useState(null); // Initialize with null or an empty object if preferred
+  const [iSSizeChart, setiSSizeChart] = useState(false); 
+  useEffect(() => {
+    console.log("iSSizeChart updated:", iSSizeChart);
+  }, [iSSizeChart]);
+
+   fetchSizeChart = async (collectionID) => {
+    console.log(collectionID)
+    console.log("Starting fetch for size chart...");
+
+    try {
+        setSizeChart(null);
+        setColID(null);
+        setiSSizeChart(false);
+     
+      const collectionRef = collection(db, collectionID);
+      console.log("Firestore collection reference created:", collectionRef);
+
+      // Fetch all documents in the collection
+      const querySnapshot = await getDocs(collectionRef);
+
+      console.log("Documents fetched:", querySnapshot.docs);
+      setiSSizeChart(true);
+      // Loop through each document and check if it matches the "sizechart" document
+      querySnapshot.forEach((doc) => {
+        if (doc.id === "sizechart") {
+          const sizeChartData = doc.data();
+          console.log("Fetched size chart data:", sizeChartData);
+
+          // Log array fields and their values for specific indices
+          Object.keys(sizeChartData).forEach((field) => {
+            const arrayField = sizeChartData[field];
+            if (Array.isArray(arrayField)) {
+              console.log(`Values for field "${field}":`, arrayField);
+
+        
+            } else {
+              console.warn(`Field "${field}" is not an array.`);
+            }
+          });
+
+          // Update the state with size chart data
+
+          setSizeChart(sizeChartData);
+          setColID(collectionID)
+          
+          console.log(iSSizeChart);
+          
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching size chart:", error);
+    }
+  };
+ 
     
     function generateRandom() {
         const min = 1000000000; // 10 digit minimum number
@@ -67,20 +282,30 @@ export default function Sizes(){
     }
     }
     useEffect(() => {
-        document.getElementById("quantity").addEventListener("input", updateTotalPrice);
-    }, []); 
+        const quantityInput = document.getElementById("quantity");
+    
+        if (quantityInput) {
+            quantityInput.addEventListener("input", updateTotalPrice);
+    
+            // Cleanup function to remove the event listener
+            return () => {
+                quantityInput.removeEventListener("input", updateTotalPrice);
+            };
+        }
+    }, [isOpen]);
+    
 
 
     let newSize;
     function changeSizeAndStyle(buttonId, size) {
         console.log(buttonId, size);
-    
-        // Change button styles - reset all buttons first
-        document.querySelectorAll('.Sizes').forEach(button => {
+      
+        // Reset all button styles first
+        document.querySelectorAll('.size-button').forEach(button => {
             button.style.backgroundColor = '';
             button.style.color = '';
         });
-    
+      
         // Get the clicked button element
         const clickedButton = document.getElementById(buttonId);
         if (clickedButton) {
@@ -90,13 +315,14 @@ export default function Sizes(){
         } else {
             console.error("Button not found for ID: ", buttonId);
         }
-    
+      
         // Store the clicked button ID in localStorage
         localStorage.setItem('clickedSize', buttonId);
-    
+      
         // Call the function to change size (ensure this exists)
         changeSize(size);
     }
+    
     
     
     // Function to run on page load and apply saved button styles
@@ -126,183 +352,323 @@ export default function Sizes(){
             newSize = "Medium";
         } else if (size === 45) {
             newSize = "Large";
+        } else if (size === 48) {
+            newSize = "Extra Large";
         } else {
-            newSize = size; // Fallback to the original size value if it's not 36, 40, or 45
+            newSize = size; 
         }
         console.log("Selected Size: " + newSize);
         
     }
+    console.log("Render check, iSSizeChart:", iSSizeChart);
+
+return(
+    <>
+    {iSSizeChart &&
+        
+     (
+        <>
+          <div
+            className="custom-dropdown"
+            ref={(dropdown) => {
+              if (dropdown) {
+                // Adding event listener to detect clicks outside the dropdown
+                document.addEventListener("mousedown", (e) => {
+                  // Check if the clicked target is outside the dropdown
+                  if (!dropdown.contains(e.target)) {
+                    // Hide the dropdown by setting display to 'none'
+                    
+      
+                    // Clear 'preCartItems' from localStorage
+                    localStorage.removeItem("purchase");
+                   
+                  }
+                });
+              }
+            }}
+          >
 
 
-    return(<>
-<div
-  className="custom-dropdown"
- 
-  ref={(dropdown) => {
-    if (dropdown) {
-      // Adding event listener to detect clicks outside the dropdown
-      document.addEventListener('mousedown', (e) => {
-        // Check if the clicked target is outside the dropdown
-        if (!dropdown.contains(e.target)) {
-          // Hide the dropdown by setting display to 'none'
-          dropdown.style.display = 'none';
-          
-          // Clear 'preCartItems' from localStorage
-          localStorage.removeItem('purchase');
-          localStorage.removeItem('preCartItems');
-        }
-      });
-    }
+
+<div style={{display:"flex",justifyContent:"center",color:"black",justifyContent:"space-around",marginLeft:"50px"}}>
+ <h1>
+    SIZE GUIDE / SELECTION
+    </h1> 
+    <span onClick={()=>{setiSSizeChart(false)}}>X</span>  
+    </div>
+     
+    <div
+  className="size-bar"
+  onClick={() => {
+    setIsOpen((prev) => !prev);
+    
+  }}
+  style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    cursor: 'pointer',
+    padding: '10px 0',
+    borderBottom: '1px solid #ccc',
   }}
 >
-    <div style={{display:'flex'}}><h4>SELECT A SIZE</h4></div>
-    <hr/>
-                       
-                       <div id="disappear" >
-       <button className="Sizes" id="s1"  onClick={() => changeSizeAndStyle('s1', 36)}>Small</button>
-       <button className="Sizes" id="s2"  onClick={() => changeSizeAndStyle('s2', 40)}>Medium</button>
-       <button className="Sizes" id="s3" onClick={() => changeSizeAndStyle('s3', 45)}>Large</button>
-       
-   </div>
-   <hr/>
-                       
 
-<h4>SELECT QUANTITY</h4>
-<hr/>
-<div className="number-control">
-      <div
-        className="number-left"
-        onClick={() => {
-            const quantityInput = document.getElementById("quantity");
-            if(parseInt(quantityInput.value, 10)>1){
+
+  <h4 style={{ fontSize: '14px', fontWeight: 'normal' }}>INCREASE QUANTITY</h4>
+  <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{isOpen ? '-' : '+'}</span>
+</div>
+
+{/* Quantity selector, shown only when isOpen is true */}
+
+  <div id="quantityBar" style={{display:"none"}}><h4>SELECT QUANTITY : </h4>
+  <div className="number-control">
+          <div
+            className="number-left"
+            onClick={() => {
+              const quantityInput = document.getElementById("quantity");
+              if (parseInt(quantityInput.value, 10) > 1) {
                 quantityInput.value = parseInt(quantityInput.value, 10) - 1;
-                }
-            setQuantity(prev => Math.max(1, prev - 1));
-            updateTotalPrice();
-        }}
+              }
+              setQuantity((prev) => Math.max(1, prev - 1));
+              updateTotalPrice();
+            }}
+          ></div>
+          <input
+            id="quantity"
+            type="number"
+            name="number"
+            className="number-quantity"
+            value={quantity}
+            min="1"
+            onChange={(e) => setQuantity(Math.max(1, e.target.value))}
+          />
+          <div
+            className="number-right"
+            onClick={() => {
+              const quantityInput = document.getElementById("quantity");
+  
+              quantityInput.value = parseInt(quantityInput.value, 10) + 1;
+  
+              setQuantity((prev) => prev + 1);
+              updateTotalPrice();
+            }}
+          ></div>
+        </div>
         
-      >
-        
-      </div>
-      <input
-        id="quantity"
-        type="number"
-        name="number"
-        className="number-quantity"
-        value={quantity}
-        min="1"
-        onChange={(e) => setQuantity(Math.max(1, e.target.value))}
-      />
-      <div
-        className="number-right"
-        onClick={() => {
-            
-            const quantityInput = document.getElementById("quantity");
-            
-            quantityInput.value = parseInt(quantityInput.value, 10) + 1;
-            
-            ;
-
-            setQuantity(prev => prev + 1);
-            updateTotalPrice();
-          }}
-      >
-      </div>  
-      </div><hr/>
+  
+  </div>
+  
       
-      <button class="cartBtn" onClick={async () => {
-    const userSize = localStorage.getItem("userSize");
-    if (userSize) {
-        const userSizeInt = parseInt(userSize, 10);
-        let preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
-        const quantityVar = parseInt(document.getElementById("quantity").value, 10);
-        const productToAdd = preCartItems.length > 0 ? preCartItems[preCartItems.length - 1] : null;
-
-        console.log(preCartItems.length);
-
-        if (productToAdd) {
-            console.log(productToAdd);
-            console.log(productToAdd.productName);
-
-            // Check if the product with the same name and size is already in the cart
-            const existingProductIndex = preCartItems.findIndex(item => 
-                item.productName === productToAdd.productName && item.size === userSizeInt
-            );
-
-            // Check for products with the same name but without a size
-            const sizeLessProductIndex = preCartItems.findIndex(item => 
-                item.productName === productToAdd.productName && !item.size
-            );
-
-            if (existingProductIndex !== -1) {
-                // If the product exists with the same name and size, just update the quantity
-                const existingProduct = preCartItems[existingProductIndex];
-                existingProduct.quantity += quantityVar;
-            } else if (sizeLessProductIndex !== -1) {
-                // If a product exists with the same name but no size, remove it
-                preCartItems.splice(sizeLessProductIndex, 1);
-
-                // Create a new entry for the new size
-                const newItem = {
-                    id: generateRandom(), // Generate a new id for the product
-                    productName: productToAdd.productName,
-                    price: productToAdd.price,
-                    pic: productToAdd.pic,
-                    quantity: quantityVar, // Set the quantity directly from user input
-                    size: userSizeInt // Add the size directly to the product object
-                };
-                preCartItems.push(newItem);
-            } else {
-                // If the product does not exist, create a new product object
-                const newItem = {
-                    id: generateRandom(), // Generate a new id for the product
-                    productName: productToAdd.productName,
-                    price: productToAdd.price,
-                    pic: productToAdd.pic,
-                    quantity: quantityVar, // Set the quantity directly from user input
-                    size: userSizeInt // Add the size directly to the product object
-                };
-                preCartItems.push(newItem);
-            }
-
-            // Await the localStorage operations (simulating async behavior)
-            await new Promise((resolve) => {
-                localStorage.removeItem('preCartItems');
-                console.log(JSON.stringify(preCartItems));
-                localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
-                localStorage.setItem("cartItems", JSON.stringify(preCartItems));
-                resolve();
-            });
-               
-                            
-            updateCartBadge();
-            setTimeout(() => {
-                document.querySelector(".custom-dropdown").style.display = 'none';
-            }, 1000);
-            if(localStorage.getItem("purchase")){
-               window.location.href = 'purchase'
-                localStorage.removeItem("purchase")
-            }
-        } else {
-            alert("No product found to add to the cart");
-        }
-    } else {
-        alert("Please select a size");
-    }
-}} >
+      
 
 
 
 
+      
 
-
-  <svg class="cart" fill="white" viewBox="0 0 576 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"></path></svg>
-  ADD
-  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512" class="productx"><path d="M211.8 0c7.8 0 14.3 5.7 16.7 13.2C240.8 51.9 277.1 80 320 80s79.2-28.1 91.5-66.8C413.9 5.7 420.4 0 428.2 0h12.6c22.5 0 44.2 7.9 61.5 22.3L628.5 127.4c6.6 5.5 10.7 13.5 11.4 22.1s-2.1 17.1-7.8 23.6l-56 64c-11.4 13.1-31.2 14.6-44.6 3.5L480 197.7V448c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64V197.7l-51.5 42.9c-13.3 11.1-33.1 9.6-44.6-3.5l-56-64c-5.7-6.5-8.5-15-7.8-23.6s4.8-16.6 11.4-22.1L137.7 22.3C155 7.9 176.7 0 199.2 0h12.6z"></path></svg>
+            <div style={{ display: "flex" ,justifyContent:"center"}}>
+              <h4>SELECT SIZE</h4>
+            </div>
+            
+            <div className="sizingBtns">
+            <button 
+  className="size-button" 
+  value="36" 
+  id="s" 
+  onClick={() => changeSizeAndStyle("s", 36)}
+>
+  Small
 </button>
+<button 
+  className="size-button" 
+  value="40" 
+  id="m" 
+  onClick={() => changeSizeAndStyle("m", 40)}
+>
+  Medium
+</button>
+<button 
+  className="size-button" 
+  value="45" 
+  id="l" 
+  onClick={() => changeSizeAndStyle("l", 45)}
+>
+  Large
+</button>
+<button 
+  className="size-button" 
+  value="48" 
+  id="xl" 
+  onClick={() => changeSizeAndStyle("xl", 48)}
+>
+  XL
+</button>
+
+</div>
+<div className="sizingBtns">
+    
+    
+<button
+              className="cartBtn"
+              onClick={async () => {
+                const userSize = localStorage.getItem("userSize");
+                if (userSize) {
+                  const userSizeInt = parseInt(userSize, 10);
+                  let preCartItems =
+                    JSON.parse(localStorage.getItem("preCartItems")) || [];
+                  let cartItems =
+                    JSON.parse(localStorage.getItem("cartItems")) || [];
+                  const quantityVar = parseInt(
+                    document.getElementById("quantity").value,
+                    10
+                  );
+                  const productToAdd =
+                    preCartItems.length > 0
+                      ? preCartItems[preCartItems.length - 1]
+                      : null;
+                      console.log(productToAdd)
+      
+                  if (productToAdd) {
+                    // Check if the product with the same name and size exists in cartItems
+                    const existingProductIndex = cartItems.findIndex(
+                      (item) =>
+                        item.productName === productToAdd.productName &&
+                        item.size === userSizeInt
+                    );
+      
+                    if (existingProductIndex !== -1) {
+                      // Update quantity if the product with same name and size exists
+                      cartItems[existingProductIndex].quantity += quantityVar;
+                    } else {
+                      // Add as a new product if the size or name is different
+                      const newItem = {
+                        id: generateRandom(), // Generate a new id for the product
+                        productName: productToAdd.productName,
+                        price: productToAdd.price,
+                        pic: productToAdd.pic,
+                        quantity: quantityVar, // Set the quantity directly from user input
+                        size: userSizeInt, // Add the size directly to the product object
+                      };
+                      cartItems.push(newItem);
+                    }
+      
+                    // Save the updated cartItems back to localStorage
+                    await new Promise((resolve) => {
+                      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+                      resolve();
+                    });
+      
+                    updateCartBadge();
+      
+                    if (localStorage.getItem("purchase")) {
+                      // If "purchase" key exists, navigate to the purchase page
+                      window.location.href = "purchase";
+                      localStorage.removeItem("purchase");
+                    } else {
+                      // Hide the dropdown after adding the item
+                      setTimeout(() => {
+                        document.querySelector(".custom-dropdown").style.display =
+                          "none";
+                      }, 1000);
+                    }
+                  } else {
+                    alert("No product found to add to the cart");
+                  }
+                } else {
+                  alert("Please select a size");
+                }
+              }}
+            >
+              
+              ADD TO CART
+              
+               
+            </button>
+
+
     </div>
 
+            {/* Adding size selection table */}
+            <table className="size-table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>S</th>
+      <th>M</th>
+      <th>L</th>
+      <th>XL</th>
+    </tr>
+  </thead>
 
-</>
-    );
+
+
+  <tbody>
+  {sizeChart &&
+     Object.keys(sizeChart).map((field, index) => (
+        <tr key={index}>
+          {/* Field Name */}
+          <td className="sizeHeaders">
+            {field} {/* Displaying the field name as text */}
+          </td>
+  
+          {/* Field Values */}
+          {Array.isArray(sizeChart[field]) ? (
+            sizeChart[field].map((value, idx) => (
+              <td key={idx}>{value}</td> // Displaying the field value as text
+            ))
+          ) : (
+            <td colSpan="4">Invalid data</td>
+          )}
+
+        {/* Delete Button */}
+       {canEdit && <td>
+          <button onClick={() => handleDelete(field, "sizechart")}>Delete</button>
+        </td>
 }
+      </tr>
+    ))}
+
+  {/* Input Row for Adding New Field */}
+  {canEdit &&
+  <tr>
+    <td>
+      <input
+        type="text"
+        placeholder="New Field Name"
+        value={newFieldName}
+        onChange={(e) => setNewFieldName(e.target.value)}
+      />
+    </td>
+    {newValues.map((value, idx) => (
+      <td key={idx}>
+        <input
+          type="text"
+          placeholder={`Value ${idx + 1}`}
+          value={value}
+          onChange={(e) => handleValueChange(idx, e.target.value)}
+        />
+      </td>
+    ))}
+    <td>
+      <button onClick={() => handleSubmit(colID)}>Add Field</button>
+    </td>
+  </tr>
+}
+</tbody>
+</table>
+      
+       
+    </div>
+            
+            
+            
+      
+          
+        </>
+      )}
+     </> );
+
+      
+      
+}
+export {fetchSizeChart};

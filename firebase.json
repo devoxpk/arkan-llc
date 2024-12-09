@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "out",
+    "target": "nouvewear",
+    "public": "out", 
     "ignore": [
       "firebase.json",
       "**/.*",

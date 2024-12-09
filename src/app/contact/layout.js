@@ -7,8 +7,15 @@ export const metadata = {
 
 export default function ContactLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
+    <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "100vh",
+      margin: 0,
+      padding: 0,
+    }}
+  >
         {children}
         
         <Script
@@ -23,7 +30,6 @@ export default function ContactLayout({ children }) {
           }}
         />
        
-      </body>
-    </html>
+     </div>
   );
 }

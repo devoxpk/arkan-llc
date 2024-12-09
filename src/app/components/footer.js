@@ -2,39 +2,88 @@
 import { useEffect, useState } from "react";
 import { db } from '../firebase'; // Import Firestore instance
 import { doc, getDoc } from 'firebase/firestore';
-
+import saveContact from '../utilis/saveContact';
 import Link from "next/link";
 
 function Footer() {
   const [categories, setCategories] = useState([]);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
+   
     const fetchCategories = async () => {
-      const collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
+      let collectionsToFetch = [];
+if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+  collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
+}
+
       const fetchedCategories = [];
-console.log(collectionsToFetch)
+    
+      // If collectionsToFetch is empty, check for numeric collections directly
+      if (collectionsToFetch.length === 0) {
+        console.log("Fetching numeric collections from the database...");
+        let i = 1;
+        while (true) {
+          try {
+            // Check if the 'headers' document exists in the current collection
+            const docRef = doc(db, `${i}/headers`);
+            const docSnap = await getDoc(docRef);
+    
+            if (docSnap.exists()) {
+              console.log(`Collection ${i} exists.`);
+              collectionsToFetch.push(i.toString()); // Add the collection ID to the array
+            } else {
+              console.log(`Collection ${i} does not exist. Stopping search.`);
+              break; // Stop the loop when a collection doesn't exist
+            }
+          } catch (error) {
+            console.error(`Error checking collection ${i}:`, error);
+            break; // Stop the loop if an error occurs
+          }
+          i++; // Increment to check the next collection
+        }
+        console.log("Found collections:", collectionsToFetch);
+      } else {
+        console.log("Using collections from localStorage:", collectionsToFetch);
+      }
+    
+      // Fetch headers for the collections
       for (const collection of collectionsToFetch) {
         try {
           const docRef = doc(db, `${collection}/headers`);
           const docSnap = await getDoc(docRef);
-
+    
           if (docSnap.exists()) {
-            const header = docSnap.data().header[1];
+            const header = docSnap.data().header[1]; // Assuming header is an array and [1] is the desired value
             fetchedCategories.push({
               id: collection,
               name: header,
             });
+          } else {
+            console.log(`No header document found for collection ${collection}`);
           }
         } catch (error) {
           console.error(`Error fetching category for collection ${collection}:`, error);
         }
       }
+    
+      console.log("Fetched categories:", fetchedCategories);
+      setCategories(fetchedCategories); // Assuming setCategories updates the state
+    
+    
 
       setCategories(fetchedCategories);
     };
 
     fetchCategories();
   }, []);
+
+  const handleSubscribe = () => {
+    if (email) {
+      saveContact(email);
+      setEmail(''); // Clear the input field after subscribing
+    }
+  };
 
   return (
     <>
@@ -49,7 +98,7 @@ console.log(collectionsToFetch)
             <p className="card-text">
               Enter your email below to be the first to know about new collections and product launches.
             </p>
-            <form action="" className="card-form">
+            <form action="" className="card-form" onSubmit={(e) => e.preventDefault()}>
               <div className="input-wrapper">
                 <ion-icon name="mail-outline"></ion-icon>
                 <input
@@ -58,9 +107,11 @@ console.log(collectionsToFetch)
                   placeholder="Enter your email"
                   required
                   className="input-field"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              <button type="submit" className="btn btn-primary w-100">
+              <button type="button" className="btn btn-primary w-100" onClick={handleSubscribe}>
                 <span>Subscribe</span>
                 <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
               </button>
@@ -93,13 +144,12 @@ console.log(collectionsToFetch)
             <ul className="footer-list">
               <li><p className="footer-list-title">Information</p></li>
               <li>
-  <Link href="/about" legacyBehavior>
-    <a className="footer-link">About Brand</a>
-  </Link>
-</li>
-
+                <Link href="/about" legacyBehavior>
+                  <a className="footer-link">About Brand</a>
+                </Link>
+              </li>
               <li><a href="#" className="footer-link">Payment Type</a></li>
-              <li><a href="#" className="footer-link">Refund Policy</a></li>
+              
             </ul>
 
             {/* Dynamic Categories List */}
@@ -107,22 +157,20 @@ console.log(collectionsToFetch)
               <li><p className="footer-list-title">Category</p></li>
               {categories.map((category) => (
                 <li key={category.id}>
-                 <Link href={`/categories?cat=${category.id}`} legacyBehavior>
-  <a className="footer-link">{category.name}</a>
-</Link>
-
-
+                  <Link href={`/categories?cat=${category.id}`} legacyBehavior>
+                    <a className="footer-link">{category.name}</a>
+                  </Link>
                 </li>
               ))}
             </ul>
 
             <ul className="footer-list">
               <li><p className="footer-list-title">Help & Support</p></li>
-              <li><a href="#" className="footer-link">Dealers & Agents</a></li>
-              <li><a href="#" className="footer-link">FAQ Information</a></li>
-              <li><a href="#" className="footer-link">Return Policy</a></li>
-              <li><a href="#" className="footer-link">Shipping & Delivery</a></li>
-              <li><a href="#" className="footer-link">Order Tracking</a></li>
+              
+              <li><Link href='/FAQ' legacyBehavior><a  className="footer-link">FAQ Information</a></Link></li>
+              <li><Link href='Return' legacyBehavior><a  className="footer-link">Return Policy</a></Link></li>
+              <li><Link href='/shipping' legacyBehavior><a  className="footer-link">Shipping & Delivery</a></Link></li>
+              <li><Link href='/tracking' legacyBehavior><a className="footer-link">Order Tracking</a></Link></li>
             </ul>
           </div>
         </div>
@@ -133,9 +181,9 @@ console.log(collectionsToFetch)
               &copy; 2024 <a href="#">Nouve</a>. All Rights Reserved.
             </p>
             <ul className="footer-bottom-list">
-              <li><a href="#" className="footer-bottom-link">Privacy Policy</a></li>
-              <li><a href="#" className="footer-bottom-link">Terms & Conditions</a></li>
-              <li><a href="#" className="footer-bottom-link">Sitemap</a></li>
+              <li><Link href='/privacypolicy' legacyBehavior><a className="footer-bottom-link">Privacy Policy</a></Link></li>
+              <li><Link href='/terms' legacyBehavior><a  className="footer-bottom-link">Terms & Conditions</a></Link></li>
+              <li><Link href='/blog' legacyBehavior><a className="footer-bottom-link">Blog</a></Link></li>
             </ul>
             <div className="payment">
               <p className="payment-title">We Support</p>

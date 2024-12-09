@@ -1,111 +1,184 @@
-import React, { useEffect, useState } from 'react';
-import { db } from '../firebase'; // Import Firestore instance
-import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore methods
+import React, { useEffect, useState } from "react";
+import { db } from "../firebase"; // Firestore instance
+import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firestore methods
 
 export default function Description() {
-    const params = new URLSearchParams(window.location.search);
-    const cat = params.get('cat'); // Get the 'cat' URL parameter, which is the collection name
-    let editMode = params.get('edit'); // Check if 'edit' parameter exists
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get("cat"); // Collection name
+  let editMode = params.get("edit"); // Edit mode check
 
-    // Correctly handle editMode assignment
-    if (editMode === '') {
-        editMode = true;
-    } else {
-        editMode = false;
+  editMode = editMode === "" || editMode === "true";
+
+  const [sections, setSections] = useState([]); // Store all sections
+  const [loading, setLoading] = useState(true);
+  const [newHeader, setNewHeader] = useState(""); // For new header
+  const [newContent, setNewContent] = useState(""); // For new content
+  const [hasAccess, setHasAccess] = useState(false); // Access state
+  const [editingIndex, setEditingIndex] = useState(null); // Index of the section being edited
+  const validKey = "fabfbuygi328y902340"; // Required key for edit mode
+
+  useEffect(() => {
+    const storedKey = localStorage.getItem("A98398HBFBB93BNABSN");
+    if (storedKey === validKey) {
+      setHasAccess(true);
     }
 
-    const [description, setDescription] = useState(''); // State to hold description
-    const [loading, setLoading] = useState(true); // Loading state
-    const [newDescription, setNewDescription] = useState(''); // State for edited description
-    const [hasAccess, setHasAccess] = useState(false); // State to manage access to edit
-
-    const validKey = 'fabfbuygi328y902340'; // Required key for edit mode
-
-    useEffect(() => {
-        // Fetch the key from localStorage
-        const storedKey = localStorage.getItem('A98398HBFBB93BNABSN');
-        console.log("Stored key from localStorage:", storedKey); // Debugging: Check the stored key
-        console.log("Valid key required:", validKey); // Debugging: Check the valid key
-
-        // Check if the key matches
-        if (storedKey === validKey) {
-            setHasAccess(true);
-            console.log("Access granted for editing."); // Debugging: Access granted
+    const fetchSections = async () => {
+      try {
+        const docRef = doc(db, cat, "desc");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setSections(data.sections || []); // Load sections
         } else {
-            console.log("Access denied for editing."); // Debugging: Access denied
+          console.log("No document found!");
         }
-
-        const fetchDescription = async () => {
-            try {
-                // Reference to the document with ID 'desc' in the collection named 'cat'
-                const docRef = doc(db, cat, 'desc');
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    console.log('Fetched data:', data); // Debugging: Check fetched data
-                    setDescription(data.description); // Set description from fetched data
-                    setNewDescription(data.description); // Pre-fill the textarea in edit mode
-                } else {
-                    console.log('No such document!'); // Debugging: No document found
-                }
-            } catch (error) {
-                console.error('Error fetching document:', error); // Debugging: Error fetching document
-            } finally {
-                setLoading(false); // Set loading to false after fetching
-            }
-        };
-
-        console.log("Fetching description for collection:", cat); // Debugging: Log collection
-        fetchDescription(); // Call the fetch function
-    }, [cat, validKey]);
-
-    // Function to handle description update
-    const handleSubmit = async () => {
-        try {
-            const docRef = doc(db, cat, 'desc');
-            await updateDoc(docRef, {
-                description: newDescription, // Update the description field
-            });
-            alert('Description updated successfully!');
-        } catch (error) {
-            console.error('Error updating document:', error);
-            alert('Failed to update description.');
-        }
+      } catch (error) {
+        console.error("Error fetching document:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    console.log(hasAccess);
-    console.log(editMode);
+    fetchSections();
+  }, [cat, validKey]);
 
-    // Render loading state, description, or edit form
-    return (
-        <>
-            <br />
-            <div>
-                {loading ? (
-                    <p>Loading...</p> // Loading message
-                ) : (
-                    <>
-                        <h2 style={{ color: 'black', fontWeight: 'bolder' }}>Description</h2>
-                        {editMode && hasAccess ? (
-                            <div>
-                                <textarea style={{border:"1px solid black"}}
-                                    value={newDescription}
-                                    onChange={(e) => setNewDescription(e.target.value)}
-                                    rows="10"
-                                    cols="50"
-                                ></textarea>
-                                <br />
-                                <button onClick={handleSubmit}>Submit</button>
-                            </div>
-                        ) : (
-                            <div>
-                                <pre>{description}</pre> {/* Display description with line breaks */}
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-        </>
+  const toggleExpand = (index) => {
+    setSections((prev) =>
+      prev.map((section, i) =>
+        i === index ? { ...section, expanded: !section.expanded } : section
+      )
     );
+  };
+
+  const handleAddSection = () => {
+    if (newHeader && newContent) {
+      setSections((prev) => [
+        ...prev,
+        { header: newHeader, content: newContent, expanded: false },
+      ]);
+      setNewHeader("");
+      setNewContent("");
+    } else {
+      alert("Please provide both header and content.");
+    }
+  };
+
+  const handleDeleteSection = (index) => {
+    const updatedSections = sections.filter((_, i) => i !== index);
+    setSections(updatedSections);
+  };
+
+  const handleEditSection = (index) => {
+    const sectionToEdit = sections[index];
+    setNewHeader(sectionToEdit.header);
+    setNewContent(sectionToEdit.content);
+    setEditingIndex(index);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingIndex !== null) {
+      const updatedSections = sections.map((section, index) =>
+        index === editingIndex
+          ? { ...section, header: newHeader, content: newContent }
+          : section
+      );
+      setSections(updatedSections);
+      setEditingIndex(null);
+      setNewHeader("");
+      setNewContent("");
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const docRef = doc(db, cat, "desc");
+      await updateDoc(docRef, {
+        sections: sections.map((section) => ({
+          header: section.header,
+          content: section.content,
+        })),
+      });
+      alert("Sections updated successfully!");
+    } catch (error) {
+      console.error("Error updating sections:", error);
+      alert("Failed to save changes.");
+    }
+  };
+
+  return (
+    <div>
+      <br />
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div>
+          {sections.map((section, index) => (
+            <div key={index} style={{ marginBottom: "10px" }}>
+              <div
+                onClick={() => toggleExpand(index)}
+                className="description-header"
+              >
+                {section.header}
+                <span className="expand-symbol">{section.expanded ? "-" : "+"}</span>
+              </div>
+
+              {section.expanded && (
+                <div className="description-content">
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: section.content.replace(/\n/g, "<br />"),
+                    }}
+                  />
+                  {editMode && hasAccess && (
+                    <div style={{ marginTop: "10px" }}>
+                      <button onClick={() => handleEditSection(index)}>Edit</button>
+                      <button
+                        onClick={() => handleDeleteSection(index)}
+                        style={{ marginLeft: "10px" }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {editMode && hasAccess && (
+            <div style={{ marginTop: "20px" }}>
+              <h3>{editingIndex !== null ? "Edit Section" : "Add New Section"}</h3>
+              <input
+                type="text"
+                placeholder="Header"
+                value={newHeader}
+                onChange={(e) => setNewHeader(e.target.value)}
+                style={{ display: "block", marginBottom: "10px" }}
+              />
+              <textarea
+                placeholder="Content"
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                rows="5"
+                cols="50"
+                style={{ display: "block", marginBottom: "10px" }}
+              ></textarea>
+              {editingIndex !== null ? (
+                <button onClick={handleSaveEdit}>Save Edit</button>
+              ) : (
+                <button onClick={handleAddSection}>Add Section</button>
+              )}
+              <button
+                onClick={handleSaveChanges}
+                style={{ marginLeft: "10px", display: "block" }}
+              >
+                Save All Changes
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

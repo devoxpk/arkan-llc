@@ -6,7 +6,7 @@ import { db, storage } from '../firebase'; // Import Firestore and Storage insta
 import { doc,updateDoc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
 import { ref, getDownloadURL } from 'firebase/storage'; // Storage methods
 
-import fetchTrackingData from '../utilis/fetchtracking';
+import serverWorker from '../utilis/serverworker';
 
 function toggleSidebar() {
     var sidebar = document.querySelector('.sidebar');
@@ -21,10 +21,9 @@ function toggleSidebar() {
 
 export default function dashboardComponent() {
   
-    
+    serverWorker();
 
     
-        fetchTrackingData();
     
   useEffect(()=>{
     let sortedDocs;
@@ -833,86 +832,7 @@ export default function dashboardComponent() {
     getDispatch.addEventListener('click', async () => {
 
         getOrders("dispatched");
-//         const querySnapshot = await getDocs(collection(db, 'dispatched'));
-//         addData.style.display = 'none';
-//             circleGraph.style.display = 'none';
-//             financeChart.style.display = 'none';
-//         if (querySnapshot.empty) {
-//             countDisplay.textContent = 0;
-//             console.log("No documents found!");
-//             dataDisplay.innerHTML = "No documents found.";
-//         } else {
-//             const title = document.getElementById("title");
-//             const writes = document.getElementById("writes");
-//             title.innerHTML = `<strong style="margin-left: 2px;font-weight: bolder;font-size: 20px;" >DISPATCHED ORDERS</strong>`;
-//             writes.style.display = 'block';
-//             dataDisplay.style.display = 'block';
-//             dataDisplay.innerHTML = ""; // Clear previous content
-    
-            
-            
-//             counter = 1;
-//             querySnapshot.forEach(async (doc) => {
-//                 const data = doc.data();
-//                 console.log("Document data:", data);
-    
-//                 const divID = `order-${counter}`;
-// const orderDiv = document.createElement('div');
-// orderDiv.id = divID;
-// orderDiv.className = 'orderids';
-// await productsData(orderDiv,doc);
-// document.body.appendChild(orderDiv);
-//                 // Display the data for each document with numbering
-//                 orderDiv.innerHTML += `<div  id="${divID}">
-//                             <strong style="color:green;" id="customerCount">${counter}:</strong><br>
-//                             <img class="images" id="imgSrc" src="${data.imgSrc}"><br>`
-//                             if (data.logo) {
-//                                 orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}">`;
-//     }
-    
-//     if (data.backImage) {
-//     if (data.logo) {
-//     // If both exist, add a single <br> between them
-//     orderDiv.innerHTML += `<br>`;
-//     }
-//     orderDiv.innerHTML += `<img class="images" style="height:auto;width:25%" id="backSrc" src="${data.backImage}"><br>`;
-//     } else if (data.logo) {
-//     // If only logo exists, add a <br> after it
-//     orderDiv.innerHTML += `<br>`;
-//     }
-    
-//     orderDiv.innerHTML+=`
-//                             <strong id="docID">Document ID:</strong> ${doc.id}<br>
-    
-//                             <strong>Tracking ID:</strong> ${data.tracking}<br>
-//                             <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
-//                                                      <strong id="customerID">Customer ID:</strong> ${data.customerID}<br>
-//                                                      <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchDate}<br>
-//                                                      <strong id="orderedDate">orderedDate:</strong> ${data.orderedDate}<br>
-//                                                      <strong id="Name">Name:</strong> ${data.Name}<br>
-//                                                      <strong id="Address">Address:</strong> ${data.Address}<br>
-//                                                      <strong id="City">City:</strong> ${data.City}<br>
-//                                                      <strong id="Contact">Contact:</strong> ${data.Contact}<br>
-                                                    
-//                                                      <strong id="Details">Details:</strong> ${data.Details}<br>
-//                                                      <strong id="Email">Email:</strong> ${data.Email}<br>
-//                                                      <strong id="productID">Product ID:</strong> ${data.productID}<br>
-//                                                      <strong>Petrol:</strong> ${data.petrol}<br>
-//                                                      <strong>Profit:</strong> ${data.profit}<br>
-//                                                      <button style="background-color:green;margin-top:10px;" class="deliveredButton">Delivered</button>
-//                                                      <button style="margin-top:10px" class="returnedButton">Returned</button>
-//                                                      <button class="reorderButton" style="margin-top:10px;background-color:red;">Push to orders</button>
-//     </div>`;
-//     dataDisplay.appendChild(orderDiv);
-//                 counter++;
-//             });
-//             addReorderButtonEventListeners(querySnapshot, 'dispatched');
-    
-//             // Add event listeners to the newly added buttons
-//             addEventListenersToButtons1(querySnapshot);
-//         }
-    
-//         countDisplay.textContent = counter - 1;
+
     });
     
     function addEventListenersToButtons1(querySnapshot) {
@@ -2033,7 +1953,7 @@ function incrementStock(orderData) {
             }
     
             // Construct the message
-            let message = `Your Order Dispatched from Embroidery Elegance \n\n` +
+            let message = `Your Order Dispatched from Nouve \n\n` +
                 `Dear ${orderData.Name},\n\n` +
                 `Your ${orderData.productName} has been dispatched!\n\n`;
     
@@ -2042,8 +1962,8 @@ function incrementStock(orderData) {
                     `Tracking Number: ${orderData.tracking}\n\n`;
             }
     
-            message += `Thank you for choosing Embroidery Elegance. Feel free to track your order for real-time updates.\n\n` +
-                `Regards,\Embroidery Elegance Team`;
+            message += `Thank you for choosing Nouve. Feel free to track your order for real-time updates.\n\n` +
+                `Regards,\Nouve Team`;
     
             // Ask for confirmation before sending the message
             if (confirm("Do you want to send the dispatch message to the customer?")) {
@@ -2391,7 +2311,7 @@ function incrementStock(orderData) {
                 const customerNumber = `92${orderData.Contact}`;
     
                 // Compose the message for the Customer
-                const message = `*Embroidery Elegance - ORDER CONFIRMATION*\n\n
+                const message = `*Nouve - ORDER CONFIRMATION*\n\n
     Assalamualaikum ${orderData.Name},\n\n
     ________________________________\n
     *Order Details:*\n
@@ -2402,16 +2322,16 @@ function incrementStock(orderData) {
     - Quantity: ${orderData.Quantity}\n
     ________________________________\n
     *To confirm your order, click the link below:*\n\n
-    [embroideryelegance.web.app/confirm?doc=${encodeURIComponent(orderDocID)}]\n
+    [nouvewear.com/confirm?doc=${encodeURIComponent(orderDocID)}]\n
     *Note:* It is compulsory to open this link to confirm your order and also recheck your details.\n\n
     Best regards,\n
-    Embroidery Elegance Team`;
+    Nouve Team`;
     
                 // Encode message for URL
                 const encodedMessage = encodeURIComponent(message).replace(/%0A/g, '%0A');
     
                 // Send the message to the Customer
-                await fetch(`https://-express-api-main-polished-hill-4595.fly.dev/send-message?num=${customerNumber}&msg=${encodedMessage}`);
+                await fetch(`http://16.171.1.112/send-message?num=${customerNumber}&msg=${encodedMessage}`);
             }
         }
     
@@ -2555,161 +2475,11 @@ function incrementStock(orderData) {
     
     
     
- sendData();
-    
-     async function sendData(docid, customerName, productName, userCity, userAddress, userContact, selectedSize, quantity) {
-    // Function to format contact number
-    const formatContact = (contact) => {
-    if (contact.startsWith("92")) {
-        return contact;
-    } else if (contact.startsWith("0")) {
-        return "92" + contact.slice(1);
-    } else {
-        return "92" + contact;
-    }
-    };
-    
-    // Format and encode contact number
-    const formattedContact = formatContact(userContact);
-    const encodedContact = formattedContact;
+ 
     
     
-    // Encode docid and replace spaces and brackets
-    const encodedDocid = encodeURIComponent(docid).replace(/%20/g, ' ').replace(/%28/g, '(').replace(/%29/g, ')');
-    
-    // Format message
-    const message = `*Embroidery Elegance - ORDER CONFIRMATION*\n\n
-    Assalamualaikum ${customerName},\n\n
-    ________________________________
-    * Order Details:*
-    - Product: ${productName}
-    - Contact: ${formattedContact}
-    - Delivery Address: ${userAddress}, ${userCity}
-    - Size: ${selectedSize}
-    - Quantity: ${quantity}
-    ________________________________
-    *To confirm your order, click the link below:*\n\n
-    [embroideryelegance.web.app/confirm?doc=${encodedDocid}]
-    *Note:* It is compulsory to open this link to confirm your order and also Recheck Your Details.\n\n
-    Best regards,\n
-    Devox Team`;
-    
-    // Encode message for URL
-    const encodedMessage = encodeURIComponent(message).replace(/%0A/g, '%0A');
-    
-    // Construct the URL
-    const url = `http://16.171.1.112:8080/send-message?num=${encodedContact}&msg=${encodedMessage}`;
-    
-    // Log the URL to the console
-    console.log(`Sending request to: ${url}`);
-    
-    try {
-    // Send message via the API
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    });
-    
-    // Check response
-    const responseText = await response.text();
-    
-    if (response.ok) {
-        console.log('Message sent successfully');
-        console.log('Response:', responseText);
-    
-        // Update Firestore document
-        const docRef = doc(db, 'orders', docid);
-        await setDoc(docRef, { confirm: "sent" }, { merge: true });
-    } else {
-        console.error('Failed to send message. Response:', responseText);
-    }
-    } catch (error) {
-    console.error('Error:', error);
-    }
-    }
-    
-    async function wakeUpServer() {
-    // Construct the URL
-    const url = `https://ss-api-main-polished-hill-4595.fly.dev/`;
-    
-    // Log the URL to the console
-    console.log(`Sending request to: ${url}`);
-    
-    try {
-    // Send request to the API to wake up the server
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    });
-    
-    // Check response
-    const responseText = await response.text();
-    
-    if (response.ok) {
-        console.log("Server is awake and responding.");
-        return true; // Server is awake
-    } else {
-        console.log("Failed to wake up the server.");
-        return false; // Server is not awake
-    }
-    } catch (error) {
-    console.error('Error waking up the server:', error);
-    return false; // Server is not awake
-    }
-    }
-    
-    async function processFirestoreData() {
-    // First, make sure the server is awake
-  //  const serverAwake = await wakeUpServer();
     
    
-    try {
-        const querySnapshot = await getDocs(collection(db, 'orders'));
-    
-        querySnapshot.forEach(async (doc) => {
-            const data = doc.data();
-    
-            // Check if 'confirm' field exists and if date is older than 20 hours
-            if (!data.confirm && data.Date) { // Assuming Date is the field name in Firestore
-                // Parse the date field as a date object
-                const docDate = new Date(data.Date);
-                const currentTime = new Date();
-                
-                // Calculate the time difference in milliseconds
-                const timeDifference = currentTime - docDate;
-    
-                // Convert milliseconds to hours
-                const hoursDifference = timeDifference / (1000 * 60 * 60);
-    
-                if (hoursDifference >= 20) {
-                    // Extract necessary data
-                    const customerName = data.Name;
-                    const productName = data.productName; // Adjust according to your field name
-                    const userCity = data.City;
-                    const userAddress = data.Address;
-                    const userContact = data.Contact;
-                    const selectedSize = data.Size;
-                    const quantity = data.Quantity;
-    
-                    // Send data to Google Sheets and update Firestore document
-                    await sendData(doc.id, customerName, productName, userCity, userAddress, userContact, selectedSize, quantity);
-                } else {
-                    console.log("Document is not older than 20 hours. Skipping...");
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error processing Firestore data:', error);
-    }
-    
-    }
-    
-    
-    processFirestoreData();
     
     async function editField(docId, fieldName, isDropdown = false, event) {
     const selectedDv = document.querySelector(".select");

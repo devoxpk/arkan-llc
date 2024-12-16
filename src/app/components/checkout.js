@@ -9,7 +9,7 @@ import Sizes from "./sizes";
 import Reviews from './reviews'
 import { handleCart } from './cart';
 import Description from "./description"
-import { useReviewVisibility } from './reviews';
+import { useReviewVisibility } from '../context/ReviewVisibilityContext'; // Updated import path
 import { checkReviewAvailability } from './reviews';
 
 import { useSearchParams } from 'next/navigation';
@@ -19,8 +19,8 @@ let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
 
-    // Initialize the setter from the custom Hook at the top level
-    const setReviewVisibility = useReviewVisibility();
+    // Use the custom hook from the context
+    const { setIsReviewVisible } = useReviewVisibility();
 
     // Use the custom hook
 
@@ -36,11 +36,11 @@ export default function Checkout() {
     }, 5000); // 5000 milliseconds = 5 seconds
 
     const handleClick = () => {
-        setReviewVisibility(true);
+        setIsReviewVisible(true);
     };
 
     const handleReviewClick = () => {
-        setReviewVisibility(true);
+        setIsReviewVisible(true);
     };
 
     useEffect(() => {

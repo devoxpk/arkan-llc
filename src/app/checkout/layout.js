@@ -1,5 +1,5 @@
 import Script from "next/script";
-
+import { ReviewVisibilityProvider } from '../context/ReviewVisibilityContext';
 export const metadata = {
   title: "NOUVE - Checkout",
   description: "Checkout layout",
@@ -7,6 +7,7 @@ export const metadata = {
 
 export default function CheckoutLayout({ children }) {
   return (
+    <ReviewVisibilityProvider>
     <div
     style={{
       display: "flex",
@@ -31,5 +32,6 @@ export default function CheckoutLayout({ children }) {
       }}
     />
   </div>
+  </ReviewVisibilityProvider>
   );
 }

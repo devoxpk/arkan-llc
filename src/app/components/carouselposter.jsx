@@ -40,9 +40,13 @@ const CarouselPoster = () => {
           setGalleryImages(images);
 
           if (images.length > 0) {
-            const cachedFirstImage = localStorage.getItem(FIRST_IMAGE_CACHE_KEY);
+            let cachedFirstImage;
+            if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+             cachedFirstImage = localStorage.getItem(FIRST_IMAGE_CACHE_KEY);
+            }
             if (cachedFirstImage !== images[0]) {
-              localStorage.setItem(FIRST_IMAGE_CACHE_KEY, images[0]);
+              if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+              localStorage.setItem(FIRST_IMAGE_CACHE_KEY, images[0]);}
               setFirstImage(images[0]);
             } else {
               setFirstImage(cachedFirstImage);
@@ -59,6 +63,7 @@ const CarouselPoster = () => {
       const edit = searchParams.get('edit');
       if (
         edit !== null &&
+        
         localStorage.getItem(process.env.NEXT_PUBLIC_PUBLIC_EDIT_KEY) ===
           localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_VALUE)
       ) {
@@ -100,7 +105,8 @@ const CarouselPoster = () => {
         setGalleryImages(updatedGallery);
 
         if (galleryImages.length === 0 || galleryImages[0] !== downloadURL) {
-          localStorage.setItem(FIRST_IMAGE_CACHE_KEY, downloadURL);
+          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          localStorage.setItem(FIRST_IMAGE_CACHE_KEY, downloadURL);}
           setFirstImage(downloadURL);
         }
 
@@ -121,10 +127,12 @@ const CarouselPoster = () => {
       setGalleryImages(updatedGallery);
 
       if (index === 0 && updatedGallery.length > 0) {
-        localStorage.setItem(FIRST_IMAGE_CACHE_KEY, updatedGallery[0]);
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        localStorage.setItem(FIRST_IMAGE_CACHE_KEY, updatedGallery[0]);}
         setFirstImage(updatedGallery[0]);
       } else if (updatedGallery.length === 0) {
-        localStorage.removeItem(FIRST_IMAGE_CACHE_KEY);
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        localStorage.removeItem(FIRST_IMAGE_CACHE_KEY);}
         setFirstImage(null);
       }
 
@@ -155,7 +163,8 @@ const CarouselPoster = () => {
         setGalleryImages(updatedGallery);
 
         if (index === 0) {
-          localStorage.setItem(FIRST_IMAGE_CACHE_KEY, downloadURL);
+          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          localStorage.setItem(FIRST_IMAGE_CACHE_KEY, downloadURL);}
           setFirstImage(downloadURL);
         }
 

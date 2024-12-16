@@ -10,21 +10,22 @@ import Loader from "../components/loader";
 import "./cat.css";
 
 function ProductsWithCategory({ setCategory }) {
-  
   const searchParams = useSearchParams();
   const cat = searchParams.get("cat");
 
   useEffect(() => {
+    console.log("New category value:", cat); // Log the new value
     setCategory(cat);
   }, [cat, setCategory]);
 
-  return <Products collectionsToFetch={cat} />;
+  // Trigger fetching new products whenever `cat` changes
+  return <Products collectionsToFetch={cat} key={cat} />;
 }
 
 export default function CategoriesPage() {
   // State to track category
   const [category, setCategory] = useState(null);
-  
+
   // Set initial price range in PKR
   const [priceRange, setPriceRange] = useState([0, 10000]); // Converted to PKR
   const [noProducts, setNoProducts] = useState(false);

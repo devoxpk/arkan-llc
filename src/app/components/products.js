@@ -17,8 +17,10 @@ let cachedHeaders = null;
 async function fetchHeaders(divID) {
     // Check localStorage first
     const localStorageKey = `headers_${divID}`;
-    const localStorageHeaders = localStorage.getItem(localStorageKey);
-
+    let localStorageHeaders;
+    if (typeof window !== 'undefined') {
+     localStorageHeaders = localStorage.getItem(localStorageKey);
+    }
     if (localStorageHeaders) {
         cachedHeaders = JSON.parse(localStorageHeaders); // Parse the stored string to an array
         console.log("Fetching headers from localStorage:", cachedHeaders);
@@ -39,7 +41,8 @@ async function fetchHeaders(divID) {
             console.log("Headers fetched from Firebase:", cachedHeaders);
 
             // Store in localStorage
-            localStorage.setItem(localStorageKey, JSON.stringify(cachedHeaders));
+            if (typeof window !== 'undefined') {
+            localStorage.setItem(localStorageKey, JSON.stringify(cachedHeaders));}
             console.log(JSON.stringify(cachedHeaders))
             return cachedHeaders;
         } else {
@@ -72,6 +75,7 @@ async function inlist(divID) {
           console.log(`Timestamp for ${divID}:`, Timejson);
 
           // Check for the checker in localStorage
+          if (typeof window !== 'undefined') {
           if (Timejson !== localStorage.getItem(`${divID} checker`)) {
             console.log(`Time doesn't match for ${divID}.`);
         
@@ -86,11 +90,13 @@ async function inlist(divID) {
         
             // Update the timestamp in localStorage
             localStorage.setItem(`${divID} checker`, JSON.stringify(timestampToSave)); 
-        }
+        }}
          else {
               console.log(`Time matches for ${divID}, using cached data.`);
               // If timestamp matches, check if there's cached data
-              const cachedData = localStorage.getItem(divID);
+              let cachedData;
+              if (typeof window !== 'undefined') {
+               cachedData = localStorage.getItem(divID);}
               if (cachedData) {
                   collectionData = JSON.parse(cachedData); // Use cached data if available
                   console.log(`Using cached data for ${divID}.`);
@@ -129,7 +135,8 @@ async function inlist(divID) {
       collectionData.sort((a, b) => a.id - b.id);
 
       // Store fetched data in localStorage for future use
-      localStorage.setItem(divID, JSON.stringify(collectionData));
+      if (typeof window !== 'undefined') {
+      localStorage.setItem(divID, JSON.stringify(collectionData));}
       console.log(`Fetched data for ${divID} and stored in localStorage.`);
 
   } catch (error) {
@@ -376,12 +383,14 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
       };
 
       handleCart(event, product, cartItems, setCartItems);
-      localStorage.setItem('purchase', '0010');
+      if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+      localStorage.setItem('purchase', '0010');}
     } else {
       
 
       handleCart(event, product, cartItems, setCartItems);
-      localStorage.setItem('purchase', '0010');
+      if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+      localStorage.setItem('purchase', '0010');}
     }
   }}
 >
@@ -477,7 +486,7 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
         handleCart(event, product, cartItems, setCartItems);
       }}
     >
-                                <ion-icon name="cart-outline"></ion-icon>
+                              {!productsStyle &&  <ion-icon name="cart-outline"></ion-icon>}
                                 <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
                               </button>
                               <button
@@ -489,8 +498,7 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
           params = new URLSearchParams(window.location.search);
         }
     
-        // Change button text to indicate checkout
-        document.querySelector('.cartBtn').innerText = 'checkout';
+        fetchSizeChart(collectionId);
     
         if (params && params.get('ImageSrc')) {
           // Product details from URL parameters
@@ -503,12 +511,14 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
           };
     
           handleCart(event, product, cartItems, setCartItems);
-          localStorage.setItem('purchase', '0010');
+          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          localStorage.setItem('purchase', '0010');}
         } else {
           
     
           handleCart(event, product, cartItems, setCartItems);
-          localStorage.setItem('purchase', '0010');
+          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          localStorage.setItem('purchase', '0010');}
         }
       }}
     >
@@ -619,20 +629,21 @@ async function edittor(divID) {
 
   // Check for URL parameter 'edit' and correct local storage key
   let urlParams;
-
+  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
   urlParams = new URLSearchParams(window.location.search);
-
+  }
 let hasEditParam = false;
 let correctLocalStorageKey = false;
 let mainEditButton;
 
 
   // Safely access window.location and localStorage on the client-side
+  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
    urlParams = new URLSearchParams(window.location.search);
   hasEditParam = urlParams.has('edit');
 
   correctLocalStorageKey = localStorage.getItem('A98398HBFBB93BNABSN') === 'fabfbuygi328y902340';
-  
+  }
   // You can initialize `mainEditButton` if needed
   mainEditButton = document.getElementById('editButton'); // Example of getting an element
 
@@ -1365,13 +1376,14 @@ checkVisibility(); // Initial check
 
 let checkFetch = true;
 let urlParams;
-
+if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
   urlParams = new URLSearchParams(window.location.search);
-
+}
 
 let hasEditParam = false;
+
 if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-  const urlParams = new URLSearchParams(window.location.search);
+   urlParams = new URLSearchParams(window.location.search);
   hasEditParam = urlParams.has('edit');
 }
 

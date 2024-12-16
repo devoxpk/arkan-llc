@@ -35,8 +35,6 @@ export default async function saveContactInfo(contact, email,page) {
         
 if(page!=="purchase" && page!=="main"){
         showMessage("Success", "Contact info saved successfully!", true);
-    }else if(page === "main"){
-        showMessage("Thanks", "You are now logged in", true);
     }
         console.log('Contact info saved successfully!');
     } catch (error) {

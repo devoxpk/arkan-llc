@@ -4,7 +4,7 @@ import { useEffect,useState } from "react";
 import {updateCartBadge} from "./cart"
 import {db} from '../firebase'
 import { collection, getDocs,doc,updateDoc,setDoc,getDoc,deleteField } from "firebase/firestore";
-
+import Link from 'next/link'
 
 
 let fetchSizeChart;
@@ -17,7 +17,86 @@ export default function Sizes(){
     const [newValues, setNewValues] = useState(["", "", "", ""]); // For indices 0-3
     const [canEdit, setCanEdit] = useState(false);
     const [colID, setColID] = useState("");
-
+    let isPurchase;
+    if(typeof window !== "undefined"){
+ isPurchase = localStorage.getItem("purchase");
+    }
+    async function handleCart() {
+      let userSize
+      if(typeof window !== "undefined"){
+       userSize = localStorage.getItem("userSize");
+      }
+      if (userSize) {
+        const userSizeInt = parseInt(userSize, 10);
+        let preCartItems;
+        let cartItems;
+        if(typeof window !== "undefined"){
+         preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
+         cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+        }
+        const quantityVar = parseInt(document.getElementById("quantity").value, 10);
+        const productToAdd =
+          preCartItems.length > 0 ? preCartItems[preCartItems.length - 1] : null;
+    
+        console.log(productToAdd);
+    
+        if (productToAdd) {
+          // Check if the product with the same name and size exists in cartItems
+          const existingProductIndex = cartItems.findIndex(
+            (item) =>
+              item.productName === productToAdd.productName &&
+              item.size === userSizeInt
+          );
+    
+          if (existingProductIndex !== -1) {
+            // Update quantity if the product with the same name and size exists
+            cartItems[existingProductIndex].quantity += quantityVar;
+          } else {
+            // Add as a new product if the size or name is different
+            const newItem = {
+              id: generateRandom(), // Generate a new id for the product
+              productName: productToAdd.productName,
+              price: productToAdd.price,
+              pic: productToAdd.pic,
+              quantity: quantityVar, // Set the quantity directly from user input
+              size: userSizeInt, // Add the size directly to the product object
+            };
+            cartItems.push(newItem);
+          }
+    
+          // Save the updated cartItems back to localStorage
+          await new Promise((resolve) => {
+            if(typeof window !== "undefined"){
+            localStorage.setItem("cartItems", JSON.stringify(cartItems));
+            }
+            resolve();
+          });
+    
+          updateCartBadge();
+          if(typeof window !== "undefined"){
+          if (localStorage.getItem("purchase")) {
+            // If "purchase" key exists, navigate to the purchase page
+            localStorage.removeItem("purchase");
+          } else {
+            // Hide the dropdown after adding the item
+            setTimeout(() => {
+              document.querySelector(".custom-dropdown").style.display = "none";
+            }, 1000);
+          }}
+        } else {
+          alert("No product found to add to the cart");
+        }
+      } else {
+        alert("Please select a size");
+      }
+    }
+    
+    // Helper function to generate a random ID (implement if not defined elsewhere)
+    function generateRandom() {
+      return Math.random().toString(36).substring(2, 9); // Example ID generator
+    }
+    
+    
     useEffect(() => {
       const quantityBar = document.getElementById("quantityBar");
       if (quantityBar) {
@@ -31,9 +110,15 @@ export default function Sizes(){
 
     useEffect(() => {
         // Check for edit mode
-        const params = new URLSearchParams(window.location.search);
+        let params;
+        if(typeof window !== "undefined"){
+         params = new URLSearchParams(window.location.search);
+        }
         if (params.has("edit")) {
-          const storedValue = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
+          let storedValue;
+          if(typeof window !== "undefined"){
+           storedValue = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
+          }
           if (storedValue === process.env.NEXT_PUBLIC_EDIT_VALUE) {
             setCanEdit(true);
           }
@@ -240,8 +325,10 @@ export default function Sizes(){
     
         if (productPriceElement) {
         // Retrieve product price from localStorage or HTML if not present in localStorage
-        let productPrice = localStorage.getItem("firstPrice");
-        
+        let productPrice;
+        if(typeof window !== "undefined"){
+         productPrice = localStorage.getItem("firstPrice");
+        }
         if (!productPrice) {
             // Product price is not in localStorage, fetch it from the HTML element
             var productPriceStr = document.getElementById("productPrice").innerText;
@@ -252,7 +339,8 @@ export default function Sizes(){
             // Check if productPrice is a valid number
             if (!isNaN(productPrice)) {
                 // Store the price in localStorage
-                localStorage.setItem("firstPrice", productPrice);
+                if(typeof window !== "undefined"){
+                localStorage.setItem("firstPrice", productPrice);}
             } else {
                 console.error("Invalid product price format in HTML.");
                 return; // Exit function if price is invalid
@@ -317,7 +405,8 @@ export default function Sizes(){
         }
       
         // Store the clicked button ID in localStorage
-        localStorage.setItem('clickedSize', buttonId);
+        if(typeof window !== "undefined"){
+        localStorage.setItem('clickedSize', buttonId);}
       
         // Call the function to change size (ensure this exists)
         changeSize(size);
@@ -326,9 +415,12 @@ export default function Sizes(){
     
     
     // Function to run on page load and apply saved button styles
+    if(typeof window !== "undefined"){
     window.onload = function() {
+      let savedButtonId;
+      if(typeof window !== "undefined"){
         localStorage.removeItem("purchase");
-        const savedButtonId = localStorage.getItem('clickedSize');
+         savedButtonId = localStorage.getItem('clickedSize');}
         console.log(savedButtonId)
         if (savedButtonId) {
             const savedButton = document.getElementById(savedButtonId);
@@ -339,12 +431,14 @@ export default function Sizes(){
                 savedButton.style.color = 'white';
             }
         }
-    };
+    };}
 
     function changeSize(size) {
         
         newSize = size;
+        if(typeof window !== "undefined"){
         localStorage.setItem("userSize",size)
+        }
         
         if (size === 36) {
             newSize = "Small";
@@ -380,7 +474,9 @@ return(
                     
       
                     // Clear 'preCartItems' from localStorage
+                    if(typeof window !== "undefined"){
                     localStorage.removeItem("purchase");
+                    }
                    
                   }
                 });
@@ -507,83 +603,24 @@ return(
 </div>
 <div className="sizingBtns">
     
-    
-<button
-              className="cartBtn"
-              onClick={async () => {
-                const userSize = localStorage.getItem("userSize");
-                if (userSize) {
-                  const userSizeInt = parseInt(userSize, 10);
-                  let preCartItems =
-                    JSON.parse(localStorage.getItem("preCartItems")) || [];
-                  let cartItems =
-                    JSON.parse(localStorage.getItem("cartItems")) || [];
-                  const quantityVar = parseInt(
-                    document.getElementById("quantity").value,
-                    10
-                  );
-                  const productToAdd =
-                    preCartItems.length > 0
-                      ? preCartItems[preCartItems.length - 1]
-                      : null;
-                      console.log(productToAdd)
-      
-                  if (productToAdd) {
-                    // Check if the product with the same name and size exists in cartItems
-                    const existingProductIndex = cartItems.findIndex(
-                      (item) =>
-                        item.productName === productToAdd.productName &&
-                        item.size === userSizeInt
-                    );
-      
-                    if (existingProductIndex !== -1) {
-                      // Update quantity if the product with same name and size exists
-                      cartItems[existingProductIndex].quantity += quantityVar;
-                    } else {
-                      // Add as a new product if the size or name is different
-                      const newItem = {
-                        id: generateRandom(), // Generate a new id for the product
-                        productName: productToAdd.productName,
-                        price: productToAdd.price,
-                        pic: productToAdd.pic,
-                        quantity: quantityVar, // Set the quantity directly from user input
-                        size: userSizeInt, // Add the size directly to the product object
-                      };
-                      cartItems.push(newItem);
-                    }
-      
-                    // Save the updated cartItems back to localStorage
-                    await new Promise((resolve) => {
-                      localStorage.setItem("cartItems", JSON.stringify(cartItems));
-                      resolve();
-                    });
-      
-                    updateCartBadge();
-      
-                    if (localStorage.getItem("purchase")) {
-                      // If "purchase" key exists, navigate to the purchase page
-                      window.location.href = "purchase";
-                      localStorage.removeItem("purchase");
-                    } else {
-                      // Hide the dropdown after adding the item
-                      setTimeout(() => {
-                        document.querySelector(".custom-dropdown").style.display =
-                          "none";
-                      }, 1000);
-                    }
-                  } else {
-                    alert("No product found to add to the cart");
-                  }
-                } else {
-                  alert("Please select a size");
-                }
-              }}
-            >
-              
-              ADD TO CART
-              
-               
-            </button>
+{isPurchase ? (
+  <Link href="/purchase">
+    <button
+      className="cartBtn"
+      onClick={() => handleCart()}
+    >
+      Checkout
+    </button>
+  </Link>
+) : (
+  <button
+    className="cartBtn"
+    onClick={() => handleCart()}
+  >
+    Add to Cart
+  </button>
+)}
+
 
 
     </div>

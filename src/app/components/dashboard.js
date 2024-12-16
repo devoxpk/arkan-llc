@@ -7,7 +7,8 @@ import { doc,updateDoc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTim
 import { ref, getDownloadURL } from 'firebase/storage'; // Storage methods
 
 import serverWorker from '../utilis/serverworker';
-
+import sendWhatsapp from '../utilis/sendWhatsapp';
+import postOrder from '../utilis/postOrder'
 function toggleSidebar() {
     var sidebar = document.querySelector('.sidebar');
     if (sidebar.style.display === 'none' || sidebar.style.display === '') {
@@ -18,7 +19,131 @@ function toggleSidebar() {
     }
 
     
-
+    export async function dispatchOrder(orderData, orderDocID) {
+        var confirmed = confirm("Are you sure?");
+        
+        // If the user confirms, perform the dispatch
+        if (confirmed) {
+            
+            let isDispatching = false; // Prevent multiple simultaneous dispatches
+    
+            if (isDispatching) {
+                console.warn("Dispatch already in progress. Skipping duplicate calls.");
+                return;
+            }
+    
+            isDispatching = true;
+    
+            try {
+                console.log("Dispatch process started", { orderData, orderDocID });
+    
+                const docRefOrders = doc(db, "orders", orderDocID);
+                const docRefDispatched = doc(db, "dispatched", orderDocID);
+                const docRefFinance = doc(db, "bank", "finance");
+    
+                // Fetch the order document
+                const orderDocSnapshot = await getDoc(doc(db, "orders", orderDocID));
+                let petrol;
+    
+                if (orderDocSnapshot.exists()) {
+                    const orderDocData = orderDocSnapshot.data();
+                    console.log("Order document fetched successfully", orderDocData);
+    
+                    petrol = orderDocData.petrol;
+    
+                    // Update orderData with fetched values
+                    orderData.petrol = petrol || 0;
+                    orderData.tracking = orderDocData.tracking || 0;
+                    orderData.trackingLink = orderDocData.trackingLink || "";
+                    orderData.profit = orderDocData.profit || 0;
+                    orderData.productCP = orderDocData.productCP || 0;
+                    orderData.productSP = orderDocData.productSP || 0;
+    
+                    // Call postOrder with relevant data
+                    const postOrderResponse = await postOrder(
+                       orderDocID
+                    );
+    
+                    console.log("Response from postOrder", postOrderResponse);
+    
+                    if (postOrderResponse.tracking) {
+                        orderData.tracking = postOrderResponse.tracking;
+                        orderData.trackingLink = `${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/tracking`;
+                    }
+                }
+    
+                const sanitizedOrderData = Object.fromEntries(
+                    Object.entries(orderData).map(([key, value]) => [key, value === undefined ? "" : value])
+                );
+    
+                console.log("Sanitized order data before dispatch", sanitizedOrderData);
+    
+                await setDoc(docRefDispatched, sanitizedOrderData);
+                console.log("Order moved to dispatched collection successfully");
+    
+                await deleteDoc(docRefOrders);
+                console.log("Order removed from orders collection successfully");
+    
+                const financeSnapshot = await getDoc(docRefFinance);
+                const currentTotalPetrol = financeSnapshot.data().totalPetrol || 0;
+                const updatedTotalPetrol = currentTotalPetrol + petrol;
+    
+                await updateDoc(docRefFinance, { totalPetrol: updatedTotalPetrol });
+                console.log("Finance collection updated with petrol value", updatedTotalPetrol);
+    
+                await decrementStock(orderData);
+                console.log("Stock decremented successfully");
+    
+                const contact = orderData.Contact.substring(0, 11);
+    
+                if (contact && /^\d{10,12}$/.test(contact)) {
+                    let customerContact = contact;
+                    if (customerContact.startsWith("0")) {
+                        customerContact = "92" + customerContact.slice(1);
+                    }
+    
+                    let message = `Your Order Dispatched from Nouve \n\n` +
+                        `Dear ${orderData.Name},\n\n` +
+                        `Your ${orderData.productName} has been dispatched!\n\n`;
+    
+                    if (orderData.tracking) {
+                        message += `Tracking Link: ${orderData.trackingLink}\n` +
+                            `Tracking Number: ${orderData.tracking}\n\n`;
+                    }
+    
+                    message += `Thank you for choosing Nouve. Feel free to track your order for real-time updates.\n\n` +
+                        `Regards,\nNouve Team`;
+    
+                    console.log("Prepared WhatsApp message", message);
+    
+                    if (confirm("Do you want to send the dispatch message to the customer?")) {
+                        sendWhatsapp(customerContact, message)
+                            .then(() => console.log("Message sent successfully for dispatch"))
+                            .catch((error) => console.error("Error sending message:", error));
+                    }
+                } else {
+                    console.warn("Invalid customer contact number. Unable to send WhatsApp message.");
+                    alert("Invalid customer contact number. Unable to send WhatsApp message.");
+                }
+            } catch (error) {
+                console.error("Error dispatching order: ", error);
+                alert(`An error occurred while dispatching: ${error.message}`);
+            } finally {
+                isDispatching = false;
+            }
+        };
+    
+        // Ensure only one event listener is attached
+        const dispatchButton = document.querySelector(".dispatchButton"); // Updated to match your HTML
+        if (dispatchButton && !dispatchButton.hasAttribute("data-listener-attached")) {
+            dispatchButton.addEventListener("click", dispatchOrder);
+            dispatchButton.setAttribute("data-listener-attached", "true");
+        } else if (!dispatchButton) {
+            console.error("Dispatch button not found on the page.");
+        }
+    
+        
+    }
 export default function dashboardComponent() {
   
     serverWorker();
@@ -28,6 +153,9 @@ export default function dashboardComponent() {
   useEffect(()=>{
     let sortedDocs;
     let editButtons;
+    let createdOrdersDisplayed;
+        createdOrdersDisplayed = false;
+        let createdCounter;
     async function getOrders(collectionID) {
         const loader = document.getElementById('loader');
         loader.style.display = 'block';
@@ -99,27 +227,10 @@ export default function dashboardComponent() {
         dataDisplay.innerHTML = ""; // Clear previous content
         
         let newCounter = 1;
-        let createdCounter = 1;
-        let createdOrdersDisplayed = false; // To track if we've created the "Created on Courier" heading
+         createdCounter = 1;
+         // To track if we've created the "Created on Courier" heading
         
-        if (!document.getElementById("preDispatch")) {
-            var preDispatch = document.createElement("button");
         
-            // Set the button text
-            preDispatch.textContent = "Pre Dispatch";
-        
-            // Set the id attribute for the button
-            preDispatch.id = "preDispatch";
-            document.body.appendChild(preDispatch);
-        
-            preDispatch.addEventListener('click', (e) => {
-                document.getElementById("downloadButton").style.display = 'block';
-                const checkboxes = document.querySelectorAll('.checkBox');
-                checkboxes.forEach((checkbox) => {
-                    checkbox.style.display = 'block';
-                });
-            });
-        }
     
     
      
@@ -164,7 +275,7 @@ export default function dashboardComponent() {
         
             orderDiv.innerHTML += `
                 <strong style="color:green;" id="customerCount">${newCounter}:</strong><br>
-                <input type="checkbox" style="display:none" class="checkBox">
+               
                 <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
                 <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
 <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><br>                
@@ -208,7 +319,7 @@ export default function dashboardComponent() {
             }
             if(collectionID==="orders"){
             if (!data.productSP || !data.productCP) {
-                orderDiv.innerHTML += `<span class="preir" style="color:Red;font-weight:bolder;">Pre Dispatch First</span>`;
+                orderDiv.innerHTML += `<span class="preir" style="color:Red;font-weight:bolder;">Not Dispatched yet</span>`;
                 
             }}
             dataDisplay.appendChild(orderDiv);
@@ -259,7 +370,7 @@ export default function dashboardComponent() {
         
                 orderDiv.innerHTML += `
                     <strong style="color:green;" id="customerCount">${createdCounter}:</strong><br>
-                    <input type="checkbox" style="display:none" class="checkBox">
+                    
                     <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
                     <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
                     <strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
@@ -317,40 +428,15 @@ export default function dashboardComponent() {
         });
         
     
-        // Create a download button
-        var downloadButton = document.createElement("button");
         
-        // Set the button text
-        downloadButton.textContent = "Download Excel Sheet";
         
-        // Set the id attribute for the button
-        downloadButton.id = "downloadButton";
-        downloadButton.style.display = 'none';
-        // Append the button to the document body
-        document.body.appendChild(downloadButton);
         
-        // Add event listener to the download button
-        downloadButton.addEventListener('click', () => {
-        // Check if worksheet has been created
-        if (worksheet) {
-        // Create a new XLSX workbook
-        const workbook = XLSX.utils.book_new();
         
-        // Add the worksheet to the workbook
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'DispatchSheet');
-        const checkboxes = document.querySelectorAll('.checkBox');
-        document.getElementById("productSale").value = "";
-        checkboxes.forEach((checkbox) => {
-        checkbox.style.display = 'none';
-        });
-        // Save the workbook to a file named 'dispatch.xls'
-        downloadWorkbook(workbook, 'dispatch.xlsx');
-        } else {
-        alert("No data added to excel.");
-        }
-        });
+       
    
         addEventListenersToButtons(querySnapshot);}
+
+
         else if(collectionID === "dispatched"){
             addReorderButtonEventListeners(querySnapshot, collectionID);
     
@@ -660,13 +746,7 @@ export default function dashboardComponent() {
     
     
     
-    document.getElementById("courierPartner").addEventListener('click', () => {
-    const courierDropdown = document.getElementById("courierPartner");
-    const selectedCourier = courierDropdown.options[courierDropdown.selectedIndex].text;
     
-    // Use the selectedCourier value as needed (e.g., update a label or perform an action)
-    console.log("Selected Courier:", selectedCourier);
-    });
     
     
     function initializeCircleGraph(elementId, financeData) {
@@ -947,45 +1027,11 @@ export default function dashboardComponent() {
     }
     
     
-    const courierLinkMapping = {
-    'Ship by PeopleAI': 'https://vendor.peopleai.pk/oms/#/order/order-details',
-    'PostEx.': 'https://callcourier.com.pk/tracking',
-    'BarqRaftar': 'https://barqraftar.pk/track',
-    'Leopards': 'https://www.leopardscourier.com/leopards-tracking',
-    'M&P': 'https://mulphilog.com.pk/track-shipment.php',
-    'Trax': 'https://trax.pk/tracking/'
-    };
+   
     
-    // Event listener for courier partner dropdown
-    document.getElementById("courierPartner").addEventListener('change', () => {
-    const courierDropdown = document.getElementById("courierPartner");
-    const selectedCourier = courierDropdown.options[courierDropdown.selectedIndex].text;
     
-    // Update link based on the selected courier
-    const courierLink = courierLinkMapping[selectedCourier];
-    document.getElementById("courierPartners").innerHTML = courierLink;
-    });
     
-    const returnLocationMapping = {
-    'OMER TARIQ': '75500',
-    };
-    
-    // Event listener for pickup location dropdown
-    document.getElementById("pickupLocationDropdown").addEventListener('change', () => {
-    const pickupLocationDropdown = document.getElementById("pickupLocationDropdown");
-    const selectedPickupLocation = pickupLocationDropdown.options[pickupLocationDropdown.selectedIndex].text;
-    
-    // Update return location dropdown based on the selected pickup location
-    const returnLocationDropdown = document.getElementById("returnLocationDropdown");
-    returnLocationDropdown.innerHTML = ''; // Clear existing options
-    
-    const selectedPickupLocationCode = returnLocationMapping[selectedPickupLocation];
-    const option = document.createElement('option');
-    option.value = selectedPickupLocationCode;
-    option.id = "returnID";
-    option.text = selectedPickupLocation;
-    returnLocationDropdown.appendChild(option);
-    });
+   
     
     
     
@@ -1119,167 +1165,15 @@ export default function dashboardComponent() {
     const confirmButtons = document.querySelectorAll('.confirm Button');
     const cancelButtons = document.querySelectorAll('.cancelButton');
     const delayButtons = document.querySelectorAll('.delayButton');
-    const checkboxes = document.querySelectorAll('.checkBox');
-    
-    checkboxes.forEach((checkbox, index) => {
-    checkbox.addEventListener('click', async (event) => {
-        const checkbox = event.target;
-        const parentDiv = checkbox.closest('div');
-    
-        document.getElementById("preDispatchForm").style.display = 'block';
-    
-     // Find the closest parent div that contains the document ID
-    const orderDiv = checkbox.closest('.orderids');
-    console.log(orderDiv)
-    if (!orderDiv) {
-        console.error('Order div not found');
-        return;
-    }
-    
-    // Get the orderDocID from the span inside the orderDiv
-    const orderDocIDElement = orderDiv.querySelector('#docid');
-    console.log(orderDocIDElement)
-    if (!orderDocIDElement) {
-        console.error('Document ID not found');
-        return;
-    }
-    const orderDocID = orderDocIDElement.textContent.trim();
-    const day = new Date().toDateString();
-                
-                const time = new Date().toLocaleTimeString();
-    // Retrieve currentData using the extracted orderDocID
-    const currentData = querySnapshot.docs.find(doc => doc.id === orderDocID)?.data();
-    console.log(currentData)
-    if (!currentData) {
-        console.error('No data found for the given document ID');
-        return;
-    }                    
-        localStorage.setItem("orderDocID", orderDocID);
-    
-        // Use orderDocData for your logic (e.g., creating a worksheet)
-        if (!worksheet) {
-            worksheet = createWorksheet(
-                ['Order Reference', 'Consignment Type', 'Invoice Amount', 'Pickup Location Code', 'Return Location Code', 'Order Details', 'Total Items', 'Order Weight', 'Customer Name', 'Customer Phone', 'Customer Email', 'Items', 'Shipping Partner', 'Shipper Consignment Type', 'Tags', 'Delivery Address', 'Notes', 'Special Instructions', 'Destination City', 'Replacement Ord Ref No', 'Replacement Order Details', 'Replacement Order Instruction']
-            );
-        }
-    });
-    });
     
     
-    let isProcessing = false;
-    
-    async function fetchDataAndAddToWorksheet(orderDocID, worksheet) {
-    try {
+  
     
     
-    const orderDocRef = doc(db, 'orders', orderDocID);
-    const orderDocSnapshot = await getDoc(orderDocRef);
-    const orderDocData = orderDocSnapshot.data();
-    const productSale = document.getElementById("productSale").value;
-    const productCost = document.getElementById("productCost").value;
-    const updateFields = {
-        profit: parseFloat(productSale) - parseFloat(productCost),
-        productCP: parseFloat(productCost) || 0,
-        productSP: parseFloat(productSale) || 0,
-        petrol: parseFloat(document.getElementById("petrol").value) || 0,
-        trackingLink: document.getElementById("courierPartners").innerText || "No tracking Link given"
-    };
-    
-    await updateDoc(orderDocRef, updateFields);
-    const pickupLocationDropdown = document.getElementById("pickupLocationDropdown");
-    let selectedPickupLocation = pickupLocationDropdown.options[pickupLocationDropdown.selectedIndex].value;
-    const returnLocationDropdown = document.getElementById("returnLocationDropdown");
-    let selectedReturnLocation = returnLocationDropdown.value;
-    const Instructions = document.getElementById("Instructions").value;
-    const courierPartnerDropdown = document.getElementById("courierPartner");
-    const courierPartner = courierPartnerDropdown.options[courierPartnerDropdown.selectedIndex].value;
-    
-    // Determine shipping method based on the courier partner
-    let shippingMethod = "Normal";
-    switch (courierPartner) {
-        case "Ship by PeopleAI":
-            shippingMethod = "Regular";
-            break;
-        case "M&P":
-        case "Leopards":
-            shippingMethod = "Overnight";
-            break;
-        case "TCS":
-            shippingMethod = "Over Night";
-            break;
-        case "Trax":
-            shippingMethod = "Rush";
-            break;
-    }
     
     
-    console.log(Instructions);
-    addToWorksheet(worksheet, [
-        [
-            orderDocData.Name + "/" + orderDocData.productName + "/" + orderDocData.Size,
-            shippingMethod,
-            productSale,
-            selectedPickupLocation,
-            selectedReturnLocation,
-            orderDocData.productName,
-            orderDocData.Quantity,
-            document.getElementById("orderWeight").value,
-            orderDocData.Name,
-            orderDocData.Contact,
-            orderDocData.Email,
-            orderDocData.Quantity,
-            courierPartner,
-            shippingMethod,
-            "Must Deliver Urgent",
-            orderDocData.Address,
-            "Call Before Delivery",
-            "Allow Check Before Pay" + " " + Instructions,
-            orderDocData.City,
-        ]
-    ]);
-    } catch (error) {
-    console.error("Error adding data to worksheet:", error);
-    } finally {
-    // Remove the loading button after the process is complete
-    const loadingButton = document.getElementById('loadingButton');
-    if (loadingButton) {
-        loadingButton.remove();
-    }
-    // Allow the button to be clicked again
-    isProcessing = false;
-    // Hide the preDispatchForm
-    }
-    }
-    
-    // Move this part outside of the checkboxes loop
-    document.getElementById("excel").addEventListener('click', (e) => {
-    if (isProcessing) {
-    return;
-    }
-    isProcessing = true;
-    
-    const orderDocID = localStorage.getItem("orderDocID");
-    // Call the async function and handle the promise
-    fetchDataAndAddToWorksheet(orderDocID, worksheet)
-    .then(() => {
-        console.log("Data added to worksheet successfully.");
-        document.getElementById("preDispatchForm").style.display = 'none';
-    })
-    .catch((error) => {
-        console.error("Error adding data to worksheet:", error);
-    });
-    });
     
     
-    /*
-    document.querySelector(".preDispatcher").addEventListener('click',(e)=>{
-    
-    document.getElementById("downloadButton").style.display = 'block';
-    const checkboxes = document.querySelectorAll('.checkBox');
-    checkboxes.forEach((checkbox) => {
-    checkbox.style.display = 'block';
-    });
-    })*/
     
         dispatchButtons.forEach((dispatchButton, index) => {
             dispatchButton.addEventListener('click', () => {
@@ -1780,15 +1674,7 @@ export default function dashboardComponent() {
     
     /* Functions */
     /* Functions */
-function dispatchOrder(orderData, orderDocID) {
-    var confirmed = confirm("Are you sure?");
-    
-    // If the user confirms, perform the dispatch
-    if (confirmed) {
-        dispatchForm.style.display = 'block';
-        submitDispatch(orderData, orderDocID);
-    }
-}
+
 
 // Function to get decrement value based on size
 function decrementValue(size) {
@@ -1889,115 +1775,8 @@ function incrementStock(orderData) {
     
     
     
-    function submitDispatch(orderData, orderDocID) {
-    const dispatchHandler = async (e) => {
-    try {
-        const docRefOrders = doc(db, "orders", orderDocID);
-        const docRefDispatched = doc(db, "dispatched", orderDocID);
-        const docRefFinance = doc(db, "bank", "finance");
-    
-        // Fetch the order document
-        const orderDocSnapshot = await getDoc(doc(db, "orders", orderDocID));
-        let petrol;
-    
-        // Check if the order document exists
-        if (orderDocSnapshot.exists()) {
-            // Extract the order data
-            const orderDocData = orderDocSnapshot.data();
-            petrol = orderDocData.petrol;
-    
-            // Access and set additional fields from order data
-            orderData.petrol = petrol || 0;
-            orderData.tracking = orderDocData.tracking || 0;
-            orderData.trackingLink = orderDocData.trackingLink || "";
-            orderData.profit = orderDocData.profit || 0;
-            orderData.productCP = orderDocData.productCP || 0;
-            orderData.productSP = orderDocData.productSP || 0;
-        }
-    
-        const tracking = document.getElementById("tracking").value || 0;
-    
-        // Update the orderData object with the extracted values
-        orderData.tracking = tracking || 0;
-        // Check and replace undefined values with empty strings
-        const sanitizedOrderData = Object.fromEntries(
-            Object.entries(orderData).map(([key, value]) => [key, value === undefined ? "" : value])
-        );
-    
-        // Set data in dispatched collection
-        await setDoc(docRefDispatched, sanitizedOrderData);
-    
-        // Delete the document from orders collection
-        await deleteDoc(docRefOrders);
-    
-        // Update finance document with petrol amount
-        const financeSnapshot = await getDoc(docRefFinance);
-        const currentTotalPetrol = financeSnapshot.data().totalPetrol || 0;
-        const updatedTotalPetrol = currentTotalPetrol + petrol;
-    
-        // Update the finance document
-        await updateDoc(docRefFinance, { totalPetrol: updatedTotalPetrol });
-    
-        await decrementStock(orderData);
-    
-        const contact = orderData.Contact.substring(0, 11);
-        dispatchForm.style.display = 'none';
-        document.getElementById("productCost").value = "";
-        document.getElementById("productSale").value = "";
-        document.getElementById("tracking").value = "";
-    
-        if (contact && /^\d{10,12}$/.test(contact)) {
-            let customerContact = contact;
-            if (customerContact.startsWith('0')) {
-                customerContact = '92' + customerContact.slice(1);
-            }
-    
-            // Construct the message
-            let message = `Your Order Dispatched from Nouve \n\n` +
-                `Dear ${orderData.Name},\n\n` +
-                `Your ${orderData.productName} has been dispatched!\n\n`;
-    
-            if (orderData.tracking) {
-                message += `Tracking Link: ${orderData.trackingLink}\n` +
-                    `Tracking Number: ${orderData.tracking}\n\n`;
-            }
-    
-            message += `Thank you for choosing Nouve. Feel free to track your order for real-time updates.\n\n` +
-                `Regards,\Nouve Team`;
-    
-            // Ask for confirmation before sending the message
-            if (confirm("Do you want to send the dispatch message to the customer?")) {
-                const response = await fetch(`https://-express-api-main-polished-hill-4595.fly.dev/send-message?num=${customerContact}&msg=${encodeURIComponent(message)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-    
-                if (response.ok) {
-                    console.log('Message sent successfully');
-                    alert("Your order has been dispatched");
-                } else {
-                    console.error('Failed to send message.');
-                    alert("Failed to send message.");
-                }
-            }
-    
-        } else {
-            alert("Invalid customer contact number. Unable to send WhatsApp message.");
-        }
-    
-        dispatch.removeEventListener('click', dispatchHandler);
-    } catch (error) {
-        console.error("Error dispatching order: ", error);
-        alert(`An error occurred while dispatching: ${error.message}`);
-    }
-    };
-    
-    // Remove existing event listeners and add a new one
-    dispatch.removeEventListener('click', dispatchHandler);
-    dispatch.addEventListener('click', dispatchHandler);
-    }
+
+
     
     
     
@@ -2288,8 +2067,8 @@ function incrementStock(orderData) {
             var sendToManufacturer = confirm("Do you want to send a message to the Manufacturer?");
             if (sendToManufacturer) {
                 // Awake the serverless API and send the message
-                await fetch('https://-express-api-main-polished-hill-4595.fly.dev/send-message?num=923271383833&msg=encoded');
-    
+                
+                sendWhatsapp(env.process.NEXT_PUBLIC_OWNER_CONTACT,encoded)
                 // Compose the message for the Manufacturer
                 let message = `Asslamoalaikum  Ali yeh order banadu yeh mockup hein ${orderData.imgSrc} aur yeh`;
     
@@ -2302,7 +2081,7 @@ function incrementStock(orderData) {
                 }
     console.log(message)
                 // Send the message to the Manufacturer
-                await fetch(`https://exs-api-main-polished-hill-4595.fly.dev/send-message?num=923271383833&msg=${encodeURIComponent(message)}`);
+                sendWhatsapp(process.env.NEXT_PUBLIC_OWNER_CONTACT,message);
             }
         } else {
             // Confirm sending message to the Customer
@@ -2331,7 +2110,8 @@ function incrementStock(orderData) {
                 const encodedMessage = encodeURIComponent(message).replace(/%0A/g, '%0A');
     
                 // Send the message to the Customer
-                await fetch(`http://16.171.1.112/send-message?num=${customerNumber}&msg=${encodedMessage}`);
+                sendWhatsapp(customerNumber,encodedMessage)
+               
             }
         }
     
@@ -2794,13 +2574,13 @@ function incrementStock(orderData) {
 
 <div style={{ display: 'none' }} id="dataDisplay" />
 
-<div className="form-container" id="dispatchForm">
+{/* <div className="form-container" id="dispatchForm">
   <label htmlFor="courier">Tracking Number:</label>
   <input type="text" id="tracking" name="tracking" placeholder="Enter Tracking Number" />
   <button id="dispatch">Dispatch</button>
-</div>
+</div> */}
 
-<div className="form-container" id="preDispatchForm">
+{/* <div className="form-container" id="preDispatchForm">
   <label htmlFor="productCost">Product Cost:</label>
   <input type="number" id="productCost" name="productCost" placeholder="Enter product cost" />
   <label htmlFor="productSale">Product Sale:</label>
@@ -2820,12 +2600,7 @@ function incrementStock(orderData) {
     <option value="PostEx.">PostEx.</option>
   </select>
 
-  <label htmlFor="pickupLocation">Select Pickup Location:</label>
-  <select id="pickupLocationDropdown">
-    <option>Select</option>
-    <option value="75500">OMER TARIQ</option>
-  </select>
-
+  
   <div style={{ display: 'none' }}>
     <label htmlFor="returnLocation">Selected Return Location:</label>
     <select id="returnLocationDropdown"></select>
@@ -2836,7 +2611,7 @@ function incrementStock(orderData) {
   <label htmlFor="Instructions">Additional Instruction:</label>
   <input type="text" id="Instructions" name="Instructions" placeholder="Enter secondary contact or any other info" />
   <button id="excel">Add to Excel</button>
-</div>
+</div> */}
 
 <div className="form-container" id="deliveredForm">
   <label htmlFor="productDelivery">Delivery Charges:</label>

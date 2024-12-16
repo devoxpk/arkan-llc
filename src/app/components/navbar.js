@@ -11,8 +11,8 @@ import { useAuth, useSignOut } from '../context/AuthContext';
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
 
-import Fetcher from '../utilis/dashboardWorker'
-import fetchTracking from '../utilis/fetchtracking'
+import UserSession from './UserSession';
+import EditModeButton from './editmode';
 
   
 
@@ -20,17 +20,12 @@ import fetchTracking from '../utilis/fetchtracking'
 function Navbar() {
   const [isNavActive, setNavActive] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
-  const { signIn} = useAuth();
-  const [userSession, setUserSession] = useState(
-    JSON.parse(localStorage.getItem('userSession'))
-  );
-  const handleSignout=useSignOut();
+  
  
   const headerRef = useRef(null);
   const overlayRef = useRef(null);
 
-Fetcher();
-fetchTracking();
+
 
   const [categories, setCategories] = useState([]);
   const [expandedCollections, setExpandedCollections] = useState(false);
@@ -42,8 +37,9 @@ fetchTracking();
       let collectionsToFetch = [];
 
       // Retrieve collections from localStorage if available
+      if(typeof window !== "undefined"){
       collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
-
+      }
       const fetchedCategories = [];
 
       // If collectionsToFetch is empty, find numeric collections from the database
@@ -70,7 +66,8 @@ fetchTracking();
         }
 
         // Save the collections to localStorage for future use
-        localStorage.setItem("collectionsToFetch", JSON.stringify(collectionsToFetch));
+        if(typeof window !== "undefined"){
+        localStorage.setItem("collectionsToFetch", JSON.stringify(collectionsToFetch));}
       } else {
         console.log("Using collections from localStorage:", collectionsToFetch);
       }
@@ -111,8 +108,9 @@ fetchTracking();
   };
 
   useEffect(() => {
-
-      const handleScroll = () => {
+    let handleScroll;
+    if(typeof window !== "undefined"){
+       handleScroll = () => {
         if (headerRef.current) {
           if (window.scrollY >= 200) {
             headerRef.current.classList.add('active');
@@ -123,10 +121,13 @@ fetchTracking();
       };
 
       window.addEventListener("scroll", handleScroll);
+    }
 
       // Cleanup event listener on component unmount
       return () => {
+        if(typeof window !== "undefined"){
         window.removeEventListener("scroll", handleScroll);
+        }
       };
     
   }, []);
@@ -137,7 +138,7 @@ fetchTracking();
 
   return (
     <>
-
+<EditModeButton/>
 <Cart/>
     
       <div
@@ -237,52 +238,7 @@ fetchTracking();
           <div className="header-actions">
           
 
-<button
-  className="header-action-btn"
-  onClick={() => {
-    const userSession = JSON.parse(localStorage.getItem('userSession'));
-    if (userSession) {
-      handleSignout().then(() => {
-      
-        alert(`You have signed out, ${userSession.displayName}`);
-        localStorage.removeItem('userSession'); // Clear session on sign-out
-        setUserSession(null); // Update state to reflect changes
-      });
-    } else {
-      signIn().then((user) => {
-        // Example: After sign-in, save user data to localStorage and state
-        const newUserSession = {
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        };
-        signIn();
-        localStorage.setItem('userSession', JSON.stringify(newUserSession));
-        setUserSession(newUserSession); // Update state to reflect changes
-      })
-    }
-  }}
->
-  {userSession ? (
-    <>
-      <img
-        src={userSession.photoURL}
-        alt="User Avatar"
-        style={{
-          width: '30px',
-          height: '30px',
-          borderRadius: '50%',
-          marginRight: '8px',
-        }}
-      />
-      <p className="header-action-label">{userSession.displayName}</p>
-    </>
-  ) : (
-    <>
-      <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
-      <p className="header-action-label">Sign in</p>
-    </>
-  )}
-</button>
+<UserSession/>
 
 
 
@@ -342,7 +298,8 @@ fetchTracking();
 
             <ul className="navbar-list">
               <li><Link href='/' legacyBehavior><a  className="navbar-link" data-nav-link>Home</a></Link></li>
-              <li><a href="#" className="navbar-link" data-nav-link>Shop</a></li>
+                  // Start of Selection
+                  <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
               <li><Link href='/contact' legacyBehavior><a  className="navbar-link" data-nav-link>Contact Us</a></Link></li>
               <li>
       <button

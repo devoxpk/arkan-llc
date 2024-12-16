@@ -3,22 +3,24 @@ import React, { useEffect } from 'react';
 import "../css/purchase.css";
 import Cartitem from '../components/cart.js';
 import { db } from '../firebase'; 
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection,updateDoc, deleteField,getDocs,serverTimestamp,query,where } from 'firebase/firestore';
 import saveContact from '../utilis/saveContact'
 import showMessageBox from '../utilis/showMessageBox'
 
 
       
 function saveCustomerIdToLocalStorage() {
+    let customerId;
+    if(typeof window !== "undefined"){
     if (!localStorage.getItem("idstatus")) {
-      const customerId = Math.floor(100000 + Math.random() * 900000);
+       customerId = Math.floor(100000 + Math.random() * 900000);
       localStorage.setItem("customerNumber", customerId);
       localStorage.setItem("idstatus", "set");
     }
     if (!localStorage.getItem("count")) {
       localStorage.setItem("count", 1);
     }
-  }
+  }}
       saveCustomerIdToLocalStorage();
   
 
@@ -29,8 +31,100 @@ export default function PurchaseComponent() {
 
     
 
+    async function validatePromo(event) {
+        event.preventDefault(); // Prevent the page from reloading
+    
+        const promoInput = document.querySelector(".input_field").value.trim();
+        if (!promoInput) {
+            showMessageBox("Invalid Promo", "Please enter a promo code.", false);
+            return;
+        }
+    
+        try {
+            // Reference the specific document `codes` inside the `promos` collection
+            const promoDocRef = doc(db, "promos", "codes");
+    
+            // Fetch the document
+            const promoDoc = await getDoc(promoDocRef);
+    
+            if (promoDoc.exists()) {
+                const promoData = promoDoc.data();
+    
+                // Check if the promo code exists as a field in the document
+                if (promoData[promoInput] !== undefined) {
+                    let discount = promoData[promoInput]; // Get the discount percentage
+    
+                    // Log discount for debugging
+                    console.log("Fetched Discount Value:", discount);
+    
+                    // Handle discount being a string with a % symbol
+                    if (typeof discount === "string" && discount.includes("%")) {
+                        discount = discount.replace("%", ""); // Remove % symbol
+                    }
+    
+                    discount = parseFloat(discount); // Parse as a number
+    
+                    // Log parsed discount for debugging
+                    console.log("Parsed Discount Value:", discount);
+    
+                    // Ensure discount is a valid number
+                    if (!isNaN(discount)) {
+                        const priceElements = document.querySelectorAll(".priceElement");
+    
+                        priceElements.forEach(priceElement => {
+                            let originalPriceText = priceElement.textContent.replace("PKR", "").trim();
+    
+                            // Remove unexpected characters and parse as a number
+                            originalPriceText = originalPriceText.replace(/[^0-9.]/g, "");
+                            const originalPrice = parseFloat(originalPriceText);
+    
+                            // Log parsed original price
+                            console.log("Parsed Original Price:", originalPrice);
+    
+                            const discountedPrice = originalPrice - (originalPrice * discount) / 100;
+    
+                            // Update the price element's text content
+                            priceElement.textContent = `PKR ${discountedPrice.toFixed(2)}`;
+    
+                            // Log discounted price
+                            console.log("Discounted Price:", discountedPrice);
+                        });
+    
+
+  const updates = {};
+                        updates[promoInput] = deleteField();
+                        await updateDoc(promoDocRef, updates);
+    
+
+                        // Show success message
+                        showMessageBox("Promo Applied", `You have received a ${discount}% discount! `, true);
+                    } else {
+                        console.error("Invalid discount value:", discount);
+                        showMessageBox("Error", "Invalid discount value received.", false);
+                    }
+                } else {
+                    // Promo code not found
+                    showMessageBox("Invalid Promo", "Please use a correct promo code.", false);
+                }
+            } else {
+                console.error("Promo codes document does not exist.");
+                showMessageBox("Error", "Promo codes are not available.", false);
+            }
+        } catch (error) {
+            console.error("Error validating promo:", error);
+            showMessageBox("Error", "An error occurred while applying the promo code.", false);
+        }
+    }
+    
+
+    
+  
+   
+    
+
     useEffect(() => {
         document.addEventListener('DOMContentLoaded', function () {
+            if(typeof window !== "undefined"){
             // Get references to the input fields
             const nameInput = document.getElementById('customerName');
             const addressInput = document.getElementById('userAddress');
@@ -38,6 +132,7 @@ export default function PurchaseComponent() {
             const emailInput = document.getElementById("userEmail");
         
             // Check localStorage for cached values
+            
             if (localStorage.getItem('userName')) {
                 nameInput.value = localStorage.getItem('userName');
             }
@@ -49,7 +144,7 @@ export default function PurchaseComponent() {
             }if (localStorage.getItem('userEmail')) {
                 emailInput.value = localStorage.getItem('userEmail');
             }
-        
+            
            
             nameInput.addEventListener('input', () => {
                 localStorage.setItem('userName', nameInput.value);
@@ -65,6 +160,7 @@ export default function PurchaseComponent() {
             emailInput.addEventListener('input', () => {
                 localStorage.setItem('userEmail', emailInput.value);
             });
+        }
         });
 
 
@@ -92,10 +188,16 @@ export default function PurchaseComponent() {
           const day = new Date().toDateString();
           const time = new Date().toLocaleTimeString();
           const details = document.getElementById("additionalDetails").value;
-          const counts = localStorage.getItem("count");
-          const customerId = localStorage.getItem("customerNumber");
-          const productsData = localStorage.getItem("cartItems");
-          const currentLoc = localStorage.getItem("currentLoc");
+          let counts;
+          let customerId;
+          let productsData;
+          let currentLoc;
+          if(typeof window !== "undefined"){
+           counts = localStorage.getItem("count");
+           customerId = localStorage.getItem("customerNumber");
+           productsData = localStorage.getItem("cartItems");
+           currentLoc = localStorage.getItem("currentLoc");
+          }
           const docRef = doc(db, "orders", `${customerId}(${customerName})-${counts}`);
   const paymentMode=  document.getElementById("paymentMode").innerText;
           const docData = {
@@ -114,12 +216,16 @@ export default function PurchaseComponent() {
           };
   
           await setDoc(docRef, docData);
+          if(typeof window !== "undefined"){
           localStorage.setItem("count", parseInt(counts) + 1);
+          }
           
           showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
           saveContact(userContact,userEmail,"purchase")
           window.location.href = `thanks?docId=${docRef.id}`;
+          if(typeof window !== "undefined"){
           localStorage.removeItem("cartItems");
+          }
 
         } catch (error) {
           console.error("Error adding document: ", error);
@@ -134,9 +240,10 @@ export default function PurchaseComponent() {
       return () => submitButton.removeEventListener("click", handleOrderPlacement);
     }, []);
 
-
-    
-    const items = JSON.parse(localStorage.getItem("cartItems")) || [];
+let items;
+    if(typeof window !== "undefined"){
+     items = JSON.parse(localStorage.getItem("cartItems")) || [];
+    }
 
     // Calculate subtotal
     const subtotal = items.reduce((total, item) => {
@@ -173,7 +280,9 @@ export default function PurchaseComponent() {
                     var lng = position.coords.longitude;
 
                     var mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                    if(typeof window !== "undefined"){
                     localStorage.setItem("currentLoc", mapsLink);
+                    }
                 }, function(error) {
                     console.error("Geolocation error: " + error.message);
                 });
@@ -184,7 +293,7 @@ export default function PurchaseComponent() {
     }
 
     return (
-        <>
+       <>
             <div id="fabricDiv">
                 <h2 id="fabricHead">N O U V E</h2>
                 <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" />
@@ -218,7 +327,7 @@ export default function PurchaseComponent() {
                                         placeholder="Enter a Promo Code"
                                         type="text"
                                     />
-                                    <button>Apply</button>
+                                    <button onClick={()=>{validatePromo(event)}}>Apply</button>
                                 </form>
                             </div>
                             <hr />
@@ -273,13 +382,13 @@ export default function PurchaseComponent() {
             <span>PAYMENT</span>
             <div className="details">
                 <span>Subtotal:</span>
-                <span> {subtotal.toFixed(2)}</span>
+                <span className='priceElement'> {subtotal.toFixed(2)}</span>
                 <span>Shipping:</span>
                 <span> {shipping.toFixed(2)}</span>
                 <span>Tax:</span>
                 <span> {tax.toFixed(2)}</span>
                 <span>Total:</span>
-                <span> {total.toFixed(2)}</span>
+                <span className='priceElement'> {total.toFixed(2)}</span>
             </div>
         </div>
                         </div>
@@ -288,7 +397,7 @@ export default function PurchaseComponent() {
 
                 <div className="card checkout">
                     <div className="footer">
-                        <label className="price">PKR {total.toFixed(2)}</label>
+                        <label className="price priceElement">PKR {total.toFixed(2)}</label>
                         <button className="checkout-btn" id='submitButton'>Checkout</button>
                     </div>
                 </div>
@@ -297,7 +406,7 @@ export default function PurchaseComponent() {
             <Cartitem cartStyle={true} /></div>
             <footer style={{ display: 'flex', justifyContent: 'center', color: 'white' }}>
                 &copy; All Rights Reserved by&nbsp;<h3 style={{ fontWeight: 'bolder', display: 'inline' }}>Nouve</h3>
-            </footer>
-        </>
+            </footer>     
+            </> 
     );
 }

@@ -13,7 +13,7 @@ function Footer() {
    
     const fetchCategories = async () => {
       let collectionsToFetch = [];
-if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      if (typeof window !== "undefined"){
   collectionsToFetch = JSON.parse(localStorage.getItem("collectionsToFetch")) || [];
 }
 

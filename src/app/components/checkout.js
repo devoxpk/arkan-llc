@@ -11,9 +11,11 @@ import { handleCart } from './cart';
 import Description from "./description"
 import { useReviewVisibility } from './reviews';
 import {checkReviewAvailability} from './reviews';
-import Edit from './editmode'
+
+import { useSearchParams } from 'next/navigation';
 import { fetchSizeChart } from './sizes';
 let isAvailable;
+let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
 
@@ -60,14 +62,13 @@ setTimeout(() => {
     
     const [cartItems, setCartItems] = useState([]);
     async function loadProductImages() {
-        const remove = document.getElementById("image-details");
-        // Clear the existing content if needed
-        //remove.innerHTML = '';
+        // Remove all existing slides with the class 'productImages'
+        const existingSlides = document.querySelectorAll('.productImages');
+        existingSlides.forEach(slide => slide.remove());
     
         const params = new URLSearchParams(window.location.search);
-        const productName = document.getElementById("productName").innerText;
+        const productName = document.getElementById("productName")?.innerText;
         const productImagesDiv = document.getElementById('image-details');
-    
         const isEditMode = params.has('edit');
     
         if (!productName) {
@@ -76,7 +77,7 @@ setTimeout(() => {
         }
     
         try {
-            // Get the document from Firestore
+            // Fetch product images from Firestore
             const docRef = doc(db, 'productImages', productName);
             const docSnapshot = await getDoc(docRef);
     
@@ -84,72 +85,60 @@ setTimeout(() => {
                 const images = docSnapshot.data().images || [];
     
                 images.forEach((imageUrl, index) => {
-                    // Create the slide container for each image
+                    const imageId = `productimage-${index}`;
+                    const slideId = `productImagesSlide-${index}`;
+    
+                    // Create slide container
                     const slideDiv = document.createElement('div');
-                    slideDiv.classList.add('slide'); // Add the 'slide' class
-                    
+                    slideDiv.classList.add('slide', 'productImages');
+                    slideDiv.id = slideId;
+    
                     // Create the image element
                     const imgElement = document.createElement('img');
-                    imgElement.id = index;
+                    imgElement.id = imageId;
+                    imgElement.className = 'productsImages';
                     imgElement.src = imageUrl;
-                    imgElement.style.width = '100%'; // Example styling
-                    imgElement.style.height = '100%';
-                   
-                    
-                    
-                    imgElement.style.position = 'static';
-                    imgElement.style.cursor = 'pointer'; // Make the image appear clickable
-    
-                    // Set the image's onclick event to trigger the showImage function with imageUrl
-                    imgElement.onclick = () => showImage(index, imageUrl);
+                    imgElement.onclick = () => showImage(imageId, imageUrl);
     
                     // Append the image to the slide container
                     slideDiv.appendChild(imgElement);
     
-                    // Append the slide container to the parent container (productImagesDiv)
-                    productImagesDiv.appendChild(slideDiv);
-    
-                    if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") == "fabfbuygi328y902340") {
-                        // Create the delete icon
+                    if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
+                        // Create delete icon
                         const deleteIcon = document.createElement('span');
+                        deleteIcon.id = `delete-btn-${index}`;
                         deleteIcon.innerHTML = '🗑️';
-                        deleteIcon.style.top = '5px';
-                        deleteIcon.style.right = '5px';
                         deleteIcon.style.cursor = 'pointer';
-                        deleteIcon.style.display = 'flex';
-                        deleteIcon.onclick = () => deleteImage(index, imageUrl);
-                        slideDiv.appendChild(deleteIcon);
+                        deleteIcon.style.marginLeft = '10px';
+                        deleteIcon.onclick = () => deleteImage(index);
     
-                        // Create the pencil icon for editing
-                        const pencilIcon = document.createElement('span');
-                        pencilIcon.innerHTML = '✏️';
-                        pencilIcon.style.display = 'flex';
-                        pencilIcon.style.top = '5px';
-                        pencilIcon.style.right = '30px';
-                        pencilIcon.style.cursor = 'pointer';
-                        pencilIcon.onclick = () => editImage(index, imageUrl);
-                        slideDiv.appendChild(pencilIcon);
+                        // Create edit icon
+                        const editIcon = document.createElement('span');
+                        editIcon.id = `edit-btn-${index}`;
+                        editIcon.innerHTML = '✏️';
+                        editIcon.style.cursor = 'pointer';
+                        editIcon.style.marginLeft = '10px';
+                        editIcon.onclick = () => editImage(index);
+    
+                        // Append buttons to the slide container
+                        slideDiv.appendChild(deleteIcon);
+                        slideDiv.appendChild(editIcon);
                     }
+    
+                    // Append the slide container to the parent container
+                    productImagesDiv.appendChild(slideDiv);
                 });
             }
     
-            if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") == "fabfbuygi328y902340") {
-                // Create the Add Image button
-                if(!document.getElementById("addImgBtn")){
-                const addIcon = document.createElement('button');
-                addIcon.innerHTML = 'Add Image';
-                addIcon.id = "addImgBtn";
-                addIcon.style.fontSize = '21px';
-                addIcon.style.cursor = 'pointer';
-                addIcon.style.marginBottom = '3%';
-                addIcon.style.marginTop = '3%';
-                addIcon.style.backgroundColor = 'white';
-                addIcon.style.color = 'black';
-                addIcon.style.fontWeight = 'light';
-                
-                addIcon.onclick = addNewImage;
-    
-                document.getElementById("productDetails").appendChild(addIcon);
+            if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
+                // Add Image button
+                if (!document.getElementById("addImgBtn")) {
+                    const addButton = document.createElement('button');
+                    addButton.innerHTML = 'Add Image';
+                    addButton.id = "addImgBtn";
+                    addButton.style.cursor = 'pointer';
+                    addButton.onclick = addNewImage;
+                    document.getElementById("productDetails").appendChild(addButton);
                 }
             }
         } catch (error) {
@@ -157,128 +146,108 @@ setTimeout(() => {
         }
     
         // Function to display the selected image
-        function showImage(index, url) {
-            const container = document.getElementById('productImages');
-            const images = container.getElementsByTagName('img');
-    
-            // Remove border from all images
-            for (let i = 0; i < images.length; i++) {
-                images[i].style.border = 'none';
+        function showImage(imageId, url) {
+            const images = productImagesDiv.getElementsByTagName('img');
+            for (let img of images) {
+                img.style.border = 'none';
             }
-    
-            // Add border to selected image
-            const selectedImage = document.getElementById(index);
+            const selectedImage = document.getElementById(imageId);
             if (selectedImage) {
                 selectedImage.style.border = '2px solid Black';
             }
-    
-            // Update the main image
-            const main = document.getElementById('MainImg');
-            main.src = url;
-            main.dataset.selectedImageId = index;
+            const mainImage = document.getElementById('MainImg');
+            mainImage.src = url;
+            mainImage.dataset.selectedImageId = imageId;
         }
-  
-  function detectSwipeDirection(startX, endX) {
-      const diffX = endX - startX;
-  
-      if (Math.abs(diffX) > 30) { // Threshold for swipe detection
-          return diffX > 0 ? 'left' : 'right';
-      }
-      return null;
-  }
-  
- 
-  
-  
-  
-  // Attach swipe handler to the MainImg element
-  const mainImg = document.getElementById('MainImg');
-
-  
-  
-      async function addNewImage() {
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.onchange = async () => {
-              const file = fileInput.files[0];
-              if (file) {
-                  const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
-                  await uploadBytes(storageRef, file);
-                  const imageUrl = await getDownloadURL(storageRef);
-  
-                  // Update Firestore
-                  const docRef = doc(db, 'productImages', productName);
-                  const docSnapshot = await getDoc(docRef);
-  
-                  if (docSnapshot.exists()) {
-                      await updateDoc(docRef, {
-                          images: arrayUnion(imageUrl)
-                      });
-                  } else {
-                      await setDoc(docRef, {
-                          images: [imageUrl]
-                      });
-                  }
-  
-                  loadProductImages();
-              }
-          };
-          fileInput.click();
-      }
-  
-      async function editImage(index, imageUrl) {
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.onchange = async () => {
-              const file = fileInput.files[0];
-              if (file) {
-                  const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
-                  await uploadBytes(storageRef, file);
-                  const newImageUrl = await getDownloadURL(storageRef);
-  
-                  // Update Firestore
-                  const docRef = doc(db, 'productImages', productName);
-                  const docSnapshot = await getDoc(docRef);
-  
-                  if (docSnapshot.exists()) {
-                      const images = docSnapshot.data().images;
-                      images[index] = newImageUrl;
-  
-                      await updateDoc(docRef, { images });
-                  }
-  
-                  loadProductImages();
-              }
-          };
-          fileInput.click();
-      }
-  
-      async function deleteImage(index, imageUrl) {
-      const docRef = doc(db, 'productImages', productName);
-      const docSnapshot = await getDoc(docRef);
-  
-      if (docSnapshot.exists()) {
-          const images = docSnapshot.data().images;
-          images.splice(index, 1);
-  
-          await updateDoc(docRef, { images });
-  
-          // Extract and decode the image file name
-          const imageFileName = decodeURIComponent(imageUrl.split('/').pop().split('?')[0]);
-  
-          // Create a reference to the image in Firebase Storage
-          const storageRef = ref(storage, `productImages/${productName}/${imageFileName}`);
-  
-          // Delete the image from Firebase Storage
-          await deleteObject(storageRef);
-  
-          // Reload the images after deletion
-          loadProductImages();
-      }
+    
+        // Function to add a new image
+        async function addNewImage() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = async () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    const imageUrl = await getDownloadURL(storageRef);
+    
+                    const docRef = doc(db, 'productImages', productName);
+                    const docSnapshot = await getDoc(docRef);
+    
+                    if (docSnapshot.exists()) {
+                        await updateDoc(docRef, { images: arrayUnion(imageUrl) });
+                    } else {
+                        await setDoc(docRef, { images: [imageUrl] });
+                    }
+    
+                    loadProductImages();
+                }
+            };
+            fileInput.click();
+        }
+    
+        // Function to edit an image
+        async function editImage(index) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = async () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    const newImageUrl = await getDownloadURL(storageRef);
+    
+                    const docRef = doc(db, 'productImages', productName);
+                    const docSnapshot = await getDoc(docRef);
+    
+                    if (docSnapshot.exists()) {
+                        const images = docSnapshot.data().images;
+                        images[index] = newImageUrl;
+                        await updateDoc(docRef, { images });
+                    }
+    
+                    loadProductImages();
+                }
+            };
+            fileInput.click();
+        }
+    
+        // Function to delete an image
+        async function deleteImage(index) {
+            const docRef = doc(db, 'productImages', productName);
+            const docSnapshot = await getDoc(docRef);
+    
+            if (docSnapshot.exists()) {
+                const images = docSnapshot.data().images;
+                const [removedImage] = images.splice(index, 1);
+                await updateDoc(docRef, { images });
+    
+                const imageFileName = decodeURIComponent(removedImage.split('/').pop().split('?')[0]);
+                const storageRef = ref(storage, `productImages/${productName}/${imageFileName}`);
+    
+                try {
+                    await deleteObject(storageRef);
+                } catch (error) {
+                    if (error.code === 'storage/object-not-found') {
+                        console.warn('Image file not found in Firebase Storage. It might have been already deleted.');
+                    } else {
+                        console.error('Error deleting image from Firebase Storage:', error);
+                    }
+                }
+    
+                // Reload product images regardless of the outcome
+                loadProductImages();
+            }
+        }
     }
-  }
+    
+    
+    
+    
+    
+    
 
 
     
@@ -413,9 +382,9 @@ setTimeout(() => {
     
       
     useEffect(() => {
-        const initializePage = async () => {
+         initializePage = async () => {
           await addData();
-          await loadProductImages();
+        
       
           let productName = document.getElementById("productName").innerText;
       
@@ -471,9 +440,7 @@ function updateSizeOptions(productName) {
                 };
 
                 // Update size options based on availability
-                updateSizeElement(sizes.s, 's1');
-                updateSizeElement(sizes.m, 's2');
-                updateSizeElement(sizes.l, 's3');
+               
             } else {
                 console.error("Document does not exist for product:", productName);
             }
@@ -497,77 +464,92 @@ function updateSizeOptions(productName) {
         return urlParams.get(name);
     }
 
-    async function addData() {
-        console.log("Add Data is Running ");
-        
-        // Retrieve data from URL query parameters or local storage
-        var productName = decodeURIComponent(getQueryParameter("pname")) || localStorage.getItem("productName");
-        var productPrice = decodeURIComponent(getQueryParameter("pprice")) || localStorage.getItem("productPrice");
-        var productImageSrc = getQueryParameter("ImageSrc") || localStorage.getItem("productImageSrc");
-        var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || "";  // Fetch dPrice from query parameters
-        var token = getQueryParameter("token");
-    
-        if (productImageSrc) {
-            productImageSrc = productImageSrc.replace(/(products\/)/, 'products%2F');
-            productImageSrc = productImageSrc.replace(/ /g, '%20')
-                                             .replace(/\(/g, '%28')
-                                             .replace(/\)/g, '%29');
-            
-            if (token) {
-                productImageSrc += `&token=${token}`;
-            }
-        } else {
-            productImageSrc = localStorage.getItem("productImageSrc");
-        }
-    
-        // Update the product details in the HTML
-        var productNameElement = document.getElementById("productName");
-        var productPriceElement = document.getElementById("productPrice");
-        var mainImgElement = document.getElementById("MainImg");
-        var cuttedProductPriceElement = document.getElementById("cuttedProductPrice");
-    
-        // Function to load an image and return a Promise
-        function loadImage(src) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = src;
-                img.onload = () => resolve(src);
-                img.onerror = () => reject(new Error("Image failed to load"));
-            });
-        }
-    
-        try {
-            // Update product image and wait for it to load
-            if (productImageSrc) {
-                await loadImage(productImageSrc);
-                mainImgElement.src = productImageSrc;
-            } else {
-                showMessageBox("Image Not found", "Contact Us if not Resolved", false);
-            }
-    
-            // Update product name
-            productNameElement.innerText = productName || "Not found";
-    
-            // Update product price
-            productPriceElement.innerText = productPrice || "Not found";
-    
-            // Update cutted price if dPrice is available
-            if (dPrice) {
-                cuttedProductPriceElement.innerText = `Rs. ${dPrice}`;
-                cuttedProductPriceElement.style.textDecoration = "line-through";  // Apply line-through style
-            } else {
-                cuttedProductPriceElement.innerText = "Not found";
-            }
-    
-            // Display image-details and hide imgLoading
-            document.getElementById("image-details").style.display = 'block';
-            document.getElementById("imgLoading").style.display = 'none';
-            
-        } catch (error) {
-            console.error("Error loading image:", error);
-            // Handle image load error if needed
-        }
+    const [searchParams] = useSearchParams();
+
+  
+
+  async function addData() {
+    console.log("Add Data is Running ");
+
+    // Retrieve data from URL query parameters or local storage
+    var productName =
+      decodeURIComponent(getQueryParameter("pname")) ||
+      localStorage.getItem("productName");
+    var productPrice =
+      decodeURIComponent(getQueryParameter("pprice")) ||
+      localStorage.getItem("productPrice");
+    var productImageSrc =
+      getQueryParameter("ImageSrc") || localStorage.getItem("productImageSrc");
+    var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || ""; // Fetch dPrice from query parameters
+    var token = getQueryParameter("token");
+
+    if (productImageSrc) {
+      productImageSrc = productImageSrc.replace(/(products\/)/, "products%2F");
+      productImageSrc = productImageSrc
+        .replace(/ /g, "%20")
+        .replace(/\(/g, "%28")
+        .replace(/\)/g, "%29");
+
+      if (token) {
+        productImageSrc += `&token=${token}`;
+      }
+    } else {
+      productImageSrc = localStorage.getItem("productImageSrc");
     }
+
+    // Update the product details in the HTML
+    var productNameElement = document.getElementById("productName");
+    var productPriceElement = document.getElementById("productPrice");
+    var mainImgElement = document.getElementById("MainImg");
+    var cuttedProductPriceElement = document.getElementById("cuttedProductPrice");
+
+    // Function to load an image and return a Promise
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(src);
+        img.onerror = () => reject(new Error("Image failed to load"));
+      });
+    }
+
+    try {
+      // Update product image and wait for it to load
+      if (productImageSrc) {
+        await loadImage(productImageSrc);
+        mainImgElement.src = productImageSrc;
+      } else {
+        showMessageBox("Image Not found", "Contact Us if not Resolved", false);
+      }
+
+      // Update product name
+      productNameElement.innerText = productName || "Not found";
+
+      // Update product price
+      productPriceElement.innerText = productPrice || "Not found";
+
+      // Update cutted price if dPrice is available
+      if (dPrice) {
+        cuttedProductPriceElement.innerText = `Rs. ${dPrice}`;
+        cuttedProductPriceElement.style.textDecoration = "line-through"; // Apply line-through style
+      } else {
+        cuttedProductPriceElement.innerText = "Not found";
+      }
+await loadProductImages();
+      // Display image-details and hide imgLoading
+      document.getElementById("image-details").style.display = "block";
+      document.getElementById("imgLoading").style.display = "none";
+      document.querySelector(".loader").style.display = "none";
+    } catch (error) {
+      console.error("Error loading image:", error);
+      // Handle image load error if needed
+    }
+  }
+
+  useEffect(() => {
+    initializePage()
+  }, [searchParams]); // Run whenever searchParams changes
+
     
 
    
@@ -698,6 +680,7 @@ function updateSizeOptions(productName) {
     fontSize: "18px",
     columnGap: "2%",
     height: "auto",
+    marginLeft:'4%'
   }}
 >
   <img

@@ -100,9 +100,10 @@
 
 /* Section heading styling */
 .trending-items-heading {
-    position: sticky; /* Makes the heading fixed relative to the parent section */
+    
     top: 0; /* Stick to the top of the viewport or container */
     font-size: 24px;
+    margin-bottom: 3%;
     color: black;
     font-weight: bold;
     text-align: center;

@@ -12,7 +12,8 @@ const Cart = ({cartStyle = false}) => {
 
 
   // Safe access to localStorage on the client-side
-  storedCartItems = localStorage.getItem('cartItems');
+  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+  storedCartItems = localStorage.getItem('cartItems');}
 
 
         return storedCartItems ? JSON.parse(storedCartItems) : [];
@@ -27,7 +28,8 @@ const Cart = ({cartStyle = false}) => {
 
        
           // Safe access to localStorage on the client-side
-          storedCartItems = localStorage.getItem('cartItems');
+          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          storedCartItems = localStorage.getItem('cartItems');}
         
         
         if (storedCartItems) {
@@ -37,7 +39,8 @@ const Cart = ({cartStyle = false}) => {
             console.log("No stored cart items found, initializing empty cart");
           
                 // Safe access to localStorage on the client-side
-                localStorage.setItem("preCartItems", JSON.stringify([]));
+                if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                localStorage.setItem("preCartItems", JSON.stringify([]));}
               
               // Initialize if not present
             setCartItems([]); // Ensure the state is empty if no items are found
@@ -68,7 +71,8 @@ const Cart = ({cartStyle = false}) => {
     useEffect(() => {
       
             // Safe access to localStorage on the client-side
-            localStorage.setItem("preCartItems", JSON.stringify([]));
+            if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+            localStorage.setItem("preCartItems", JSON.stringify([]));}
           
           
     }, [cartItems]);
@@ -79,8 +83,8 @@ const Cart = ({cartStyle = false}) => {
 
         // Retrieve cart items from localStorage
         let cartItems = null;
-    
-         cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+         cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];}
         
         // Calculate total quantityf
         const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -111,7 +115,10 @@ console.log(`Total Quantity: ${totalQuantity}`);
         console.log("Current Cart Items:", cartItems);
     
         // Retrieve existing `preCartItems` from localStorage or initialize as an empty array
-        const preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
+        let preCartItems;
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+         preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
+        }
     
         // Check if the product already exists in `preCartItems`
         const existingProductIndex = preCartItems.findIndex(item => item.productName === product.productName);
@@ -132,8 +139,9 @@ console.log(`Total Quantity: ${totalQuantity}`);
         }
     
         // Update `preCartItems` in localStorage
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
         localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
-    
+        }
         // Update `cartItems` state to reflect changes in the UI
         const updatedCartItems = [...preCartItems];
         setCartItems(updatedCartItems);
@@ -149,7 +157,9 @@ console.log(`Total Quantity: ${totalQuantity}`);
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
         localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
+        }
     };
     
     const decreaseQuantity = (id) => {
@@ -160,15 +170,18 @@ console.log(`Total Quantity: ${totalQuantity}`);
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
         localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
+        }
     };
     
     const deleteItem = (id) => {
         const updatedCartItems = cartItems.filter(item => item.id !== id);
         
         setCartItems(updatedCartItems); // Update state with the remaining items
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
         localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with remaining items
-    
+        }
         // Adjust the badge count
         const deletedItem = cartItems.find(item => item.id === id);
         const currentBadgeCount = parseInt(document.querySelector('.header-action-btn .btn-badge.green').innerText) || 0;

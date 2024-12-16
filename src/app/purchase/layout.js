@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function PurchaseLayout({ children }) {
   return (
-    <div
+    <div className="purchasePage"
     style={{
       display: "flex",
       flexDirection: "column",

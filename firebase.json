@@ -1,7 +1,7 @@
 {
   "hosting": {
     "target": "nouvewear",
-    "public": "out", 
+    "public": "out",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -9,24 +9,52 @@
     ],
     "rewrites": [
       {
-        "source": "/about",
-        "destination": "/about/page"
-      },
-      {
         "source": "/checkout",
-        "destination": "/checkout/page"
-      },
-      {
-        "source": "/categories",
-        "destination": "/categories/page"
+        "destination": "/checkout.html"
       },
       {
         "source": "/purchase",
-        "destination": "/purchase/page"
+        "destination": "/purchase.html"
+      },
+      {
+        "source": "/thanks",
+        "destination": "/thanks.html"
+      },
+      {
+        "source": "/faq",
+        "destination": "/faq.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/terms.html"
+      },
+      {
+        "source": "/return",
+        "destination": "/return.html"
+      },
+      {
+        "source": "/categories",
+        "destination": "/categories.html"
+      },
+      {
+        "source": "/shipping",
+        "destination": "/shipping.html"
+      },
+      {
+        "source": "/tracking",
+        "destination": "/tracking.html"
+      },
+      {
+        "source": "/about",
+        "destination": "/about.html"
+      },
+      {
+        "source": "/shop",
+        "destination": "/shop.html"
       },
       {
         "source": "/**",
-        "destination": "/index"
+        "destination": "/index.html"
       }
     ]
   }

@@ -6,7 +6,6 @@ export default function TrackingComponent() {
     const [trackingData, setTrackingData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [trackingNumber, setTrackingNumber] = useState('');
-    const [contact, setContact] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('Track Your Parcel Here');
 
     const loadingMessages = [
@@ -23,57 +22,71 @@ export default function TrackingComponent() {
         'Just a second...',
     ];
 
-    // Message index to avoid repetition
     let messageIndex = 0;
 
-    // Function to rotate loading messages
     useEffect(() => {
         let messageInterval;
         if (loading) {
             messageInterval = setInterval(() => {
-                // Only show new message if index is within bounds
-                if (messageIndex < loadingMessages.length - 2) {
+                if (messageIndex < loadingMessages.length - 1) {
                     setLoadingMessage(loadingMessages[messageIndex]);
                     messageIndex++;
                 }
-            }, 1500); // Change message every 1.5 seconds
+            }, 1500);
         } else {
             setLoadingMessage('Track Your Parcel Here');
-            messageIndex = 0; // Reset message index
+            messageIndex = 0;
         }
 
-        return () => clearInterval(messageInterval); // Clear interval on unmount or when loading ends
+        return () => clearInterval(messageInterval);
     }, [loading]);
 
     const handleTracking = async () => {
         setLoading(true);
         setTrackingData(null);
 
-        const contactNumber = contact || '00000000000';
-
         try {
-            let response = await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_API}/get-tracking?auth=${process.env.NEXT_PUBLIC_OWNER_AUTH}&tracking[]=${trackingNumber}&courier[]=leopards&contact[]=${contactNumber}`
-            );
-            let data = await response.json();
+            const response = await fetch('https://api.shooterdelivery.com/Apis/fetch-order-tracking.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    id: trackingNumber,
+                }),
+            });
 
-            if (!data.trackingResults || data.trackingResults.length === 0) {
-                response = await fetch(
-                    `${process.env.NEXT_PUBLIC_SERVER_API}/get-tracking?auth=${process.env.NEXT_PUBLIC_OWNER_AUTH}&tracking[]=${trackingNumber}&courier[]=barq&contact[]=${contactNumber}`
-                );
-                data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            if (data.trackingResults && data.trackingResults.length > 0) {
-                setTrackingData(data.trackingResults[0].trackingDetails);
-            } else {
-                setTrackingData({ status: 'Not Found', date: 'N/A' });
-            }
+            const data = await response.json();
+
+            // Process the Shooter API response
+            const orderDetails = data.Order_Details || {};
+            const statusHistory = data.Status_History || [];
+
+            const trackingInfo = {
+                status: orderDetails.status || 'Not Found',
+                origin: orderDetails.Origin || 'Unknown',
+                destination: orderDetails.Destination || 'Unknown',
+                consignee: orderDetails.consignee_name || 'Unknown',
+                shipper: orderDetails.Shipper || 'Unknown',
+                date: orderDetails.created_at || 'N/A',
+                history: statusHistory.map((entry) => ({
+                    status: entry.status,
+                    date: entry.created_at,
+                })),
+            };
+
+            setTrackingData(trackingInfo);
         } catch (error) {
-            console.error('Error fetching tracking data. Please try again later.');
+            console.error('Error fetching tracking data:', error);
+            setTrackingData({ status: 'Error', date: 'N/A' });
         }
 
-        setTrackingNumber(''); // Clear the tracking number input
+        setTrackingNumber('');
         setLoading(false);
     };
 
@@ -119,10 +132,24 @@ export default function TrackingComponent() {
                 {trackingData ? (
                     <div className="tracking-result">
                         <div className="status">
-                            <span>{trackingData.status}</span>
+                            <span>Status: {trackingData.status}</span>
                         </div>
-                        <div className="date">
-                            <span>{trackingData.date}</span>
+                        <div className="details">
+                            <p>Origin: {trackingData.origin}</p>
+                            <p>Destination: {trackingData.destination}</p>
+                            <p>Consignee: {trackingData.consignee}</p>
+                            <p>Shipper: {trackingData.shipper}</p>
+                            <p>Date: {trackingData.date}</p>
+                        </div>
+                        <div className="history">
+                            <h3>Status History:</h3>
+                            <ul>
+                                {trackingData.history.map((entry, index) => (
+                                    <li key={index}>
+                                        {entry.date}: {entry.status}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 ) : (

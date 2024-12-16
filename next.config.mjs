@@ -1,7 +1,8 @@
+// next.config.mjs
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // Disable Strict Mode
-  output: 'export', // Enable static HTML export
+  reactStrictMode: false, // Disable Strict Mode (you can turn it on if desired)
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.resolve.fallback = {

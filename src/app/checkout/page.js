@@ -1,6 +1,6 @@
 "use client"; // Ensure this is a client component
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 import Navbar from "../components/navbar";
@@ -11,16 +11,25 @@ import Loader from "../components/loader";
 import CheckoutComponent from "../components/checkout"; // Renamed import to avoid conflict
 
 export default function CheckoutPage() {
+  // Use the useSearchParams hook inside a Suspense boundary.
+  return (
+    <Suspense fallback={<div>Loading page...</div>}>
+      <CheckoutPageContent />
+    </Suspense>
+  );
+}
+
+function CheckoutPageContent() {
   const searchParams = useSearchParams();
   const cat = searchParams.get("cat");
-  if (typeof window !== "undefined") {
+
   return (
     <>
       <Navbar />
       <Loader />
       <Cart />
       <CheckoutComponent />
-      
+
       <hr />
       <div
         style={{
@@ -34,7 +43,7 @@ export default function CheckoutPage() {
         YOU MAY BE INTERESTED IN
       </div>
       <hr />
-      
+
       {/* Wrap only the Products component in Suspense */}
       <Suspense fallback={<div>Loading Products...</div>}>
         <Products
@@ -43,8 +52,8 @@ export default function CheckoutPage() {
           productsStyle="true"
         />
       </Suspense>
-      
+
       <Footer />
     </>
-  );}
+  );
 }

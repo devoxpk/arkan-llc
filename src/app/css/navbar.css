@@ -1173,13 +1173,15 @@
       top: calc(100% + 1px);
       left: 0;
       width: 100%;
-      background: var(--white);
+      background: transparent;
+      border-bottom: none;
+      box-shadow: none;
     }
   
     .header.active .navbar {
       position: fixed;
       top: 0;
-      box-shadow: 0 2px 20px hsla(0, 0%, 0%, 0.1);
+      
     }
   
   

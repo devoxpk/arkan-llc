@@ -73,6 +73,11 @@
       max-width: 100%;
     }
   }
+  @media (max-widht:767px){
+    .gallery-image{
+      height: 100vh;
+    }
+  }
   
 
 

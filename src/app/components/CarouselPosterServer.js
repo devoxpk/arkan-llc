@@ -13,7 +13,7 @@ const CarouselPosterServer = async () => {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-      galleryImages = data.gallery || [];
+      galleryImages = data.poster || [];
 
       if (galleryImages.length > 0) {
         firstImage = galleryImages[0];

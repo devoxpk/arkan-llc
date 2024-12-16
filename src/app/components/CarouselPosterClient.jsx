@@ -74,13 +74,13 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
       if (!file) return;
 
       try {
-        const storageRef = ref(storage, `gallery/multipleImages/${file.name}`);
+        const storageRef = ref(storage, `poster/multipleImages/${file.name}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
 
         const docRef = doc(db, 'gallery', 'imgLinks');
         const updatedGallery = [...galleryImages, downloadURL];
-        await setDoc(docRef, { gallery: updatedGallery }, { merge: true });
+        await setDoc(docRef, { poster: updatedGallery }, { merge: true });
         setGalleryImages(updatedGallery);
 
         if (galleryImages.length === 0 || galleryImages[0] !== downloadURL) {
@@ -101,7 +101,7 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
     try {
       const updatedGallery = galleryImages.filter((_, i) => i !== index);
       const docRef = doc(db, 'gallery', 'imgLinks');
-      await setDoc(docRef, { gallery: updatedGallery }, { merge: true });
+      await setDoc(docRef, { poster: updatedGallery }, { merge: true });
       setGalleryImages(updatedGallery);
 
       if (index === 0 && updatedGallery.length > 0) {
@@ -127,7 +127,7 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
       if (!file) return;
 
       try {
-        const storageRef = ref(storage, `gallery/multipleImages/${file.name}`);
+        const storageRef = ref(storage, `poster/multipleImages/${file.name}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
 
@@ -135,7 +135,7 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
         updatedGallery[index] = downloadURL;
 
         const docRef = doc(db, 'gallery', 'imgLinks');
-        await setDoc(docRef, { gallery: updatedGallery }, { merge: true });
+        await setDoc(docRef, { poster: updatedGallery }, { merge: true });
         setGalleryImages(updatedGallery);
 
         if (index === 0) {
@@ -174,7 +174,7 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
       <div className="gallery-containerx">
         {galleryImages.map((image, index) => (
           <div id={`image-${index}`} key={index} className="image-wrapperx">
-            <img src={image} alt={`Gallery ${index}`} className="gallery-imagex" />
+            <img src={image} alt={`poster ${index}`} className="gallery-imagex" />
             {isEditing && (
               <>
                 <button onClick={() => handleDeleteImage(index)} className="delete-buttonx">

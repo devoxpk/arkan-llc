@@ -187,7 +187,7 @@ async function inlistDaddy() {
   }
 }
 
-export default function Products({ collectionsToFetch: propCollectionsToFetch, styleHead = 'grid', productsStyle = false, trending = false }) {
+export default function Products({ collectionsToFetch: propCollectionsToFetch, styleHead = 'grid', productsStyle = false, trending = false ,removeActions = true }) {
   const [collectionsData, setCollectionsData] = useState({});
   const [headersData, setHeadersData] = useState({}); // State for headers
   const [loading, setLoading] = useState(true);
@@ -467,6 +467,7 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
                             ) : (
                               <div className="card-badge green">New</div>
                             )}
+                            {removeActions && 
                             <div className="card-actions">
                               <Link
                                 href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
@@ -524,7 +525,7 @@ export default function Products({ collectionsToFetch: propCollectionsToFetch, s
     >
                                 <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
                               </button>
-                            </div>
+                            </div>}
                           </figure>
                           <div className="card-content">
                             <h3 className="h4 card-title">

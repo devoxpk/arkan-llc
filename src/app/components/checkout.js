@@ -19,6 +19,9 @@ let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
 
+    // Initialize the setter from the custom Hook at the top level
+    const setReviewVisibility = useReviewVisibility();
+
     // Use the custom hook
 
     // Delay the execution by 5 seconds
@@ -33,11 +36,11 @@ export default function Checkout() {
     }, 5000); // 5000 milliseconds = 5 seconds
 
     const handleClick = () => {
-        useReviewVisibility(true)
+        setReviewVisibility(true);
     };
 
     const handleReviewClick = () => {
-        useReviewVisibility(true);
+        setReviewVisibility(true);
     };
 
     useEffect(() => {

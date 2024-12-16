@@ -142,7 +142,11 @@
     border-color: #999;
   }
   
-
+@media (max-widht:767px){
+  .gallery-imagex{
+    height: 90vh;
+  }
+}
 
   /* Text Overlay */
 .text-overlayx {

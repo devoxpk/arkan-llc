@@ -298,7 +298,7 @@ function Navbar() {
 
             <ul className="navbar-list">
               <li><Link href='/' legacyBehavior><a  className="navbar-link" data-nav-link>Home</a></Link></li>
-                  // Start of Selection
+                 
                   <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
               <li><Link href='/contact' legacyBehavior><a  className="navbar-link" data-nav-link>Contact Us</a></Link></li>
               <li>

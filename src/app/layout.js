@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Script from "next/script";
 import { AuthProvider } from "./context/AuthContext";
+import Image from 'next/image';
 
 // Define custom fonts
 const geistSans = localFont({

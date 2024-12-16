@@ -144,9 +144,9 @@ function toggleSidebar() {
     
         
     }
-export default function dashboardComponent() {
+export default function DashboardComponent() {
   
-    serverWorker();
+    // serverWorker();
 
     
     

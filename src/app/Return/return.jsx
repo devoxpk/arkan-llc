@@ -1,3 +1,4 @@
+ // Start of Selection
 'use client'
 import React, { useState } from 'react';
 
@@ -43,7 +44,7 @@ export default function ReturnComponent() {
                 </div>
                 {open === 3 && (
                     <div className="return-content">
-                        To exchange, simply message our customer support on WhatsApp at +92 312 1234567. Include your order number, the item(s) you want to exchange, and the reason for the exchange. After that, customers need to send the shipment back via any courier service to the company's warehouse address for the exchange.
+                        To exchange, simply message our customer support on WhatsApp at +92 312 1234567. Include your order number, the item(s) you want to exchange, and the reason for the exchange. After that, customers need to send the shipment back via any courier service to the company&apos;s warehouse address for the exchange.
                     </div>
                 )}
             </div>

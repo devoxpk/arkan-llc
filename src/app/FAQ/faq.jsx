@@ -1,3 +1,4 @@
+ // Start of Selection
 'use client'
 import React, { useState } from 'react';
 
@@ -12,8 +13,7 @@ export default function FaqComponent() {
         <div className="faq-container">
             <h1 className="faq-title">FAQs</h1>
 
-           
-
+          
           
             <div className="faq-item" onClick={() => toggleFAQ(5)}>
                 <div className="faq-question">
@@ -58,7 +58,7 @@ export default function FaqComponent() {
                 </div>
                 {open === 8 && (
                     <div className="faq-answer">
-                        If you haven't received your parcel as scheduled, please feel free to reach out to our customer service team for assistance. You can contact us via WhatsApp at +92 312 1234567.
+                        If you haven&apos;t received your parcel as scheduled, please feel free to reach out to our customer service team for assistance. You can contact us via WhatsApp at +92 312 1234567.
                     </div>
                 )}
             </div>
@@ -82,7 +82,7 @@ export default function FaqComponent() {
                 </div>
                 {open === 10 && (
                     <div className="faq-answer">
-                        When placing your order, please refer to the product page for a "SIZE CHART." It contains comprehensive information regarding sizes and their corresponding fits. Simply consult the size chart to determine your perfect size before making your purchase.
+                        When placing your order, please refer to the product page for a &quot;SIZE CHART.&quot; It contains comprehensive information regarding sizes and their corresponding fits. Simply consult the size chart to determine your perfect size before making your purchase.
                     </div>
                 )}
             </div>

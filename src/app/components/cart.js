@@ -13,7 +13,8 @@ const Cart = ({cartStyle = false}) => {
 
   // Safe access to localStorage on the client-side
   if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-  storedCartItems = localStorage.getItem('cartItems');}
+    storedCartItems = localStorage.getItem('cartItems');
+  }
 
 
         return storedCartItems ? JSON.parse(storedCartItems) : [];
@@ -29,7 +30,8 @@ const Cart = ({cartStyle = false}) => {
        
           // Safe access to localStorage on the client-side
           if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-          storedCartItems = localStorage.getItem('cartItems');}
+            storedCartItems = localStorage.getItem('cartItems');
+          }
         
         
         if (storedCartItems) {
@@ -40,7 +42,8 @@ const Cart = ({cartStyle = false}) => {
           
                 // Safe access to localStorage on the client-side
                 if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-                localStorage.setItem("preCartItems", JSON.stringify([]));}
+                  localStorage.setItem("preCartItems", JSON.stringify([]));
+                }
               
               // Initialize if not present
             setCartItems([]); // Ensure the state is empty if no items are found
@@ -50,21 +53,21 @@ const Cart = ({cartStyle = false}) => {
     
 
     // Attach event listener to the cart icon when component mounts
-   useEffect(() => {
-    const cartIcon = document.querySelector('#cart-icon');
-    
-    // Only add the event listener if the element exists
-    if (cartIcon) {
-        cartIcon.addEventListener('click', handleCartOpen);
-    }
-
-    // Clean up the event listener on unmount
-    return () => {
+    useEffect(() => {
+        const cartIcon = document.querySelector('#cart-icon');
+        
+        // Only add the event listener if the element exists
         if (cartIcon) {
-            cartIcon.removeEventListener('click', handleCartOpen);
+            cartIcon.addEventListener('click', handleCartOpen);
         }
-    };
-}, []);
+
+        // Clean up the event listener on unmount
+        return () => {
+            if (cartIcon) {
+                cartIcon.removeEventListener('click', handleCartOpen);
+            }
+        };
+    }, []);
 
 
     // Save cart items to localStorage whenever cartItems changes and update badge
@@ -72,7 +75,8 @@ const Cart = ({cartStyle = false}) => {
       
             // Safe access to localStorage on the client-side
             if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-            localStorage.setItem("preCartItems", JSON.stringify([]));}
+                localStorage.setItem("preCartItems", JSON.stringify([]));
+            }
           
           
     }, [cartItems]);
@@ -84,30 +88,45 @@ const Cart = ({cartStyle = false}) => {
         // Retrieve cart items from localStorage
         let cartItems = null;
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-         cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];}
+            cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        }
         
-        // Calculate total quantityf
+        // Calculate total quantity
         const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
-console.log(`Total Quantity: ${totalQuantity}`);
+        console.log(`Total Quantity: ${totalQuantity}`);
 
         // Update the badge inner text
-        document.querySelector('.header-action-btn .btn-badge.green').innerText = totalQuantity;
+        const badgeElement = document.querySelector('.header-action-btn .btn-badge.green');
+        if (badgeElement) {
+            badgeElement.innerText = totalQuantity;
+        }
     };
 
     // Close cart if clicked outside
-    if(!cartStyle){
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (cartRef.current && !cartRef.current.contains(event.target)) {
-                document.querySelector(".cart-card").style.display = "none"; // Close the cart
-            }
-        };
+        if(!cartStyle){
+            const handleClickOutside = (event) => {
+                if (cartRef.current && !cartRef.current.contains(event.target)) {
+                    const cartCard = document.querySelector(".cart-card");
+                    if (cartCard) {
+                        cartCard.style.display = "none"; // Close the cart
+                    }
+                }
+            };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);}
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [cartStyle]);
+
+    // Update cart badge when cartStyle changes
+    useEffect(() => {
+        if(!cartStyle){
+            updateCartBadge();
+        }
+    }, [cartStyle]);
 
     handleCart = (event, product, cartItems, setCartItems) => {
         event.preventDefault();
@@ -117,7 +136,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
         // Retrieve existing `preCartItems` from localStorage or initialize as an empty array
         let preCartItems;
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-         preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
+            preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
         }
     
         // Check if the product already exists in `preCartItems`
@@ -140,7 +159,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
     
         // Update `preCartItems` in localStorage
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-        localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
+            localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
         }
         // Update `cartItems` state to reflect changes in the UI
         const updatedCartItems = [...preCartItems];
@@ -158,7 +177,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
         
         setCartItems(updatedCartItems); // Update state with new quantities
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
+            localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
     };
     
@@ -171,7 +190,7 @@ console.log(`Total Quantity: ${totalQuantity}`);
         
         setCartItems(updatedCartItems); // Update state with new quantities
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
+            localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
     };
     
@@ -180,22 +199,22 @@ console.log(`Total Quantity: ${totalQuantity}`);
         
         setCartItems(updatedCartItems); // Update state with the remaining items
         if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with remaining items
+            localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with remaining items
         }
         // Adjust the badge count
         const deletedItem = cartItems.find(item => item.id === id);
-        const currentBadgeCount = parseInt(document.querySelector('.header-action-btn .btn-badge.green').innerText) || 0;
-        const newBadgeCount = currentBadgeCount - deletedItem.quantity;
-        document.querySelector('.header-action-btn .btn-badge.green').innerText = newBadgeCount;
+        const badgeElement = document.querySelector('.header-action-btn .btn-badge.green');
+        if (deletedItem && badgeElement) {
+            const currentBadgeCount = parseInt(badgeElement.innerText) || 0;
+            const newBadgeCount = currentBadgeCount - deletedItem.quantity;
+            badgeElement.innerText = newBadgeCount;
+        }
     };
     
-    
+
 
      totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     const shippingAmount = 0;
-    if(!cartStyle){
-    useEffect(()=>{updateCartBadge();});
-}
     return (
 <div
       ref={cartRef}
@@ -257,7 +276,10 @@ console.log(`Total Quantity: ${totalQuantity}`);
             style={{ cursor: "pointer" }}
             className="text-muted"
             onClick={() => {
-                document.querySelector(".cart-card").style.display = "none";
+                const cartCard = document.querySelector(".cart-card");
+                if (cartCard) {
+                    cartCard.style.display = "none";
+                }
             }}
         >
             Back to shop

@@ -1,6 +1,6 @@
 "use client";
 // If you're using Next.js 13 or earlier, ensure React is imported
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "../css/checkout.css";
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
 import { doc, getDoc, updateDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp, arrayUnion } from 'firebase/firestore'; // Firestore methods including arrayUnion
@@ -10,7 +10,7 @@ import Reviews from './reviews'
 import { handleCart } from './cart';
 import Description from "./description"
 import { useReviewVisibility } from './reviews';
-import {checkReviewAvailability} from './reviews';
+import { checkReviewAvailability } from './reviews';
 
 import { useSearchParams } from 'next/navigation';
 import { fetchSizeChart } from './sizes';
@@ -19,90 +19,94 @@ let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
 
- // Use the custom hook
-  
- // Delay the execution by 5 seconds
+    // Use the custom hook
 
- function openSizeChart(){
-    fetchSizeChart(getQueryParameter("cat"));
- }
-setTimeout(() => {
-   isAvailable = checkReviewAvailability();
-  console.log("after 5 sec"+" "+isAvailable); // For debugging
-  setRenderReviews(isAvailable)
-}, 5000); // 5000 milliseconds = 5 seconds
+    // Delay the execution by 5 seconds
 
-  const handleClick = () => {
-    useReviewVisibility(true)
-  };
-
-
-
-   useEffect(()=>{document.getElementById('image-details').addEventListener('scroll', function () {
-    let element = this;
-    let scrollTop = element.scrollTop; // How much has been scrolled from the top
-    let scrollHeight = element.scrollHeight; // Total scrollable height
-    let clientHeight = element.clientHeight; // Visible height of the element
-
-    // Calculate the scroll percentage
-    let scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
-
-    // Adjust the thumb height based on scroll position
-    let thumbHeight = (scrollPercent / 100) * (clientHeight); // Set thumb height as a percentage of the visible area
-    element.style.setProperty('--scrollbar-thumb-height', thumbHeight + 'px'); // Set height in pixels
-
-    // Ensure the thumb height doesn't go below a minimum size
-    if (thumbHeight < 5) { // Set minimum thumb size in pixels
-        element.style.setProperty('--scrollbar-thumb-height', '5px');
-    } else if (thumbHeight > clientHeight) { // Ensure the thumb height does not exceed visible height
-        element.style.setProperty('--scrollbar-thumb-height', clientHeight + 'px');
+    function openSizeChart() {
+        fetchSizeChart(getQueryParameter("cat"));
     }
-});},[])
-   
-    
+    setTimeout(() => {
+        isAvailable = checkReviewAvailability();
+        console.log("after 5 sec" + " " + isAvailable); // For debugging
+        setRenderReviews(isAvailable)
+    }, 5000); // 5000 milliseconds = 5 seconds
+
+    const handleClick = () => {
+        useReviewVisibility(true)
+    };
+
+    const handleReviewClick = () => {
+        useReviewVisibility(true);
+    };
+
+    useEffect(() => {
+        document.getElementById('image-details').addEventListener('scroll', function () {
+            let element = this;
+            let scrollTop = element.scrollTop; // How much has been scrolled from the top
+            let scrollHeight = element.scrollHeight; // Total scrollable height
+            let clientHeight = element.clientHeight; // Visible height of the element
+
+            // Calculate the scroll percentage
+            let scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+
+            // Adjust the thumb height based on scroll position
+            let thumbHeight = (scrollPercent / 100) * (clientHeight); // Set thumb height as a percentage of the visible area
+            element.style.setProperty('--scrollbar-thumb-height', thumbHeight + 'px'); // Set height in pixels
+
+            // Ensure the thumb height doesn't go below a minimum size
+            if (thumbHeight < 5) { // Set minimum thumb size in pixels
+                element.style.setProperty('--scrollbar-thumb-height', '5px');
+            } else if (thumbHeight > clientHeight) { // Ensure the thumb height does not exceed visible height
+                element.style.setProperty('--scrollbar-thumb-height', clientHeight + 'px');
+            }
+        });
+    }, [])
+
+
     const [cartItems, setCartItems] = useState([]);
     async function loadProductImages() {
         // Remove all existing slides with the class 'productImages'
         const existingSlides = document.querySelectorAll('.productImages');
         existingSlides.forEach(slide => slide.remove());
-    
+
         const params = new URLSearchParams(window.location.search);
         const productName = document.getElementById("productName")?.innerText;
         const productImagesDiv = document.getElementById('image-details');
         const isEditMode = params.has('edit');
-    
+
         if (!productName) {
             console.error('Product name is missing.');
             return;
         }
-    
+
         try {
             // Fetch product images from Firestore
             const docRef = doc(db, 'productImages', productName);
             const docSnapshot = await getDoc(docRef);
-    
+
             if (docSnapshot.exists()) {
                 const images = docSnapshot.data().images || [];
-    
+
                 images.forEach((imageUrl, index) => {
                     const imageId = `productimage-${index}`;
                     const slideId = `productImagesSlide-${index}`;
-    
+
                     // Create slide container
                     const slideDiv = document.createElement('div');
                     slideDiv.classList.add('slide', 'productImages');
                     slideDiv.id = slideId;
-    
+
                     // Create the image element
                     const imgElement = document.createElement('img');
                     imgElement.id = imageId;
                     imgElement.className = 'productsImages';
                     imgElement.src = imageUrl;
                     imgElement.onclick = () => showImage(imageId, imageUrl);
-    
+
                     // Append the image to the slide container
                     slideDiv.appendChild(imgElement);
-    
+
                     if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
                         // Create delete icon
                         const deleteIcon = document.createElement('span');
@@ -111,7 +115,7 @@ setTimeout(() => {
                         deleteIcon.style.cursor = 'pointer';
                         deleteIcon.style.marginLeft = '10px';
                         deleteIcon.onclick = () => deleteImage(index);
-    
+
                         // Create edit icon
                         const editIcon = document.createElement('span');
                         editIcon.id = `edit-btn-${index}`;
@@ -119,17 +123,17 @@ setTimeout(() => {
                         editIcon.style.cursor = 'pointer';
                         editIcon.style.marginLeft = '10px';
                         editIcon.onclick = () => editImage(index);
-    
+
                         // Append buttons to the slide container
                         slideDiv.appendChild(deleteIcon);
                         slideDiv.appendChild(editIcon);
                     }
-    
+
                     // Append the slide container to the parent container
                     productImagesDiv.appendChild(slideDiv);
                 });
             }
-    
+
             if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
                 // Add Image button
                 if (!document.getElementById("addImgBtn")) {
@@ -144,7 +148,7 @@ setTimeout(() => {
         } catch (error) {
             console.error('Error loading product images:', error);
         }
-    
+
         // Function to display the selected image
         function showImage(imageId, url) {
             const images = productImagesDiv.getElementsByTagName('img');
@@ -159,7 +163,7 @@ setTimeout(() => {
             mainImage.src = url;
             mainImage.dataset.selectedImageId = imageId;
         }
-    
+
         // Function to add a new image
         async function addNewImage() {
             const fileInput = document.createElement('input');
@@ -171,22 +175,22 @@ setTimeout(() => {
                     const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
                     await uploadBytes(storageRef, file);
                     const imageUrl = await getDownloadURL(storageRef);
-    
+
                     const docRef = doc(db, 'productImages', productName);
                     const docSnapshot = await getDoc(docRef);
-    
+
                     if (docSnapshot.exists()) {
                         await updateDoc(docRef, { images: arrayUnion(imageUrl) });
                     } else {
                         await setDoc(docRef, { images: [imageUrl] });
                     }
-    
+
                     loadProductImages();
                 }
             };
             fileInput.click();
         }
-    
+
         // Function to edit an image
         async function editImage(index) {
             const fileInput = document.createElement('input');
@@ -198,35 +202,35 @@ setTimeout(() => {
                     const storageRef = ref(storage, `productImages/${productName}/${file.name}`);
                     await uploadBytes(storageRef, file);
                     const newImageUrl = await getDownloadURL(storageRef);
-    
+
                     const docRef = doc(db, 'productImages', productName);
                     const docSnapshot = await getDoc(docRef);
-    
+
                     if (docSnapshot.exists()) {
                         const images = docSnapshot.data().images;
                         images[index] = newImageUrl;
                         await updateDoc(docRef, { images });
                     }
-    
+
                     loadProductImages();
                 }
             };
             fileInput.click();
         }
-    
+
         // Function to delete an image
         async function deleteImage(index) {
             const docRef = doc(db, 'productImages', productName);
             const docSnapshot = await getDoc(docRef);
-    
+
             if (docSnapshot.exists()) {
                 const images = docSnapshot.data().images;
                 const [removedImage] = images.splice(index, 1);
                 await updateDoc(docRef, { images });
-    
+
                 const imageFileName = decodeURIComponent(removedImage.split('/').pop().split('?')[0]);
                 const storageRef = ref(storage, `productImages/${productName}/${imageFileName}`);
-    
+
                 try {
                     await deleteObject(storageRef);
                 } catch (error) {
@@ -236,31 +240,22 @@ setTimeout(() => {
                         console.error('Error deleting image from Firebase Storage:', error);
                     }
                 }
-    
+
                 // Reload product images regardless of the outcome
                 loadProductImages();
             }
         }
     }
-    
-    
-    
-    
-    
-    
 
-
-    
-         
     function showMessageBox(message, subMessage, isSuccess) {
         // Create the message box element
         const messageBox = document.createElement('div');
         messageBox.classList.add('card');
-    messageBox.id = 'success';
+        messageBox.id = 'success';
         // Set the icon color and background color based on success or failure
         const iconColor = isSuccess ? '#269b24' : '#e74c3c'; // Green for success, Red for failure
         const backgroundColor = isSuccess ? '#04e40048' : '#e74c3c'; // Light green or red for background
-    
+
         messageBox.innerHTML = `
             <svg class="wave" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -269,7 +264,7 @@ setTimeout(() => {
                     style="fill: ${backgroundColor};"
                 ></path>
             </svg>
-    
+
             <div class="icon-container" style="background-color: ${backgroundColor};">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -305,10 +300,10 @@ setTimeout(() => {
                 ></path>
             </svg>
         `;
-    
+
         // Append the message box to the body
         document.body.appendChild(messageBox);
-    
+
         // Apply dynamic CSS styles
         const style = document.createElement('style');
         style.innerHTML = `
@@ -366,99 +361,92 @@ setTimeout(() => {
             }
         `;
         document.head.appendChild(style);
-        document.querySelector(".cross-icon").addEventListener ("click",(e)=>{
-    console.log("ok")
-    document.getElementById("success").remove();
-    
-    });
-    
+        document.querySelector(".cross-icon").addEventListener("click", (e) => {
+            console.log("ok")
+            document.getElementById("success").remove();
+
+        });
+
         // Remove the message box after a delay and redirect if successful
         setTimeout(() => {
             messageBox.remove();
-        }, 5000); 
+        }, 5000);
     }
-            
-   
-    
-      
+
+
+
     useEffect(() => {
-         initializePage = async () => {
-          await addData();
-        
-      
-          let productName = document.getElementById("productName").innerText;
-      
-          // List of color names to be removed from productName
-          const colorNames = ["red", "green", "blue", "yellow", "black", "white", "gray", "orange", "purple", "brown", "pink"];
-          colorNames.forEach(color => {
-            const regex = new RegExp(`\\s*[\\(\\{\\[].*?${color}.*?[\\)\\}\\]]|\\s*\\b\\w*\\b\\s*${color}`, 'gi');
-            productName = productName.replace(regex, '');
-          });
-      
-          localStorage.setItem("filteredProduct", productName.trim());
-          console.log(productName.trim());
-      
-          if (productName) {
-            updateSizeOptions(productName);
-            
-          } else {
-            console.error("Product name is empty or undefined.");
-          }
-        };
-      
-        initializePage();
-      }, []);
-      
-
-      
-    
-
-     
-    
+        initializePage = async () => {
+            await addData();
 
 
+            let productName = document.getElementById("productName").innerText;
 
+            // List of color names to be removed from productName
+            const colorNames = ["red", "green", "blue", "yellow", "black", "white", "gray", "orange", "purple", "brown", "pink"];
+            colorNames.forEach(color => {
+                const regex = new RegExp(`\\s*[\\(\\{\\[].*?${color}.*?[\\)\\}\\]]|\\s*\\b\\w*\\b\\s*${color}`, 'gi');
+                productName = productName.replace(regex, '');
+            });
 
+            localStorage.setItem("filteredProduct", productName.trim());
+            console.log(productName.trim());
 
-    
-function updateSizeOptions(productName) {
-    try {
-        // Access Firestore collection and document
-        const productRef = doc(collection(db, "clothsims"), productName);
+            if (productName) {
+                updateSizeOptions(productName);
 
-        // Get document data asynchronously
-        getDoc(productRef)
-          .then((docSnapshot) => {
-            if (docSnapshot.exists()) {
-                const data = docSnapshot.data();
-
-                // Convert size fields from strings to integers
-                const sizes = {
-                    s: parseInt(data.s, 10),
-                    m: parseInt(data.m, 10),
-                    l: parseInt(data.l, 10)
-                };
-
-                // Update size options based on availability
-               
             } else {
-                console.error("Document does not exist for product:", productName);
+                console.error("Product name is empty or undefined.");
             }
-          })
-          .catch((error) => {
-            console.error("Error getting document:", error);
-          });
-    } catch (error) {
-        console.error("Error updating size options:", error);
+        };
+
+        initializePage();
+    }, []);
+
+
+
+
+
+
+
+
+
+    function updateSizeOptions(productName) {
+        try {
+            // Access Firestore collection and document
+            const productRef = doc(collection(db, "clothsims"), productName);
+
+            // Get document data asynchronously
+            getDoc(productRef)
+                .then((docSnapshot) => {
+                    if (docSnapshot.exists()) {
+                        const data = docSnapshot.data();
+
+                        // Convert size fields from strings to integers
+                        const sizes = {
+                            s: parseInt(data.s, 10),
+                            m: parseInt(data.m, 10),
+                            l: parseInt(data.l, 10)
+                        };
+
+                        // Update size options based on availability
+
+                    } else {
+                        console.error("Document does not exist for product:", productName);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error getting document:", error);
+                });
+        } catch (error) {
+            console.error("Error updating size options:", error);
+        }
     }
-}
 
 
 
 
-    
 
-       
     function getQueryParameter(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
@@ -466,113 +454,110 @@ function updateSizeOptions(productName) {
 
     const [searchParams] = useSearchParams();
 
-  
 
-  async function addData() {
-    console.log("Add Data is Running ");
 
-    // Retrieve data from URL query parameters or local storage
-    var productName =
-      decodeURIComponent(getQueryParameter("pname")) ||
-      localStorage.getItem("productName");
-    var productPrice =
-      decodeURIComponent(getQueryParameter("pprice")) ||
-      localStorage.getItem("productPrice");
-    var productImageSrc =
-      getQueryParameter("ImageSrc") || localStorage.getItem("productImageSrc");
-    var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || ""; // Fetch dPrice from query parameters
-    var token = getQueryParameter("token");
+    async function addData() {
+        console.log("Add Data is Running ");
 
-    if (productImageSrc) {
-      productImageSrc = productImageSrc.replace(/(products\/)/, "products%2F");
-      productImageSrc = productImageSrc
-        .replace(/ /g, "%20")
-        .replace(/\(/g, "%28")
-        .replace(/\)/g, "%29");
+        // Retrieve data from URL query parameters or local storage
+        var productName =
+            decodeURIComponent(getQueryParameter("pname")) ||
+            localStorage.getItem("productName");
+        var productPrice =
+            decodeURIComponent(getQueryParameter("pprice")) ||
+            localStorage.getItem("productPrice");
+        var productImageSrc =
+            getQueryParameter("ImageSrc") || localStorage.getItem("productImageSrc");
+        var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || ""; // Fetch dPrice from query parameters
+        var token = getQueryParameter("token");
 
-      if (token) {
-        productImageSrc += `&token=${token}`;
-      }
-    } else {
-      productImageSrc = localStorage.getItem("productImageSrc");
+        if (productImageSrc) {
+            productImageSrc = productImageSrc.replace(/(products\/)/, "products%2F");
+            productImageSrc = productImageSrc
+                .replace(/ /g, "%20")
+                .replace(/\(/g, "%28")
+                .replace(/\)/g, "%29");
+
+            if (token) {
+                productImageSrc += `&token=${token}`;
+            }
+        } else {
+            productImageSrc = localStorage.getItem("productImageSrc");
+        }
+
+        // Update the product details in the HTML
+        var productNameElement = document.getElementById("productName");
+        var productPriceElement = document.getElementById("productPrice");
+        var mainImgElement = document.getElementById("MainImg");
+        var cuttedProductPriceElement = document.getElementById("cuttedProductPrice");
+
+        // Function to load an image and return a Promise
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.src = src;
+                img.onload = () => resolve(src);
+                img.onerror = () => reject(new Error("Image failed to load"));
+            });
+        }
+
+        try {
+            // Update product image and wait for it to load
+            if (productImageSrc) {
+                await loadImage(productImageSrc);
+                mainImgElement.src = productImageSrc;
+            } else {
+                showMessageBox("Image Not found", "Contact Us if not Resolved", false);
+            }
+
+            // Update product name
+            productNameElement.innerText = productName || "Not found";
+
+            // Update product price
+            productPriceElement.innerText = productPrice || "Not found";
+
+            // Update cutted price if dPrice is available
+            if (dPrice) {
+                cuttedProductPriceElement.innerText = `Rs. ${dPrice}`;
+                cuttedProductPriceElement.style.textDecoration = "line-through"; // Apply line-through style
+            } else {
+                cuttedProductPriceElement.innerText = "Not found";
+            }
+            await loadProductImages();
+            // Display image-details and hide imgLoading
+            document.getElementById("image-details").style.display = "block";
+            document.getElementById("imgLoading").style.display = "none";
+            document.querySelector(".loader").style.display = "none";
+        } catch (error) {
+            console.error("Error loading image:", error);
+            // Handle image load error if needed
+        }
     }
 
-    // Update the product details in the HTML
-    var productNameElement = document.getElementById("productName");
-    var productPriceElement = document.getElementById("productPrice");
-    var mainImgElement = document.getElementById("MainImg");
-    var cuttedProductPriceElement = document.getElementById("cuttedProductPrice");
+    useEffect(() => {
+        initializePage()
+    }, [searchParams]); // Run whenever searchParams changes
 
-    // Function to load an image and return a Promise
-    function loadImage(src) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => resolve(src);
-        img.onerror = () => reject(new Error("Image failed to load"));
-      });
-    }
 
-    try {
-      // Update product image and wait for it to load
-      if (productImageSrc) {
-        await loadImage(productImageSrc);
-        mainImgElement.src = productImageSrc;
-      } else {
-        showMessageBox("Image Not found", "Contact Us if not Resolved", false);
-      }
 
-      // Update product name
-      productNameElement.innerText = productName || "Not found";
 
-      // Update product price
-      productPriceElement.innerText = productPrice || "Not found";
 
-      // Update cutted price if dPrice is available
-      if (dPrice) {
-        cuttedProductPriceElement.innerText = `Rs. ${dPrice}`;
-        cuttedProductPriceElement.style.textDecoration = "line-through"; // Apply line-through style
-      } else {
-        cuttedProductPriceElement.innerText = "Not found";
-      }
-await loadProductImages();
-      // Display image-details and hide imgLoading
-      document.getElementById("image-details").style.display = "block";
-      document.getElementById("imgLoading").style.display = "none";
-      document.querySelector(".loader").style.display = "none";
-    } catch (error) {
-      console.error("Error loading image:", error);
-      // Handle image load error if needed
-    }
-  }
 
-  useEffect(() => {
-    initializePage()
-  }, [searchParams]); // Run whenever searchParams changes
-
-    
-
-   
-
-    
-    
 
     return (
         <>
-        {/* <Edit/> */}
-        <Sizes/>
-        
+            {/* <Edit/> */}
+            <Sizes />
+
             <section id="prodetails" className="section-p1">
 
 
 
-                
                 <div id="imgLoading" >
                     <div className="card">
                         <div className="card-1"></div>
                         <div className="right">
                             <div className="card-2"></div>
-                            <div className="card-3"></div>
                             <div className="card-3"></div>
                             <div className="card-3"></div>
                             <div className="card-3"></div>
@@ -585,131 +570,132 @@ await loadProductImages();
                     </div>
                 </div>
 
-                
 
 
-                <div className="single-pro-image" id="image-details" style={{ display: 'none',borderRadius:"0"}}>
+
+                <div className="single-pro-image" id="image-details" style={{ display: 'none', borderRadius: "0" }}>
                     <div className='slide'>
-                    <img  width="100%" id="MainImg" alt="T shirts"  /></div>
-                    
+                        <img width="100%" id="MainImg" alt="T shirts" /></div>
+
                 </div>
 
                 <div className="single-pro-details">
                     <div id='productDetails'>
-                        <h4 id="productName" style={{color:"black"}}></h4><div style={{display:'flex',columnGap:"3%"}}>
+                        <h4 id="productName" style={{ color: "black" }}></h4><div style={{ display: 'flex', columnGap: "3%" }}>
 
-                        
-                        <h2  id="productPrice" style={{color:"black"}}></h2>
-                        <h2 id="cuttedProductPrice" style={{ textDecoration: "line-through", color: "black" }}
- ></h2></div>
 
-                        
+                            <h2 id="productPrice" style={{ color: "black" }}></h2>
+                            <h2 id="cuttedProductPrice" style={{ textDecoration: "line-through", color: "black" }}
+                            ></h2></div>
+
+
                         <br />
                     </div>
-                    <button  style={{    width:" 100%",
-    display:" flex",
-    borderRadius:"0"}}
-    type="submit" 
-    className="btn normal"
-    onClick={(event) => {
-        const params = new URLSearchParams(window.location.search);
-        document.querySelector(".cartBtn").innerText= "Add";
+                    <button style={{
+                        width: " 100%",
+                        display: " flex",
+                        borderRadius: "0"
+                    }}
+                        type="submit"
+                        className="btn normal"
+                        onClick={(event) => {
+                            const params = new URLSearchParams(window.location.search);
+                            document.querySelector(".cartBtn").innerText = "Add";
 
-        // Extract product details and trim "Rs. " from the price
-        const product = {
-            pic: params.get("ImageSrc"),
-            productName: params.get("pname"),
-            price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
-            id: Date.now() // Generate unique ID based on current time
-        };
+                            // Extract product details and trim "Rs. " from the price
+                            const product = {
+                                pic: params.get("ImageSrc"),
+                                productName: params.get("pname"),
+                                price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
+                                id: Date.now() // Generate unique ID based on current time
+                            };
 
-        // Call handleCart with the product and cart items
-        handleCart(event, product, cartItems, setCartItems);
-    }}
->
-    Add to Cart
-</button>
-<button style={{background:"black",display:"flex",color:"white",width:"100%",marginTop:" 6%",
-    justifyContent: "center"}} onClick={(event) => {
-        const params = new URLSearchParams(window.location.search);
-        document.querySelector(".cartBtn").innerText= "checkout";
-        // Extract product details and trim "Rs. " from the price
-        const product = {
-            pic: params.get("ImageSrc"),
-            productName: params.get("pname"),
-            price: params.get("pprice")?.replace("Rs. ", ""), 
-            id: Date.now() 
-        };
+                            // Call handleCart with the product and cart items
+                            handleCart(event, product, cartItems, setCartItems);
+                        }}
+                    >
+                        Add to Cart
+                    </button>
+                    <button style={{ background: "black", display: "flex", color: "white", width: "100%", marginTop: " 6%",
+                        justifyContent: "center" }} onClick={(event) => {
+                            const params = new URLSearchParams(window.location.search);
+                            document.querySelector(".cartBtn").innerText = "checkout";
+                            // Extract product details and trim "Rs. " from the price
+                            const product = {
+                                pic: params.get("ImageSrc"),
+                                productName: params.get("pname"),
+                                price: params.get("pprice")?.replace("Rs. ", ""),
+                                id: Date.now()
+                            };
 
-        // Call handleCart with the product and cart items
-        handleCart(event, product, cartItems, setCartItems);
-        localStorage.setItem("purchase","0010");
-        
-        
-    }} >
-    Buy it now
-</button>
+                            // Call handleCart with the product and cart items
+                            handleCart(event, product, cartItems, setCartItems);
+                            localStorage.setItem("purchase", "0010");
 
-                    
-                
-                                    
+
+                        }} >
+                        Buy it now
+                    </button>
+
+
+
 
                     <br />
-                  
-                    <Description/>
-                   
-                   
+
+                    <Description />
+
+
 
 
 
                     <div>
-     
-
-                    <span
-  onClick={() => {
-    openSizeChart();
-  }}
 
 
-  
-  style={{
-    textDecoration: "none",
-    color: "black",
-    fontWeight: "lighter",
-    display: "flex",
-    fontSize: "18px",
-    columnGap: "2%",
-    height: "auto",
-    marginLeft:'4%'
-  }}
->
-  <img
-    alt="T shirts"
-    src="/logo/sizecharticon.png"
-    style={{ width: "10%" }}
-  />
-  SIZE GUIDE
-</span>
+                        <span
+                            onClick={() => {
+                                openSizeChart();
+                            }}
 
 
 
+                            style={{
+                                textDecoration: "none",
+                                color: "black",
+                                fontWeight: "lighter",
+                                display: "flex",
+                                fontSize: "18px",
+                                columnGap: "2%",
+                                height: "auto",
+                                marginLeft: '4%'
+                            }}
+                        >
+                            <img
+                                alt="T shirts"
+                                src="/logo/sizecharticon.png"
+                                style={{ width: "10%" }}
+                            />
+                            SIZE GUIDE
+                        </span>
 
-   
-        <Reviews
-          productName={(function () {
-            const value = localStorage.getItem("filteredProduct");
-            console.log("Value fetched from localStorage:", value);
-            return value || "";
-          })()}
-        />
 
-     {renderReviews && <span
-        style={{ textDecoration: "underline", cursor: "pointer",color:"black",marginLeft:"6px" }}
-        onClick={handleClick}
-      >
-        Reviews
-      </span> }   
-    </div>
+
+
+
+                        <Reviews
+                            productName={(function () {
+                                const value = localStorage.getItem("filteredProduct");
+                                console.log("Value fetched from localStorage:", value);
+                                return value || "";
+                            })()}
+                        />
+
+                        {renderReviews && <span
+                            style={{ textDecoration: "underline", cursor: "pointer", color: "black", marginLeft: "6px" }}
+                            onClick={handleClick}
+                        >
+                            Reviews
+                        </span>}
+                    </div>
 
 
 
@@ -718,8 +704,7 @@ await loadProductImages();
                 </div>
             </section>
 
-            
-       
+
 
         </>
     );

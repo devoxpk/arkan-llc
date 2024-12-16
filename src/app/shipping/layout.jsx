@@ -19,6 +19,7 @@ export default function ShippingLayout({ children }) {
       {children}
       
       <Script
+      id="clarity-script-shipping"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

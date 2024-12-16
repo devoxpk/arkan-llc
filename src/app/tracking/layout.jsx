@@ -19,6 +19,7 @@ export default function TrackingLayout({ children }) {
       {children}
       
       <Script
+        id="clarity-script-tracking"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

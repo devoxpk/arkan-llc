@@ -19,6 +19,7 @@ export default function AboutLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-about"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

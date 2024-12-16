@@ -19,6 +19,7 @@ export default function CategoriesLayout({ children }) {
       {children}
       
       <Script
+        id="clarity-script-categories"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

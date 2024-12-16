@@ -19,6 +19,7 @@ export default function ContactLayout({ children }) {
         {children}
         
         <Script
+          id="clarity-script-contact"
           type="text/javascript"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{

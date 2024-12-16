@@ -19,6 +19,7 @@ export default function FAQLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-faq"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

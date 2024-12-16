@@ -19,6 +19,7 @@ export default function PurchaseLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-purchase"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

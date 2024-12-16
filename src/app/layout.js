@@ -63,6 +63,7 @@ export default function RootLayout({ children }) {
 
         {/* Clarity analytics script */}
         <Script
+          id="clarity-script"
           type="text/javascript"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{

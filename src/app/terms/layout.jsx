@@ -19,6 +19,7 @@ export default function TermsLayout({ children }) {
       {children}
       
       <Script
+        id="clarity-script-terms"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

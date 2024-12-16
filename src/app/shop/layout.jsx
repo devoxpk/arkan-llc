@@ -19,6 +19,7 @@ export default function ShopLayout({ children }) {
       {children}
       
       <Script
+        id="clarity-script-shop"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

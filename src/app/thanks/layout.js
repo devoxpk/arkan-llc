@@ -19,6 +19,7 @@ export default function ThanksLayout({ children }) {
       {children}
       
       <Script
+        id="clarity-script-thanks"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

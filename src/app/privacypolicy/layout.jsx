@@ -19,6 +19,7 @@ export default function PrivacyLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-privacypolicy"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

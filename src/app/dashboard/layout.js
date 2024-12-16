@@ -34,6 +34,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Scripts for XLSX, Chart.js, and Firebase */}
         <Script
+          id="clarity-script-dashboard"
           src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"
           strategy="lazyOnload"
         />

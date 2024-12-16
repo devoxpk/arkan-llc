@@ -19,6 +19,7 @@ export default function CheckoutLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-checkout"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

@@ -19,6 +19,7 @@ export default function ReturnLayout({ children }) {
     {children}
     
     <Script
+      id="clarity-script-return"
       type="text/javascript"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{

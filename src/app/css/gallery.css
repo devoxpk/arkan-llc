@@ -16,7 +16,11 @@
   .image-wrapper {
     position: relative;
     width: 100%; /* Full width by default */
-    height: auto; /* Maintains aspect ratio */
+    height: auto; /* Allow height to adjust based on content */
+  }
+  
+  .image-wrapper:first-child {
+    height: 100vh; /* First image takes full viewport height */
   }
   
   .gallery-image {
@@ -73,11 +77,33 @@
       max-width: 100%;
     }
   }
-  @media (max-widht:767px){
-    .gallery-image{
-      height: 100vh;
+    @media (max-width: 767px) {
+      .gallery-image {
+        height: 100vh;
+      }
+    
+      .gallery-container {
+        overflow-y: scroll; /* Enable vertical scrolling */
+        scroll-snap-type: none; /* Disable snap for entire container */
+        scroll-behavior: smooth; /* Add smooth scrolling */
+        scrollbar-width: none; /* Hide scrollbar for Firefox */
+        -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+      }
+    
+      .gallery-container::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+      }
+    
+      .image-wrapper:first-child {
+        scroll-snap-align: start; /* Apply snap only to the first image */
+        height: 100vh; /* Ensure first image takes full viewport height */
+      }
+
+      .image-wrapper:not(:first-child) {
+        scroll-snap-align: none; /* Disable snap for other images */
+        height: auto; /* Allow other images to adjust their height */
+      }
     }
-  }
   
 
 

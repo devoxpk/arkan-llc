@@ -101,9 +101,8 @@
 /* Section heading styling */
 .trending-items-heading {
     
-    top: 0; /* Stick to the top of the viewport or container */
     font-size: 24px;
-    margin-bottom: 3%;
+    /* margin-bottom: 3%; */
     color: black;
     font-weight: bold;
     text-align: center;
@@ -111,7 +110,8 @@
     width: fit-content;
     margin: 0 auto;
     font-family: ui-serif;
-    padding-bottom: 5px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
     margin-top: 10%;
 }
 

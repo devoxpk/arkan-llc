@@ -26,7 +26,7 @@ export default function Home() {
         
       
       
-      <Products removeActions={false} />
+     
       
       <Loader />
       <Footer />

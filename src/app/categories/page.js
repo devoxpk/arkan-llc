@@ -66,7 +66,7 @@ export default function CategoriesPage() {
         <Cart />
 
         <hr />
-        <div className="card-conteiner">
+        <div className="card-conteiner" style={{ display: 'none' }}>
           <div className="card-contentx">
             <div className="card-titlex">
               Price <span>Range</span>

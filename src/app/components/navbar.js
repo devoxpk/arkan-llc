@@ -228,9 +228,12 @@ function Navbar() {
         <div className="container">
           <div className={`overlay ${isNavActive ? 'active' : ''}`} data-overlay ref={overlayRef}></div>
 
-          <a href="/" className="logo">
-            <img id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
-          </a>
+            
+              <Link href="/" legacyBehavior>
+                <a className="logo">
+                  <img id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
+                </a>
+              </Link>
           <span id='brandNameSpan'>
             <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>N O U V E</h1>
           </span>
@@ -288,19 +291,22 @@ function Navbar() {
 
           <nav className={`navbar ${isNavActive ? 'active' : ''}`} data-navbar>
             <div className="navbar-top">
-              <a href="#" className="logo">
-                <img src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
-              </a>
+                  
+                  <Link href="/" legacyBehavior>
+                    <a className="logo">
+                      <img src="/logo/dwlogo.png" alt="Nouve Shirts in Pakistan" width="55" height="auto" />
+                    </a>
+                  </Link>
               <button className="nav-close-btn" onClick={toggleNavbar} aria-label="Close Menu">
                 <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
               </button>
             </div>
 
             <ul className="navbar-list">
-              <li><Link href='/' legacyBehavior><a  className="navbar-link" data-nav-link>Home</a></Link></li>
+              <li><Link href='/' legacyBehavior><a className="navbar-link" data-nav-link>Home</a></Link></li>
                  
-                  <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
-              <li><Link href='/contact' legacyBehavior><a  className="navbar-link" data-nav-link>Contact Us</a></Link></li>
+              <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
+              <li><Link href='/contact' legacyBehavior><a className="navbar-link" data-nav-link>Contact Us</a></Link></li>
               <li>
       <button
         id="navCategories"

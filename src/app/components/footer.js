@@ -185,10 +185,10 @@ function Footer() {
               <li><Link href='/terms' legacyBehavior><a  className="footer-bottom-link">Terms & Conditions</a></Link></li>
               <li><Link href='/blog' legacyBehavior><a className="footer-bottom-link">Blog</a></Link></li>
             </ul>
-            <div className="payment">
+            {/* <div className="payment">
               <p className="payment-title">We Support</p>
               <img src="/payment-img.png" alt="Online payment logos" className="payment-img" />
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

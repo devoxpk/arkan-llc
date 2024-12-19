@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 import Navbar from "../components/navbar";
-import Products from "../components/products";
+import Products from "../components/productsServer";
 import Footer from "../components/footer";
 import Cart from "../components/cart";
 import Loader from "../components/loader";

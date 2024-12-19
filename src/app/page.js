@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Navbar from './components/navbar.js';
-import Products from './components/products.js';
+import Products from './components/products';
 import Footer from './components/footer.js';
 import Video from './components/video.js';
 import Loader from './components/loader.js';

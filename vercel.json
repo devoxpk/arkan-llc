@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "no-store"
+      }
+    }
+  ]
+}

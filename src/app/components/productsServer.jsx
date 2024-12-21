@@ -143,19 +143,17 @@ async function inlistDaddy() {
     }
 }
 
-
-export default async function ProductsServer({ collectionsToFetch, styleHead, productsStyle, trending }) {
+export default async function ProductsServer({ collectionsToFetch = [], styleHead = 'grid', productsStyle = false, trending = false }) {
     const { collectionData, headersData, collections } = await fetchAndRenderCollections(collectionsToFetch);
 
     return (
         <Products
-            collectionData={collectionData}
-            headers={headersData}
-            collectionsToFetch={collections}
+            collectionData={collectionData || {}}
+            headers={headersData || {}}
+            collectionsToFetch={collections || []}
             styleHead={styleHead}
             productsStyle={productsStyle}
             trending={trending}
         />
     );
 }
-

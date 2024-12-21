@@ -6,9 +6,11 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc, deleteDoc, collection,updateDoc, deleteField,getDocs,serverTimestamp,query,where } from 'firebase/firestore';
 import saveContact from '../utilis/saveContact'
 import showMessageBox from '../utilis/showMessageBox'
+import { useRouter } from 'next/navigation';
 
+const router = useRouter();
 
-      
+    
 function saveCustomerIdToLocalStorage() {
     let customerId;
     if(typeof window !== "undefined"){
@@ -222,7 +224,8 @@ export default function PurchaseComponent() {
           
           showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
           saveContact(userContact,userEmail,"purchase")
-          window.location.href = `thanks?docId=${docRef.id}`;
+          router.push(`thanks?docId=${docRef.id}`);
+          
           if(typeof window !== "undefined"){
           localStorage.removeItem("cartItems");
           }

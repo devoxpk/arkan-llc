@@ -3,7 +3,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false, // Disable Strict Mode (you can turn it on if desired)
-  ssg: false, // Disable Static Site Generation
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.resolve.fallback = {

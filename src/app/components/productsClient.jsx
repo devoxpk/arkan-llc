@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp,listCollections } from 'firebase/firestore'; // Firestore methods
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp,onSnapshot } from 'firebase/firestore'; // Firestore methods
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // Storage methods
 import {handleCart} from "./cart"
 import Link from "next/link";
@@ -11,21 +11,61 @@ import Loader from './loader'
 import {fetchSizeChart} from './sizes';
 import { refreshProducts } from './products';
 import showMessageBox from '../utilis/showMessageBox';
+import addProduct from './ProductAdd';
 
 
 
 
 
 
-
-export default function Products({ collectionData, headers, collectionsToFetch, styleHead = 'grid', productsStyle = false, trending = false, removeActions = true }) {
+export default function Products({ collectionData, headers, collectionsToFetch = [], styleHead = 'grid', productsStyle = false, trending = false, removeActions = true }) {
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [cartItems, setCartItems] = useState([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (collectionsToFetch.length > 0) {
+          const unsubscribes = collectionsToFetch.map((collectionName) =>
+            onSnapshot(collection(db, collectionName), async (snapshot) => {
+              for (const change of snapshot.docChanges()) {
+                if (['modified', 'removed'].includes(change.type)) {
+                  console.log(`${change.type.charAt(0).toUpperCase() + change.type.slice(1)} document:`, change.doc.data());
+                  try {
+                    await refreshProducts();
+                  } catch (error) {
+                    console.error('Error refreshing products:', error);
+                  }
+                }
+              }
+            })
+          );
 
-  
-  
+          return () => {
+            unsubscribes.forEach((unsubscribe) => unsubscribe());
+          };
+        } else {
+          console.warn('No collections to fetch.');
+        }
+      } catch (error) {
+        console.error('Error setting up onSnapshot:', error);
+      }
+    };
+
+    fetchData();
+  }, [collectionsToFetch]);
+
+
+  useEffect(() => {
+    console.log("New collectionData:", collectionData);
+    console.log("New headers:", headers);
+    console.log("New collectionsToFetch:", collectionsToFetch);
+    console.log("New styleHead:", styleHead);
+    console.log("New productsStyle:", productsStyle);
+    console.log("New trending:", trending);
+    console.log("New removeActions:", removeActions);
+  }, [collectionData, headers, collectionsToFetch, styleHead, productsStyle, trending, removeActions]);
 
   useEffect(() => {
     const scrollLeftBtn = document.querySelector('.scroll-button-left');
@@ -525,57 +565,7 @@ newElement.addEventListener('click', (event) => {
 });
 }
 
-  // After inlist, append the "Add a Product" card if edit parameters are present
-  if (hasEditParam && correctLocalStorageKey) {
-      const firstContainer = document.getElementById(divID);
-      const newProductCard = document.createElement('div');
-
-// newProductCard.classList.add('product-card');
-
-
-      newProductCard.innerHTML = `
-  <h1>${divID}</h1>    <ul class="product-list">     
-                <div class="product-card">
-                  <figure class="card-banner">
-                    <a >
-                      <img
-                        src='/poster/addimg.jpg'
-                        alt="Add product pic"
-                        loading="lazy"
-                        width="800"
-                        height="1034"
-                        class="w-100"
-                      />
-                    </a>
-                    <div class="card-badge red">-25%</div>
-                    <div class="card-actions">
-                      <button class="card-action-btn" aria-label="Quick view">
-                        <ion-icon name="eye-outline"></ion-icon>
-                      </button>
-                      <button class="card-action-btn cart-btn">
-                        <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                        <p>Add to Cart</p>
-                      </button>
-                      <button class="card-action-btn" aria-label="Add to Wishlist">
-                        <ion-icon name="heart-outline"></ion-icon>
-                      </button>
-                    </div>
-                  </figure>
-                  <div class="card-content">
-                    <h3 class="h4 card-title">
-                      <a href="#">Add Product Name</a>
-                    </h3>
-                    <div class="card-price">
-                      <data value=>Add Price</data>
-                      <data value="65.00">Rs. (Add Original Price)</data>
-                    </div>
-                  </div>
-                </div></ul>
-              
-      `;
-      // Append the new product card at the end of the firstContainer
-      firstContainer.appendChild(newProductCard);
-  }
+ 
   
 }
 
@@ -692,17 +682,41 @@ async function deleteFirestoreDocument(divId, docId) {
       }
     }
 
+export async function forceRefreshProducts(divId) {
+  
+    await refreshProducts();
+ 
+    await edittor(divId);
+    await mainEdit(divId);
+  }
+
+
+
+
 function mainEdit(divID) {
+
+  const addItemButton = document.getElementById(`Add-${divID}`);
+  const priceContainer = document.querySelector(".card-price");
+  priceContainer.style.display = 'flex';
+  priceContainer.style.flexDirection = 'column';
+  if(!addItemButton){
+    addProduct(divID);
+  }
   console.log(divID);
   console.log("Main works");
+  
+  const editBtn = document.getElementById(`Edit-${divID}`);
+  if(editBtn){
+    editBtn.remove();
+  }
 
   // Create and position the delete button for the entire collection
   const firstContainer = document.getElementById(divID);
   const deleteCollectionButton = document.createElement('button');
   deleteCollectionButton.textContent = 'Delete Collection';
   deleteCollectionButton.style.position = 'absolute';
-  deleteCollectionButton.style.top = '10px';
-  deleteCollectionButton.style.left = '10px';
+  deleteCollectionButton.style.top = '-56px';
+  deleteCollectionButton.style.right = '-7px';
   deleteCollectionButton.style.backgroundColor = 'red';
   deleteCollectionButton.style.color = 'white';
   deleteCollectionButton.style.border = 'none';
@@ -787,7 +801,7 @@ function mainEdit(divID) {
                   try {
                     const firebaseImageUrl = await uploadImageToFirebase(file, divId, productTitle);
                     await updateFirestoreDocument(divId, index + 1, { pic: firebaseImageUrl });
-                    await refreshProducts();
+                    
                   } catch (error) {
                     console.error('Error updating product:', error);
                   } finally {
@@ -984,17 +998,15 @@ function mainEdit(divID) {
 
       const attachPencilButton = (tag, index) => {
         const element = headersContainer.querySelector(tag);
-        if (!element) return;
+        if (!element || element.parentNode.classList.contains('pencil-wrapper')) return;
 
-        if (element.parentNode && element.parentNode.classList.contains('pencil-wrapper')) {
-          element.parentNode.remove();
-        }
-
+        // Create a wrapper for the header and pencil button without removing the header element itself
         const wrapper = document.createElement('div');
         wrapper.classList.add('pencil-wrapper');
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
 
+        // Insert the wrapper before the header element and append the header element to the wrapper
         element.parentNode.insertBefore(wrapper, element);
         wrapper.appendChild(element);
 
@@ -1015,7 +1027,7 @@ function mainEdit(divID) {
             updateData[`headerText`] = newText;
 
             updateFirestoreDocument(firstContainer.id, 'headers', updateData);
-            element.textContent = newText;
+            // element.textContent = newText;
           }
         });
       };
@@ -1050,8 +1062,9 @@ function mainEdit(divID) {
     priorityButton.textContent = 'Set Priority';
     priorityButton.style.marginLeft = '10px';
     priorityButton.style.padding = '5px';
-    priorityButton.style.backgroundColor = '#007bff';
+    priorityButton.style.backgroundColor = 'black';
     priorityButton.style.color = '#ffffff';
+    priorityButton.style.marginTop = '10px';
     priorityButton.style.border = 'none';
     priorityButton.style.borderRadius = '5px';
     priorityButton.style.cursor = 'pointer';
@@ -1077,36 +1090,57 @@ function mainEdit(divID) {
     sizesContainer.style.marginTop = '10px';
 
     const sizeHeader = document.createElement('div');
-    sizeHeader.textContent = 'Sizes (S, M, L, XL):';
+    sizeHeader.textContent = 'Sizes:';
     sizeHeader.style.marginBottom = '5px';
     sizesContainer.appendChild(sizeHeader);
 
-    const sizeData = await getSizeFromFirestore(productTitle, 'sizes');
-    const sizes = ['s', 'm', 'l', 'xl'];
+    const sizeTable = document.createElement('table');
+    sizeTable.style.width = '100%';
+    sizeTable.style.borderCollapse = 'collapse';
+
+    const sizeTableHeader = document.createElement('thead');
+    const sizeTableHeaderRow = document.createElement('tr');
+    const sizes = ['S', 'M', 'L', 'XL'];
+
     sizes.forEach(size => {
-      const sizeContainer = document.createElement('div');
-      sizeContainer.style.marginBottom = '5px';
+      const th = document.createElement('th');
+      th.textContent = size;
+      th.style.border = '1px solid black';
+      th.style.padding = '5px';
+      th.style.textAlign = 'center';
+      sizeTableHeaderRow.appendChild(th);
+    });
 
-      const sizeLabel = document.createElement('label');
-      sizeLabel.textContent = size;
-      sizeLabel.style.marginRight = '5px';
-      sizeContainer.appendChild(sizeLabel);
+    sizeTableHeader.appendChild(sizeTableHeaderRow);
+    sizeTable.appendChild(sizeTableHeader);
 
+    const sizeTableBody = document.createElement('tbody');
+    const sizeTableBodyRow = document.createElement('tr');
+
+    const sizeData = await getSizeFromFirestore(productTitle, 'sizes');
+    sizes.forEach(size => {
+      const td = document.createElement('td');
       const sizeInput = document.createElement('input');
+      sizeTableBodyRow.style.height = 'none';
       sizeInput.type = 'number';
       sizeInput.style.border = '2px solid black';
-      sizeInput.id = `size(${index + 1})-${size}`;
-      sizeInput.style.width = '100px';
-      sizeInput.value = sizeData[size.toLowerCase()] || (size === 'xl' ? 0 : '');
-      sizeContainer.appendChild(sizeInput);
-      sizesContainer.appendChild(sizeContainer);
+      sizeInput.style.width = '100%';
+      sizeInput.style.boxSizing = 'border-box';
+      sizeInput.id = `size(${index + 1})-${size.toLowerCase()}`;
+      sizeInput.value = sizeData[size.toLowerCase()] || '';
+      td.appendChild(sizeInput);
+      sizeTableBodyRow.appendChild(td);
     });
+
+    sizeTableBody.appendChild(sizeTableBodyRow);
+    sizeTable.appendChild(sizeTableBody);
+    sizesContainer.appendChild(sizeTable);
 
     const submitButton = document.createElement('button');
     submitButton.textContent = 'Submit Sizes';
     submitButton.style.marginTop = '10px';
     submitButton.style.padding = '5px';
-    submitButton.style.backgroundColor = '#007bff';
+    submitButton.style.backgroundColor = 'black';
     submitButton.style.color = '#ffffff';
     submitButton.style.border = 'none';
     submitButton.style.borderRadius = '5px';
@@ -1116,9 +1150,9 @@ function mainEdit(divID) {
     submitButton.addEventListener('click', async () => {
       const newSizes = {};
       sizes.forEach(size => {
-        const sizeValue = document.getElementById(`size(${index + 1})-${size}`).value;
+        const sizeValue = document.getElementById(`size(${index + 1})-${size.toLowerCase()}`).value;
         if (sizeValue) {
-          newSizes[size] = sizeValue;
+          newSizes[size.toLowerCase()] = sizeValue;
         }
       });
 
@@ -1188,6 +1222,7 @@ productTitle = productTitle.replace(/✎/g, '').trim();
 }
 
 async function updateFirestoreDocument(divId, docId, updateData) {
+ 
   // Ensure divId and docId are strings
   const divIdStr = String(divId);
   const docIdStr = String(docId);
@@ -1262,12 +1297,11 @@ async function updateFirestoreDocument(divId, docId, updateData) {
         console.log('Data swapped between documents.');
         const loaderElement = document.querySelector(".loader");
         loaderElement.style.display = 'block';
-        await refreshProducts().finally(() => {
-          loaderElement.style.display = 'none';
-        });
+        
         showMessageBox("Priority updated successfully", "Thanks for Patience", true);
         await edittor(divId);
         await mainEdit(divId);
+        loaderElement.style.display = 'none';
       } else {
         console.error(`Document with priority ID: ${newPriorityDocId} does not exist.`);
         alert(`You cannot set a priority for a document that doesn't exist.`);
@@ -1382,7 +1416,7 @@ console.log("Edittor mode ")
           await edittor(id.toString());
         }
       }
-      await edittor1();
+      // await edittor1();
       console.log("Both edittor functions have been executed.");
     }, 5000);
   } catch (error) {

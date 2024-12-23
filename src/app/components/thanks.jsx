@@ -20,6 +20,10 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     if (!orderDetails && error) return <p>{error}</p>;
 
     useEffect(() => {
+        if (!orderDetails && error) {
+            return;
+        }
+
         const initializeMap = async () => {
             // Wait until Leaflet is loaded
             while (!window.L) {
@@ -88,7 +92,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
             // Optionally, you can set a state or perform other actions here
             // Currently handled by showing the Confirm button
         }
-    }, [orderDetails, action]);
+    }, [orderDetails, action, error]);
 
     const handleConfirm = async () => {
         setIsLoading(true);

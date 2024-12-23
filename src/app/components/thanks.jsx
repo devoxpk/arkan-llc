@@ -17,8 +17,6 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     const action = searchParams.get('action');
     const [order, setOrder] = useState(orderDetails); // Initialize order state
 
-    if (!orderDetails && error) return <p>{error}</p>;
-
     useEffect(() => {
         if (!orderDetails && error) {
             return;
@@ -290,185 +288,192 @@ export default function ThanksPage({ orderDetails, error, docid }) {
         setShowCard(false);
     };
 
-    return (<>
-        <navbar style={{ justifyContent: "center", display: "flex", position: "relative", marginTop: "2%" }}>
-            <span style={{marginTop:"6px"}}>Thanks {order.name} for Ordering</span>
-            <span style={{ backgroundColor: "green", color: "white", borderRadius: "50%", padding: "5px", marginLeft: "10px" }}>
-                ✓
-            </span>
-        </navbar>
-        <div className="thanks-component" id="thanksCard">
-            {/* First Row: Order Details and Billing Details */}
-            <div className="details-row">
-                <div className="order-details">
-                    <h3>Order Details</h3>
-                    <p><strong>Order ID:</strong> {order.customerID}</p>
-                    <p><strong>Date:</strong> {order.date}</p>
-                    <p>
-                        <strong>Contact:</strong> {order.contact} 
-                    {action === 'confirm' && (
-                            <span 
-                            onClick={() => handleEditField('Contact', order.contact)} 
-                                style={{ cursor: "pointer", marginLeft: "10px" }}
-                                title="Edit Contact"
-                        >
-                                ✎
-                            </span>
-                    )}
-                    </p>
-                </div>
-                <div className="order-details">
-                    <h3>Billing Details</h3>
-                    <p>
-                        <strong>City:</strong> {order.city} 
-                    {action === 'confirm' && (
-                            <span 
-                            onClick={() => handleEditField('City', order.City)} 
-                                style={{ cursor: "pointer", marginLeft: "10px" }}
-                                title="Edit City"
-                        >
-                                ✎
-                            </span>
-                    )}
-                    </p>
-                    <p>
-                        <strong>Address:</strong> {order.billingAddress} 
-                    {action === 'confirm' && (
-                            <span 
-                            onClick={() => handleEditField('Address', order.billingAddress)} 
-                                style={{ cursor: "pointer", marginLeft: "10px" }}
-                                title="Edit Address"
-                        >
-                                ✎
-                            </span>
-                    )}
-                    </p>
-                    <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
-                    <p>
-                        <strong>Amount:</strong> {order.amount}
-                    </p>
-                </div>
-            </div>
-
-            {/* Second Row: Tracking and Product Details */}
-            <div className="details-row" id="productDetails">
-                <div className="order-updates">
-                    <h3>Tracking</h3>
-                    <p>
-                        {order.confirm.toLowerCase() === "ok"
-                            ? "Confirmed"
-                            : "Not Confirmed Yet"}
-                    </p>
-                </div>
-                <div className="products">
-                    <h3>Product Details</h3>
-                    {order.products.length > 0 ? (
-                        order.products.map((product) => (
-                            <div key={product.id} className="product-item" style={{ position: "relative", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
-                                {/* Simple Delete Icon at the Top */}
+    return (
+        <>
+            {(!orderDetails && error) ? (
+                <p>{error}</p>
+            ) : (
+                <>
+                    <navbar style={{ justifyContent: "center", display: "flex", position: "relative", marginTop: "2%" }}>
+                        <span style={{marginTop:"6px"}}>Thanks {order.name} for Ordering</span>
+                        <span style={{ backgroundColor: "green", color: "white", borderRadius: "50%", padding: "5px", marginLeft: "10px" }}>
+                            ✓
+                        </span>
+                    </navbar>
+                    <div className="thanks-component" id="thanksCard">
+                        {/* First Row: Order Details and Billing Details */}
+                        <div className="details-row">
+                            <div className="order-details">
+                                <h3>Order Details</h3>
+                                <p><strong>Order ID:</strong> {order.customerID}</p>
+                                <p><strong>Date:</strong> {order.date}</p>
+                                <p>
+                                    <strong>Contact:</strong> {order.contact} 
                                 {action === 'confirm' && (
-                                    <span 
-                                        onClick={() => handleRemoveProduct(product.id)} 
-                                        style={{ color: "red", position: "absolute", top: "10px", right: "43px", cursor: "pointer" }}
-                                        title="Delete Product"
+                                        <span 
+                                        onClick={() => handleEditField('Contact', order.contact)} 
+                                            style={{ cursor: "pointer", marginLeft: "10px" }}
+                                            title="Edit Contact"
                                     >
-                                        ×
-                                    </span>
+                                            ✎
+                                        </span>
                                 )}
-                                <img src={product.pic} alt={product.productName} style={{ width: "100px", height: "100px", objectFit: "cover" }} />
-                                <div className="product-info">
-                                    <p><strong>{product.productName}</strong></p>
-                                    <p>Price: {product.price}</p>
-                                    <p>
-                                        Quantity: {product.quantity}
-                                        {action === 'confirm' && (
-                                            <span 
-                                                onClick={() => handleEditQuantity(product.id, product.quantity, parseFloat(product.price))}
-                                                style={{ cursor: "pointer", marginLeft: "10px" }}
-                                                title="Edit Quantity"
-                                            >
-                                                ✎
-                                            </span>
-                                        )}
-                                    </p>
-                                    <p>
-                                        Size: {getSizeLabel(product.size)} 
-                                    {action === 'confirm' && (
-                                            <span 
-                                                onClick={() => handleEditProductField(product.id, 'size', product.size)} 
-                                                style={{ cursor: "pointer", marginLeft: "10px" }}
-                                                title="Edit Size"
-                                            >
-                                                ✎
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
+                                </p>
                             </div>
-                        ))
-                    ) : (
-                        <p>No products available.</p>
+                            <div className="order-details">
+                                <h3>Billing Details</h3>
+                                <p>
+                                    <strong>City:</strong> {order.city} 
+                                {action === 'confirm' && (
+                                        <span 
+                                        onClick={() => handleEditField('City', order.City)} 
+                                            style={{ cursor: "pointer", marginLeft: "10px" }}
+                                            title="Edit City"
+                                    >
+                                            ✎
+                                        </span>
+                                )}
+                                </p>
+                                <p>
+                                    <strong>Address:</strong> {order.billingAddress} 
+                                {action === 'confirm' && (
+                                        <span 
+                                        onClick={() => handleEditField('Address', order.billingAddress)} 
+                                            style={{ cursor: "pointer", marginLeft: "10px" }}
+                                            title="Edit Address"
+                                    >
+                                            ✎
+                                        </span>
+                                )}
+                                </p>
+                                <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
+                                <p>
+                                    <strong>Amount:</strong> {order.amount}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Second Row: Tracking and Product Details */}
+                        <div className="details-row" id="productDetails">
+                            <div className="order-updates">
+                                <h3>Tracking</h3>
+                                <p>
+                                    {order.confirm.toLowerCase() === "ok"
+                                        ? "Confirmed"
+                                        : "Not Confirmed Yet"}
+                                </p>
+                            </div>
+                            <div className="products">
+                                <h3>Product Details</h3>
+                                {order.products.length > 0 ? (
+                                    order.products.map((product) => (
+                                        <div key={product.id} className="product-item" style={{ position: "relative", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
+                                            {/* Simple Delete Icon at the Top */}
+                                            {action === 'confirm' && (
+                                                <span 
+                                                    onClick={() => handleRemoveProduct(product.id)} 
+                                                    style={{ color: "red", position: "absolute", top: "10px", right: "43px", cursor: "pointer" }}
+                                                    title="Delete Product"
+                                                >
+                                                    ×
+                                                </span>
+                                            )}
+                                            <img src={product.pic} alt={product.productName} style={{ width: "100px", height: "100px", objectFit: "cover" }} />
+                                            <div className="product-info">
+                                                <p><strong>{product.productName}</strong></p>
+                                                <p>Price: {product.price}</p>
+                                                <p>
+                                                    Quantity: {product.quantity}
+                                                    {action === 'confirm' && (
+                                                        <span 
+                                                            onClick={() => handleEditQuantity(product.id, product.quantity, parseFloat(product.price))}
+                                                            style={{ cursor: "pointer", marginLeft: "10px" }}
+                                                            title="Edit Quantity"
+                                                        >
+                                                            ✎
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                <p>
+                                                    Size: {getSizeLabel(product.size)} 
+                                                {action === 'confirm' && (
+                                                        <span 
+                                                            onClick={() => handleEditProductField(product.id, 'size', product.size)} 
+                                                            style={{ cursor: "pointer", marginLeft: "10px" }}
+                                                            title="Edit Size"
+                                                        >
+                                                            ✎
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No products available.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Third Row: Map */}
+                        <div className="map-container">
+                            <h3>Location</h3>
+                            { (order.currentLoc || order.city) ? (
+                                <div id="map" style={{ height: '300px', width: '100%', borderRadius: '8px' }}></div>
+                            ) : (
+                                <p>Location data is unavailable.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {action === 'confirm' && (
+                        <>
+                            <div 
+                                className="unique-image" 
+                                onClick={handleConfirm} 
+                                style={{ position: "fixed", bottom: "20px", right: "20px",zIndex: "1000", cursor: "pointer" }}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                       <path d="M20 7L9.00004 18L3.99994 13" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                                </svg>
+                            </div>
+                            <button 
+                                className="cancel-order-button" 
+                                onClick={handleDeleteOrder}
+                                style={{ backgroundColor: "red", color: "white", border: "none", padding: "10px 20px", cursor: "pointer" }}
+                            >
+                                Cancel Order
+                            </button>
+                        </>
                     )}
-                </div>
-            </div>
 
-            {/* Third Row: Map */}
-            <div className="map-container">
-                <h3>Location</h3>
-                { (order.currentLoc || order.city) ? (
-                    <div id="map" style={{ height: '300px', width: '100%', borderRadius: '8px' }}></div>
-                ) : (
-                    <p>Location data is unavailable.</p>
-                )}
-            </div>
-        </div>
-
-        {action === 'confirm' && (
-            <>
-                <div 
-                    className="unique-image" 
-                    onClick={handleConfirm} 
-                    style={{ position: "fixed", bottom: "20px", right: "20px",zIndex: "1000", cursor: "pointer" }}
-                >
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                               <path d="M20 7L9.00004 18L3.99994 13" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                    </svg>
-                </div>
-                <button 
-                    className="cancel-order-button" 
-                    onClick={handleDeleteOrder}
-                    style={{ backgroundColor: "red", color: "white", border: "none", padding: "10px 20px", cursor: "pointer" }}
-                >
-                    Cancel Order
-                </button>
-            </>
-        )}
-
-        {/* Confirmation Card */}
-        {showCard && (
-            <div className="unique-card">
-                <button className="unique-dismiss" type="button" onClick={dismissCard}>×</button>
-                <div className="unique-header"> 
-                    <div className="unique-div_image_v">
-                        <div className="unique-image">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 7L9.00004 18L3.99994 13" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                            </svg>
-                        </div> 
-                    </div> 
-                    <div className="unique-content">
-                        <span className="unique-title">Order Validated</span> 
-                        <p className="unique-message">
-                            Thank you for your purchase. Your package will be delivered within 3 days of your purchase.
-                            <br />
-                            <strong>Tracking Number:</strong> {trackingInfo}
-                            <br />
-                            <Link style={{color:"blue"}} href={`https://${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/tracking`} target="_blank" rel="noopener noreferrer">Click Here to Track Your Order</Link>
-                        </p> 
-                    </div> 
-                </div> 
-            </div>
-        )}
+                    {/* Confirmation Card */}
+                    {showCard && (
+                        <div className="unique-card">
+                            <button className="unique-dismiss" type="button" onClick={dismissCard}>×</button>
+                            <div className="unique-header"> 
+                                <div className="unique-div_image_v">
+                                    <div className="unique-image">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 7L9.00004 18L3.99994 13" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                                        </svg>
+                                    </div> 
+                                </div> 
+                                <div className="unique-content">
+                                    <span className="unique-title">Order Validated</span> 
+                                    <p className="unique-message">
+                                        Thank you for your purchase. Your package will be delivered within 3 days of your purchase.
+                                        <br />
+                                        <strong>Tracking Number:</strong> {trackingInfo}
+                                        <br />
+                                        <Link style={{color:"blue"}} href={`https://${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/tracking`} target="_blank" rel="noopener noreferrer">Click Here to Track Your Order</Link>
+                                    </p> 
+                                </div> 
+                            </div> 
+                        </div>
+                    )}
+                </>
+            )}
         </>
     );
 }

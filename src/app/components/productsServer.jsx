@@ -2,9 +2,6 @@ import { db } from '../firebase.js'
 import { collection, doc, getDoc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import Products from './productsClient.jsx'
-let fetchedHeaders = 0;
-let cachedHeaders = null;
-
 
 // Function to fetch headers globally
 async function fetchHeaders(divID) {
@@ -16,10 +13,9 @@ async function fetchHeaders(divID) {
 
         if (headerSnap.exists()) {
             const fetchedHeaders = headerSnap.data(); // Assuming this is an array or contains an array field
-            cachedHeaders = fetchedHeaders; // Cache the headers data
-            console.log("Headers fetched from Firebase:", cachedHeaders);
+            console.log("Headers fetched from Firebase:", fetchedHeaders);
 
-            return cachedHeaders;
+            return fetchedHeaders;
         } else {
             console.log("No header data found!");
             return null;
@@ -29,7 +25,6 @@ async function fetchHeaders(divID) {
         return null;
     }
 }
-
 
 // Optimized function to fetch data for collections
 async function inlist(divID) {
@@ -51,7 +46,7 @@ async function inlist(divID) {
             const docId = parseInt(doc.id, 10);
             if (docId > 0) { // Assuming IDs start from 1
                 const data = doc.data();
-                
+
                 // Convert createdAt to ISO string if it exists
                 if (data.createdAt && data.createdAt.seconds) {
                     data.createdAt = new Date(data.createdAt.seconds * 1000 + data.createdAt.nanoseconds / 1000000).toISOString();
@@ -78,38 +73,53 @@ async function inlist(divID) {
 
 
 
-let fetchAndRenderCollections;
 let collectionsToFetch = [];
 
-fetchAndRenderCollections = async (collectionsToFetchArg = null) => {
-    collectionsToFetch = [];
+async function fetchAndRenderCollections(collectionsToFetchArg = null) {
+    let isFetching = false; // Moved inside function
+    console.log("fetchAndRenderCollections started with argument:", collectionsToFetchArg);
+
     try {
-        let collections;
+        let collections = [];
+
         if (!collectionsToFetchArg || collectionsToFetchArg.length === 0) {
-            collections = await inlistDaddy(); // Populate collectionsToFetch if not provided
+            console.log("No collectionsToFetchArg provided. Calling inlistDaddy to retrieve collections.");
+            collections = await inlistDaddy(); // Populate collections if not provided
+            console.log("Collections retrieved from inlistDaddy:", collections);
         } else {
             // Filter out null or undefined values and remove duplicates
-            collectionsToFetch = collectionsToFetchArg.filter(id => id !== null && id !== undefined);
-            collectionsToFetch = [...new Set(collectionsToFetch)];
-            collections = collectionsToFetch; // Assign the deduplicated collectionsToFetch to collections variable
+            collections = collectionsToFetchArg.filter(id => id != null);
+            collections = [...new Set(collections)];
+            console.log("Using provided collectionsToFetchArg after filtering and deduplication:", collections);
+        }
+
+        if (collections.length === 0) {
+            console.warn("No collections to fetch after processing collectionsToFetchArg.");
+            return { collectionData: {}, headersData: {}, collections: [] };
         }
 
         const collectionData = {};
         const headersData = {};
 
-        for (const collectionId of collectionsToFetch) {
+        for (const collectionId of collections) {
+            console.log(`Fetching data for collectionId: ${collectionId}`);
             const { collectionData: data, headers } = await inlist(collectionId); // Fetch collection and headers
-            collectionData[collectionId] = data;
-            headersData[collectionId] = headers;
+            if (data && headers) {
+                collectionData[collectionId] = data;
+                headersData[collectionId] = headers;
+                console.log(`Successfully fetched data for collectionId: ${collectionId}`);
+            } else {
+                console.warn(`No data fetched for collectionId: ${collectionId}`);
+            }
         }
 
-        console.log("Collections fetched and rendered successfully.");
-        return { collectionData, headersData, collections }; // Return fetched data
+        console.log("All collections fetched and processed successfully.");
+        return { collectionData, headersData, collections };
     } catch (error) {
-        console.error("Error fetching data:", error);
-        return { collectionData: {}, headersData: {}, collections: [] }; // Return empty data on error
+        console.error("Error in fetchAndRenderCollections:", error);
+        return { collectionData: {}, headersData: {}, collections: [] };
     }
-};
+}
 
 async function inlistDaddy() {
     console.log("Running Daddy of inlist");
@@ -134,6 +144,7 @@ async function inlistDaddy() {
                 console.log(`Collection ${divID} not found.`);
                 break; // Terminate the loop if collection not found
             }
+
         }
         console.log(`Total collections found: ${collectionCount - 1}`); // Log total collections found
         return collectionsToFetch;
@@ -144,6 +155,9 @@ async function inlistDaddy() {
 }
 
 export default async function ProductsServer({ collectionsToFetch = [], styleHead = 'grid', productsStyle = false, trending = false }) {
+    console.log("collectionsToFetch",collectionsToFetch);
+    let cachedHeaders = null; // Moved inside function
+
     const { collectionData, headersData, collections } = await fetchAndRenderCollections(collectionsToFetch);
 
     return (

@@ -336,7 +336,7 @@ function Navbar() {
         <ul style={{ borderRadius:"6px",position:"fixed",marginLeft: "6px", listStyleType: "none", padding: "0" }}>
           {categories.map((category) => (
             <li key={category.id}>
-              <Link href={`/categories?cat=${category.id}`}>
+              <Link href={`/categories/${category.id}`}>
                 {category.name}
               </Link>
             </li>

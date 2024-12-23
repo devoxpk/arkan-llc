@@ -7,7 +7,9 @@ export async function refreshProducts() {
     revalidatePath('/products');
 }
 
-export default async function Products({ collectionsToFetch, styleHead = "grid", productsStyle = false, trending = false } = {}) {
+
+export default async function Products({ collectionsToFetch = [], styleHead = "grid", productsStyle = false, trending = false } = {}) {
+    
     return (
         <div>
             

@@ -157,7 +157,7 @@ function Footer() {
               <li><p className="footer-list-title">Category</p></li>
               {categories.map((category) => (
                 <li key={category.id}>
-                  <Link href={`/categories?cat=${category.id}`} legacyBehavior>
+                  <Link href={`/categories/${category.id}`} legacyBehavior>
                     <a className="footer-link">{category.name}</a>
                   </Link>
                 </li>

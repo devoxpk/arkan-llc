@@ -18,6 +18,9 @@ let isAvailable;
 let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
+    useEffect(() => {
+        console.log("Checkout run");
+    }, []);
 
     // Use the custom hook from the context
     const { setIsReviewVisible } = useReviewVisibility();
@@ -29,11 +32,15 @@ export default function Checkout() {
     function openSizeChart() {
         fetchSizeChart(getQueryParameter("cat"));
     }
-    setTimeout(() => {
-        isAvailable = checkReviewAvailability();
-        console.log("after 5 sec" + " " + isAvailable); // For debugging
-        setRenderReviews(isAvailable)
-    }, 5000); // 5000 milliseconds = 5 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            isAvailable = checkReviewAvailability();
+            console.log("after 5 sec" + " " + isAvailable); // For debugging
+            setRenderReviews(isAvailable);
+        }, 5000); // 5000 milliseconds = 5 seconds
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
+    }, []); // Empty dependency array ensures this runs only once
 
     const handleClick = () => {
         setIsReviewVisible(true);

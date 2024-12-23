@@ -33,7 +33,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                 if (['modified', 'removed'].includes(change.type)) {
                   console.log(`${change.type.charAt(0).toUpperCase() + change.type.slice(1)} document:`, change.doc.data());
                   try {
-                    await refreshProducts();
+                   console.log("Refreshing products"); // await refreshProducts();
                   } catch (error) {
                     console.error('Error refreshing products:', error);
                   }

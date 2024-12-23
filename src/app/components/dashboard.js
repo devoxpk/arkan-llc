@@ -19,7 +19,7 @@ function toggleSidebar() {
     }
 
     
-    export async function dispatchOrder(orderData, orderDocID) {
+     async function dispatchOrder(orderData, orderDocID) {
         var confirmed = confirm("Are you sure?");
         
         // If the user confirms, perform the dispatch
@@ -1205,23 +1205,7 @@ export default function DashboardComponent() {
         return;
     }                    
     
-                dispatchOrder({
-                    
-                    logo: currentData.logo || null,
-                    customerID: currentData.customerID,
-                    Name: currentData.Name,
-                    City: currentData.City,
-                    Address: currentData.Address,
-                    Contact: currentData.Contact,
-                    
-                    productsData:currentData.productsData,
-                   
-                    Details: currentData.Details,
-                    Email: currentData.Email,
-                    orderedDate: currentData.Date,
-                    dispatchDate: day + " " + time,
-                    productID: currentData.productID,
-                }, orderDocID);
+     postOrder(orderDocID,true);
                 countDisplay.textContent = parseInt(countDisplay.textContent) - 1;
                
             });

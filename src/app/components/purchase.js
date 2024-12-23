@@ -8,31 +8,27 @@ import saveContact from '../utilis/saveContact'
 import showMessageBox from '../utilis/showMessageBox'
 import { useRouter } from 'next/navigation';
 
-const router = useRouter();
-
-    
-function saveCustomerIdToLocalStorage() {
-    let customerId;
-    if(typeof window !== "undefined"){
-    if (!localStorage.getItem("idstatus")) {
-       customerId = Math.floor(100000 + Math.random() * 900000);
-      localStorage.setItem("customerNumber", customerId);
-      localStorage.setItem("idstatus", "set");
-    }
-    if (!localStorage.getItem("count")) {
-      localStorage.setItem("count", 1);
-    }
-  }}
-      saveCustomerIdToLocalStorage();
-  
-
-
-
-    
 export default function PurchaseComponent() {
+    const router = useRouter();
 
+    function saveCustomerIdToLocalStorage() {
+        let customerId;
+        if(typeof window !== "undefined"){
+        if (!localStorage.getItem("idstatus")) {
+           customerId = Math.floor(100000 + Math.random() * 900000);
+          localStorage.setItem("customerNumber", customerId);
+          localStorage.setItem("idstatus", "set");
+        }
+        if (!localStorage.getItem("count")) {
+          localStorage.setItem("count", 1);
+        }
+      }}
+        saveCustomerIdToLocalStorage();
     
 
+
+
+    
     async function validatePromo(event) {
         event.preventDefault(); // Prevent the page from reloading
     

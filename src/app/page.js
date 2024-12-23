@@ -1,5 +1,3 @@
-import React from 'react';
-
 import Navbar from './components/navbar.js';
 import Products from './components/products';
 import Footer from './components/footer.js';
@@ -10,7 +8,6 @@ import Gallery from './components/gallery'
 import CarouselPoster from './components/carouselposter'
 
 export default function Home() {
-  
   return (
     <>
       {  /* Components */}

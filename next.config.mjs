@@ -3,6 +3,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false, // Disable Strict Mode (you can turn it on if desired)
+  output: 'standalone', // Force serverless deployment for Vercel SSR
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.resolve.fallback = {

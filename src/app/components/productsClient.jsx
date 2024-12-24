@@ -12,7 +12,8 @@ import {fetchSizeChart} from './sizes';
 import { refreshProducts } from './products';
 import showMessageBox from '../utilis/showMessageBox';
 import addProduct from './ProductAdd';
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 
 

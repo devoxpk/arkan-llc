@@ -200,7 +200,7 @@ export default function PurchaseComponent() {
   const paymentMode=  document.getElementById("paymentMode").innerText;
           const docData = {
             productsData,
-            productPrice:subtotal,
+            productSP:subtotal,
             Address: userAddress,
             Contact: userContact,
             Name: customerName,

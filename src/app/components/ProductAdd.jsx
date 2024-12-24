@@ -154,7 +154,7 @@
                 // Find the next available document ID
                 const colRef = collection(db, divID);
                 const querySnapshot = await getDocs(colRef);
-                const docIds = querySnapshot.docs.map(doc => parseInt(doc.id, 10));
+                const docIds = querySnapshot.docs.map(doc => parseInt(doc.id, 10)).filter(id => !isNaN(id));
                 const nextDocId = Math.max(0, ...docIds) + 1;
     
                 // Upload image to Firebase Storage
@@ -200,63 +200,63 @@
         // Handle form submission for category
         const categoryForm = categoryFormContainer.querySelector('.unique-category-form');
        
-
-categoryForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  document.querySelector(".loader").style.display = 'block'; // Show loader
-
-  const firstHeader = categoryForm['first-header'].value;
-  const secondHeader = categoryForm['second-header'].value;
-  const productName = categoryForm['product-name'].value;
-  const productPrice = categoryForm['product-price'].value;
-  const productCost = categoryForm['product-cost'].value;
-  const productImage = categoryForm['product-image'].files[0];
-  const discountPrice = categoryForm['discount-price'].value;
-  if (discountPrice !== '') {
-      if (discountPrice <= productPrice) {
-          alert('Discount price cannot be less than or equal to product price');
-          return;
-      }
-  }
-
-  try {
-      // Find the next available category ID by checking for existing collections
-      let nextCategoryId = 1;
-      while (true) {
-          const categoryRef = collection(db, String(nextCategoryId));
-          const querySnapshot = await getDocs(categoryRef);
-          if (querySnapshot.empty) {
-              break; // Found an empty collection ID
+    
+    categoryForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      document.querySelector(".loader").style.display = 'block'; // Show loader
+    
+      const firstHeader = categoryForm['first-header'].value;
+      const secondHeader = categoryForm['second-header'].value;
+      const productName = categoryForm['product-name'].value;
+      const productPrice = categoryForm['product-price'].value;
+      const productCost = categoryForm['product-cost'].value;
+      const productImage = categoryForm['product-image'].files[0];
+      const discountPrice = categoryForm['discount-price'].value;
+      if (discountPrice !== '') {
+          if (discountPrice <= productPrice) {
+              alert('Discount price cannot be less than or equal to product price');
+              return;
           }
-          nextCategoryId++;
       }
-
-      // Upload image to Firebase Storage
-      const imageRef = ref(storage, `products/${productName}`);
-      const uploadTask = await uploadBytesResumable(imageRef, productImage);
-      const imageUrl = await getDownloadURL(uploadTask.ref);
-
-      // Add category and product to Firestore
-      const categoryRef = doc(db, String(nextCategoryId), '1');
-      await setDoc(categoryRef, {
-          headers: [firstHeader, secondHeader],
-          productName,
-          price: productPrice,
-          productCP: productCost,
-          pic: imageUrl,
-          dPrice: discountPrice,
-          createdAt: serverTimestamp()
-      });
-      await forceRefreshProducts(divID);
-      console.log('Category and product added successfully');
-  } catch (error) {
-      console.error('Error adding category and product:', error);
-  } finally {
-      document.querySelector(".loader").style.display = 'none'; // Hide loader
-      
-      handleCategoryFormToggle(); // Close the form after submission
-      
-  }
-});
-
-    }
+    
+      try {
+          // Find the next available category ID by checking for existing collections
+          let nextCategoryId = 1;
+          while (true) {
+              const categoryRef = collection(db, String(nextCategoryId));
+              const querySnapshot = await getDocs(categoryRef);
+              if (querySnapshot.empty) {
+                  break; // Found an empty collection ID
+              }
+              nextCategoryId++;
+          }
+    
+          // Upload image to Firebase Storage
+          const imageRef = ref(storage, `products/${productName}`);
+          const uploadTask = await uploadBytesResumable(imageRef, productImage);
+          const imageUrl = await getDownloadURL(uploadTask.ref);
+    
+          // Add category and product to Firestore
+          const categoryRef = doc(db, String(nextCategoryId), '1');
+          await setDoc(categoryRef, {
+              headers: [firstHeader, secondHeader],
+              productName,
+              price: productPrice,
+              productCP: productCost,
+              pic: imageUrl,
+              dPrice: discountPrice,
+              createdAt: serverTimestamp()
+          });
+          await forceRefreshProducts(divID);
+          console.log('Category and product added successfully');
+      } catch (error) {
+          console.error('Error adding category and product:', error);
+      } finally {
+          document.querySelector(".loader").style.display = 'none'; // Hide loader
+          
+          handleCategoryFormToggle(); // Close the form after submission
+          
+      }
+    });
+    
+        }

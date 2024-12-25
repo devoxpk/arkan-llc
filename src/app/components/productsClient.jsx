@@ -9,19 +9,27 @@ import Link from "next/link";
 import '../css/products.css'
 import Loader from './loader'
 import {fetchSizeChart} from './sizes';
+
 import { refreshProducts } from './products';
 import showMessageBox from '../utilis/showMessageBox';
 import addProduct from './ProductAdd';
-
-
-
-
-
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 export default function Products({ collectionData, headers, collectionsToFetch = [], styleHead = 'grid', productsStyle = false, trending = false, removeActions = true }) {
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+  const [canEdit, setEdit] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.has('edit')) {
+      setEdit(true);
+    } else {
+      setEdit(false);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,22 +158,33 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                       {/* Product card content */}
                       <div className="product-card">
                         <figure className="card-banner">
-                          <Link
-                          className='checkoutLink'
-                            href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
-                            legacyBehavior
-                          >
-                            <a onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                              <img
-                                src={product.pic}
-                                alt={product.productName}
-                                loading="lazy"
-                                width="800"
-                                height="1034"
-                                className="w-100"
-                              />
-                            </a>
-                          </Link>
+                          {canEdit ? (
+                            <img
+                              src={product.pic}
+                              alt={product.productName}
+                              loading="lazy"
+                              width="800"
+                              height="1034"
+                              className="w-100"
+                            />
+                          ) : (
+                            <Link
+                              className='checkoutLink'
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                              legacyBehavior
+                            >
+                              <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                                <img
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                />
+                              </a>
+                            </Link>
+                          )}
                           {product.dPrice ? (
                             <div className="card-badge red">
                               -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
@@ -278,22 +297,33 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                           {/* Product card content */}
                           <div className="product-card">
                             <figure className="card-banner">
-                              <Link
-                               className='checkoutLink'
-                                href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
-                                legacyBehavior
-                              >
-                                <a onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                  <img
-                                    src={product.pic}
-                                    alt={product.productName}
-                                    loading="lazy"
-                                    width="800"
-                                    height="1034"
-                                    className="w-100"
-                                  />
-                                </a>
-                              </Link>
+                              {canEdit ? (
+                                <img
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                />
+                              ) : (
+                                <Link
+                                  className='checkoutLink'
+                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                                  legacyBehavior
+                                >
+                                  <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                                    <img
+                                      src={product.pic}
+                                      alt={product.productName}
+                                      loading="lazy"
+                                      width="800"
+                                      height="1034"
+                                      className="w-100"
+                                    />
+                                  </a>
+                                </Link>
+                              )}
                               {product.dPrice ? (
                                 <div className="card-badge red">
                                   -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
@@ -696,6 +726,11 @@ export async function forceRefreshProducts(divId) {
 
 
 function mainEdit(divID) {
+  const checkoutLinks = document.querySelectorAll('.checkoutLink');
+  checkoutLinks.forEach(link => {
+    link.removeAttribute('onClick');
+    link.removeAttribute('href');
+  });
 
   const addItemButton = document.getElementById(`Add-${divID}`);
   const priceContainer = document.querySelector(".card-price");
@@ -708,9 +743,7 @@ function mainEdit(divID) {
   console.log("Main works");
   
   const editBtn = document.getElementById(`Edit-${divID}`);
-  if(editBtn){
-    editBtn.remove();
-  }
+  
 
   // Create and position the delete button for the entire collection
   const firstContainer = document.getElementById(divID);
@@ -764,21 +797,7 @@ function mainEdit(divID) {
   // Event listener for the delete collection button
   deleteCollectionButton.addEventListener('click', () => deleteCollection(divID));
 
-  const checkoutLinks = document.querySelectorAll('.checkoutLink');
-
-  checkoutLinks.forEach((checkoutLink) => {
-    // Disable navigation by removing href attribute
-    checkoutLink.removeAttribute('href');
-
-    // Select all <a> elements within the checkoutLink
-    const innerAnchorTags = checkoutLink.querySelectorAll('a');
-
-    // Remove onclick attribute to prevent any click events
-    innerAnchorTags.forEach((anchor) => {
-      anchor.removeAttribute('onclick');
-    });
-  });
-
+  
   console.log(firstContainer);
   
   const stringDiv = divID.toString();
@@ -1225,6 +1244,79 @@ function mainEdit(divID) {
       }
     });
   });
+
+  // Ensure the category priority container and button exist
+  let categoryPriorityContainer = document.getElementById('category-priority-container');
+  if (!categoryPriorityContainer) {
+    categoryPriorityContainer = document.createElement('div');
+    categoryPriorityContainer.id = 'category-priority-container';
+    categoryPriorityContainer.className = 'priority-container';
+    categoryPriorityContainer.style.position = 'relative';
+    categoryPriorityContainer.style.marginTop = '10px';
+    categoryPriorityContainer.textContent = 'Category Priority: ';
+
+    const categoryPriorityInput = document.createElement('input');
+    categoryPriorityInput.type = 'number';
+    categoryPriorityInput.style.border = '2px solid black';
+    categoryPriorityInput.style.width = '60px';
+    categoryPriorityInput.id = `category-priority-${divID}`;
+    categoryPriorityContainer.appendChild(categoryPriorityInput);
+
+    const categoryPriorityButton = document.createElement('button');
+    categoryPriorityButton.textContent = 'Set Category Priority';
+    categoryPriorityButton.style.marginLeft = '10px';
+    categoryPriorityButton.style.padding = '5px';
+    categoryPriorityButton.style.backgroundColor = 'black';
+    categoryPriorityButton.style.color = '#ffffff';
+    categoryPriorityButton.style.marginBottom = '20px';
+    categoryPriorityButton.style.border = 'none';
+    categoryPriorityButton.style.borderRadius = '5px';
+    categoryPriorityButton.style.cursor = 'pointer';
+    categoryPriorityContainer.appendChild(categoryPriorityButton);
+
+    categoryPriorityButton.addEventListener('click', async () => {
+      document.querySelector(".loader").style.display = 'block';
+      const newPriority = parseInt(categoryPriorityInput.value, 10);
+      if (!isNaN(newPriority)) {
+        const currentCollectionRef = collection(db, String(divID));
+        const newCollectionRef = collection(db, String(newPriority));
+
+        const currentQuerySnapshot = await getDocs(currentCollectionRef);
+        const newQuerySnapshot = await getDocs(newCollectionRef);
+
+        if (!newQuerySnapshot.empty) {
+          // Swap collections
+          const tempCollectionRef = collection(db, 'temp');
+          for (const document of newQuerySnapshot.docs) {
+            const tempDocRef = doc(db, 'temp', document.id);
+            await setDoc(tempDocRef, document.data());
+            await deleteDoc(document.ref);
+          }
+
+          for (const document of currentQuerySnapshot.docs) {
+            const newDocRef = doc(db, String(newPriority), document.id);
+            await setDoc(newDocRef, document.data());
+            await deleteDoc(document.ref);
+          }
+
+          const tempQuerySnapshot = await getDocs(tempCollectionRef);
+          for (const document of tempQuerySnapshot.docs) {
+            const currentDocRef = doc(db, String(divID), document.id);
+            await setDoc(currentDocRef, document.data());
+            await deleteDoc(document.ref);
+          }
+          document.querySelector(".loader").style.display = 'none';
+          
+          showMessageBox(`Swapped collections ${divID} and ${newPriority}`, "Priority updated successfully", true);
+        } else {
+          document.querySelector(".loader").style.display = 'none';
+         showMessageBox(`Collection with ID: ${newPriority} does not exist.`, "Please provide a valid priority", false);
+        }
+      }
+    });
+
+    firstContainer.insertBefore(categoryPriorityContainer, firstContainer.firstChild);
+  }
 }
 
 
@@ -1454,7 +1546,7 @@ console.log("Edittor mode ")
       }
       // await edittor1();
       console.log("Both edittor functions have been executed.");
-    }, 5000);
+    }, 1000);
   } catch (error) {
     console.error("Error executing edittor functions:", error);
   }

@@ -11,12 +11,12 @@ import sendWhatsapp from '../utilis/sendWhatsapp';
 import postOrder from '../utilis/postOrder'
 function toggleSidebar() {
     var sidebar = document.querySelector('.sidebar');
-    if (sidebar.style.display === 'none' || sidebar.style.display === '') {
-        sidebar.style.display = 'block';
-    } else {
-        sidebar.style.display = 'none';
+    if (sidebar.style.left === '-164px') {
+        sidebar.style.left = '0px';
+    } else if (sidebar.style.left === '0px') {
+        sidebar.style.left = '-164px';
     }
-    }
+}
 
     
      async function dispatchOrder(orderData, orderDocID) {
@@ -164,287 +164,220 @@ export default function DashboardComponent() {
         document.getElementById('count').textContent = querySnapshot.size;
         document.getElementById('circleGraph').style.display = 'none';
         document.getElementById('financeChart').style.display = 'none';
-        async function updateConfirm() {
-        // Fetch all documents from the 'orders' collection
-        const querySnapshot = await getDocs(collection(db, 'orders'));
-        
-        // Get all elements with the class 'confirmButton'
-        const confirmButtons = document.querySelectorAll('.confirmButton');
-         editButtons = document.querySelectorAll('.editButton');
-        if(collectionID === "dispatched"){
-            editButtons.style.display = 'none';
-        }
 
-        confirmButtons.forEach(confirmBtn => {
-        // Find the element with ID 'docid' within the closest parent div
-        let docElement = confirmBtn.closest('div').querySelector('#docid');
-        
-        if (docElement) {
-            const docid = docElement.innerText.trim(); // Extract the document ID from the element's inner text
-        
-            // Find the document with the matching ID
-            let found = false;
-            querySnapshot.forEach(docSnapshot => {
-                if (docSnapshot.id === docid) {
-                    found = true;
-                    const data = docSnapshot.data();
-                    if (data && data.confirm) {
-                        // Update the button with the confirm field data
-                        confirmBtn.innerText = data.confirm;
-                        confirmBtn.style.backgroundColor = 'darkblue';
-                    } else {
-                        console.log('No confirm field found in the document.');
+        async function updateConfirm() {
+            const querySnapshot = await getDocs(collection(db, 'orders'));
+            const confirmButtons = document.querySelectorAll('.confirmButton');
+            editButtons = document.querySelectorAll('.editButton');
+            if (collectionID === "dispatched") {
+                editButtons.forEach(button => button.style.display = 'none');
+            }
+
+            confirmButtons.forEach(confirmBtn => {
+                let docElement = confirmBtn.closest('div').querySelector('#docid');
+                if (docElement) {
+                    const docid = docElement.innerText.trim();
+                    let found = false;
+                    querySnapshot.forEach(docSnapshot => {
+                        if (docSnapshot.id === docid) {
+                            found = true;
+                            const data = docSnapshot.data();
+                            if (data && data.confirm) {
+                                confirmBtn.innerText = data.confirm;
+                                confirmBtn.style.backgroundColor = 'darkblue';
+                            } else {
+                                console.log('No confirm field found in the document.');
+                            }
+                        }
+                    });
+                    if (!found) {
+                        console.log('No such document!');
                     }
+                } else {
+                    console.log('Element with ID "docid" not found in the parent div.');
                 }
             });
-        
-            if (!found) {
-                console.log('No such document!');
-            }
-        } else {
-            console.log('Element with ID "docid" not found in the parent div.');
         }
-        });
-        }
-        
-    
-    
-    
-    
-    
-        
+
         if (querySnapshot.empty) {
-        document.getElementById('countDisplay').textContent = 0;
-        console.log("No documents found!");
-        document.getElementById('dataDisplay').innerHTML = "No documents found.";
+            document.getElementById('countDisplay').textContent = 0;
+            console.log("No documents found!");
+            document.getElementById('dataDisplay').innerHTML = "No documents found.";
         } else {
-        const title = document.getElementById("title");
-        const writes = document.getElementById("writes");
-        title.innerHTML = `<strong style="margin-left: 2px;font-weight: bolder;font-size: 20px;" >NEW ORDERS </strong>`;
-        writes.style.display = 'block';
-        const dataDisplay = document.getElementById('dataDisplay');
-        dataDisplay.style.display = 'block';
-        dataDisplay.innerHTML = ""; // Clear previous content
-        
-        let newCounter = 1;
-         createdCounter = 1;
-         // To track if we've created the "Created on Courier" heading
-        
-        
-    
-    
-     
-        
-        // Sort the documents by date in descending order (latest first)
-         sortedDocs = querySnapshot.docs.sort((a, b) => {
-            const dateA = new Date(a.data().Date || a.data().orderedDate);
-            const dateB = new Date(b.data().Date || b.data().orderedDate);
-            return dateB - dateA; // Descending order
-        });
-        
-        // First loop to display "New Orders" (those with "Pre Dispatch First")
-        for (const doc of sortedDocs) {
-            const data = doc.data();
-            console.log("Document data:", data);
-        
-            const divID = `order-${newCounter}`;
-    const orderDiv = document.createElement('div');
-    orderDiv.id = divID;
-    orderDiv.className = 'orderids';
-    await productsData(orderDiv,doc);
-    // Assuming you want to append orderDiv to a parent element in the DOM
-    document.body.appendChild(orderDiv); // Or replace with your desired parent element
-    
-    
-            
-        
-            if (data.logo) {
-        orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}">`;
-        }
-        
-        if (data.backImage) {
-        if (data.logo) {
-        // If both exist, add a single <br> between them
-        orderDiv.innerHTML += `<br>`;
-        }
-        orderDiv.innerHTML += `<img class="images" style="height:auto;width:25%" id="backSrc" src="${data.backImage}"><br>`;
-        } else if (data.logo) {
-        // If only logo exists, add a <br> after it
-        orderDiv.innerHTML += `<br>`;
-        }
-        
-            orderDiv.innerHTML += `
-                <strong style="color:green;" id="customerCount">${newCounter}:</strong><br>
-               
-                <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
-                <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-<strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><br>                
-                `;
-                if(collectionID ==="orders"){
-               orderDiv.innerHTML += `<strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-               `;}
-               else if(collectionID ==="dispatched"){
-                orderDiv.innerHTML += ` <strong>Tracking ID:</strong> ${data.tracking}<br>
-                <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
-                                    
-                                         <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchDate}<br>
-                                         <strong id="orderedDate">orderedDate:</strong> ${data.orderedDate}<br>
-                 
-                `;}
-              orderDiv.innerHTML += `
-               <strong id="Address">Address:</strong> ${data.Address}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Address"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                <strong id="City">City:</strong> ${data.City}<button class="editButton" data-doc-id="${doc.id}" data-field-name="City"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                <strong id="Contact">Contact:</strong> ${data.Contact}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Contact"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                
-               
-    
-                <strong id="Details">Details:</strong> ${data.Details}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Details"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                <strong id="Email">Email:</strong> ${data.Email}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Email"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-                if (data.currentLoc) {
-                orderDiv.innerHTML += `<strong id="Email">Current Location:</strong> <a href="${data.currentLoc}">See Current Location</a><button class="editButton" data-doc-id="${doc.id}" data-field-name="currentLoc"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-            }
-                if (data.productSale) {
-                orderDiv.innerHTML += `<strong id="productSell">Product Sale:</strong> ${data.productSale}<button class="editButton" data-doc-id="${doc.id}" data-field-name="productSale"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-            }
-            if (data.backSize) {
-                orderDiv.innerHTML += `<strong id="backSize">Back Print Size:</strong> ${data.backSize}<button class="editButton" data-doc-id="${doc.id}" data-field-name="backSize"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-            }
-            if (data.frontSize) {
-                orderDiv.innerHTML += `<strong id="frontSize">Back Print Size:</strong> ${data.frontSize}<button class="editButton" data-doc-id="${doc.id}" data-field-name="frontSize"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-            }
-        
-            if (data.productID) {
-                orderDiv.innerHTML += `<strong id="productID">Product ID:</strong> ${data.productID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="productID"><span style="font-size:small; opacity:0.7;">✎</span></button>`;
-            }
-            if(collectionID==="orders"){
-            if (!data.productSP || !data.productCP) {
-                orderDiv.innerHTML += `<span class="preir" style="color:Red;font-weight:bolder;">Not Dispatched yet</span>`;
-                
-            }}
-            dataDisplay.appendChild(orderDiv);
-                newCounter++;
-            
-        if(collectionID==="orders"){
-            orderDiv.innerHTML += `
-                <button class="dispatchButton">Dispatch</button>
-                <button id="confirmedButton${newCounter}" style="background-color:green;" class="confirmButton">Confirm</button>
-                <button style="background-color:lightgreen;" class="delayButton">Delay/Book</button>
-                <button style="background-color:red;" class="cancelButton">Cancel</button>
-                <button class="deleteButton">Delete</button>
-            </div>`;
-         } else if (collectionID === "dispatched")
-                {
-                    orderDiv.innerHTML += `           <strong>Petrol:</strong> ${data.petrol}<br>
-                                             <strong>Profit:</strong> ${data.profit}<br>
-                                             <button style="background-color:green;margin-top:10px;" class="deliveredButton">Delivered</button>
-                                             <button style="margin-top:10px" class="returnedButton">Returned</button>
-                                             <button class="reorderButton" style="margin-top:10px;background-color:red;">Push to orders</button>
-</div>`;
-            }
-            }
-        
-        }
-        
-        // Second loop to display "Created on Courier" orders (those without "Pre Dispatch First")
-        for (const doc of sortedDocs) {
-            const data = doc.data();
-        
-            if (data.productSP && data.productCP) {
-                if (!createdOrdersDisplayed) {
-                    dataDisplay.innerHTML += `<h2 style="color:blue;">Created on Courier</h2>`;
-                    createdOrdersDisplayed = true;
-                }
-        
-                const divID = `order-${createdCounter}`;
+            const title = document.getElementById("title");
+            const writes = document.getElementById("writes");
+            title.innerHTML = `<strong style="margin-left: 2px;font-weight: bolder;font-size: 20px;">${collectionID === "dispatched" ? "DISPATCHED" : "NEW ORDERS"}</strong>`;
+            writes.style.display = 'block';
+            const dataDisplay = document.getElementById('dataDisplay');
+            dataDisplay.style.display = 'block';
+            dataDisplay.innerHTML = "";
+
+            let newCounter = 1;
+            createdCounter = 1;
+            let createdOrdersDisplayed = false;
+
+            sortedDocs = querySnapshot.docs.sort((a, b) => {
+                const dateA = new Date(a.data().Date || a.data().orderedDate);
+                const dateB = new Date(b.data().Date || b.data().orderedDate);
+                return dateB - dateA;
+            });
+
+            for (const doc of sortedDocs) {
+                const data = doc.data();
+                console.log("Document data:", data);
+
+                const divID = `order-${newCounter}`;
                 const orderDiv = document.createElement('div');
                 orderDiv.id = divID;
                 orderDiv.className = 'orderids';
-        
-               
-        
-        
+                await productsData(orderDiv, doc);
+                document.body.appendChild(orderDiv);
+
                 if (data.logo) {
-                    orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}"><br>`;
+                    orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}">`;
                 }
-        
+
+                if (data.backImage) {
+                    if (data.logo) {
+                        orderDiv.innerHTML += `<br>`;
+                    }
+                    orderDiv.innerHTML += `<img class="images" style="height:auto;width:25%" id="backSrc" src="${data.backImage}"><br>`;
+                } else if (data.logo) {
+                    orderDiv.innerHTML += `<br>`;
+                }
+
                 orderDiv.innerHTML += `
-                    <strong style="color:green;" id="customerCount">${createdCounter}:</strong><br>
-                    
+                    <strong style="color:green;" id="customerCount">${newCounter}:</strong><br>
                     <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
                     <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                    <strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                    <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><hr>
+                    <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+
+                if (collectionID === "orders") {
+                    orderDiv.innerHTML += `<strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+                } else if (collectionID === "dispatched") {
+                    orderDiv.innerHTML += `<strong>Tracking ID:</strong> ${data.tracking}<br>
+                        <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
+                        <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchDate}<br>
+                        <strong id="orderedDate">orderedDate:</strong> ${data.orderedDate}<br>`;
+                }
+
+                orderDiv.innerHTML += `
                     <strong id="Address">Address:</strong> ${data.Address}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Address"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
                     <strong id="City">City:</strong> ${data.City}<button class="editButton" data-doc-id="${doc.id}" data-field-name="City"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
                     <strong id="Contact">Contact:</strong> ${data.Contact}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Contact"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                  
                     <strong id="Details">Details:</strong> ${data.Details}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Details"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
                     <strong id="Email">Email:</strong> ${data.Email}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Email"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-        
-                if (data.productID) {
-                    orderDiv.innerHTML += `<strong id="productID">Product ID:</strong> ${data.productID}<button class="editButton"><span style="font-size:small; opacity:0.7;">Edit</span></button>`;
+
+                if (data.currentLoc) {
+                    orderDiv.innerHTML += `<strong id="Email">Current Location:</strong> <a href="${data.currentLoc}">See Current Location</a><button class="editButton" data-doc-id="${doc.id}" data-field-name="currentLoc"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
                 }
-        
-                orderDiv.innerHTML += `
-                    <div style="border: 2px solid green;background-color: lightgrey;"><strong>ProductSP : ${data.productSP}</strong>
-                    <br><strong>Petrol : ${data.petrol}</strong>
-                    <br><strong>ProductCP : ${data.productCP}</strong>
-                    <br><strong>Tracking Link : ${data.trackingLink}</strong></div>`;
-                    if(collectionID === "orders"){
-                orderDiv.innerHTML += `
-                    <button class="dispatchButton">Dispatch</button>
-                    <button id="confirmedButton${createdCounter}" style="background-color:green;" class="confirmButton">Confirm</button>
-                    <button style="background-color:lightgreen;" class="delayButton">Delay/Book</button>
-                    <button style="background-color:red;" class="cancelButton">Cancel</button>
-                    <button class="deleteButton">Delete</button>
-                </div>`;
-                    }else if(collectionID === "dispatched"){
-                            orderDiv.innerHTML += `           <strong>Petrol:</strong> ${data.petrol}<br>
-                                                     <strong>Profit:</strong> ${data.profit}<br>
-                                                     <button style="background-color:green;margin-top:10px;" class="deliveredButton">Delivered</button>
-                                                     <button style="margin-top:10px" class="returnedButton">Returned</button>
-                                                     <button class="reorderButton" style="margin-top:10px;background-color:red;">Push to orders</button>
-    </div>`;
+                if (data.productSale) {
+                    orderDiv.innerHTML += `<strong id="productSell">Product Sale:</strong> ${data.productSale}<button class="editButton" data-doc-id="${doc.id}" data-field-name="productSale"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+                }
+                if (data.backSize) {
+                    orderDiv.innerHTML += `<strong id="backSize">Back Print Size:</strong> ${data.backSize}<button class="editButton" data-doc-id="${doc.id}" data-field-name="backSize"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+                }
+                if (data.frontSize) {
+                    orderDiv.innerHTML += `<strong id="frontSize">Back Print Size:</strong> ${data.frontSize}<button class="editButton" data-doc-id="${doc.id}" data-field-name="frontSize"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+                }
+
+                if (data.productID) {
+                    orderDiv.innerHTML += `<strong id="productID">Product ID:</strong> ${data.productID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="productID"><span style="font-size:small; opacity:0.7;">✎</span></button>`;
+                }
+                if (collectionID === "orders") {
+                    if (!data.productSP || !data.productCP) {
+                        orderDiv.innerHTML += `<span class="preir" style="color:Red;font-weight:bolder;">Not Dispatched yet</span>`;
                     }
+                }
                 dataDisplay.appendChild(orderDiv);
-                createdCounter++;
+                newCounter++;
+
+                if (collectionID === "orders") {
+                    orderDiv.innerHTML += `
+                        <button class="dispatchButton">Dispatch</button>
+                        <button id="confirmedButton${newCounter}" style="background-color:green;" class="confirmButton">Confirm</button>
+                        <button style="background-color:lightgreen;" class="delayButton">Delay/Book</button>
+                        <button style="background-color:red;" class="cancelButton">Cancel</button>
+                        <button class="deleteButton">Delete</button>
+                    </div>`;
+                } else if (collectionID === "dispatched") {
+                    orderDiv.innerHTML += `<strong>Petrol:</strong> ${data.petrol}<br>
+                        <strong>Profit:</strong> ${data.profit}<br>
+                        <button style="background-color:green;margin-top:10px;" class="deliveredButton">Delivered</button>
+                        <button style="margin-top:10px" class="returnedButton">Returned</button>
+                        <button class="reorderButton" style="margin-top:10px;background-color:red;">Push to orders</button>
+                    </div>`;
+                }
+            }
+
+            if (collectionID === "orders") {
+                for (const doc of sortedDocs) {
+                    const data = doc.data();
+                    if (data.productSP && data.productCP) {
+                        if (!createdOrdersDisplayed) {
+                            dataDisplay.innerHTML += `<h2 style="color:blue;">Created on Courier</h2>`;
+                            createdOrdersDisplayed = true;
+                        }
+
+                        const divID = `order-${createdCounter}`;
+                        const orderDiv = document.createElement('div');
+                        orderDiv.id = divID;
+                        orderDiv.className = 'orderids';
+
+                        if (data.logo) {
+                            orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}"><br>`;
+                        }
+
+                        orderDiv.innerHTML += `
+                            <strong style="color:green;" id="customerCount">${createdCounter}:</strong><br>
+                            <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
+                            <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><hr>
+                            <strong id="Address">Address:</strong> ${data.Address}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Address"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="City">City:</strong> ${data.City}<button class="editButton" data-doc-id="${doc.id}" data-field-name="City"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="Contact">Contact:</strong> ${data.Contact}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Contact"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="Details">Details:</strong> ${data.Details}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Details"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
+                            <strong id="Email">Email:</strong> ${data.Email}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Email"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
+
+                        if (data.productID) {
+                            orderDiv.innerHTML += `<strong id="productID">Product ID:</strong> ${data.productID}<button class="editButton"><span style="font-size:small; opacity:0.7;">Edit</span></button>`;
+                        }
+
+                        orderDiv.innerHTML += `
+                            <div style="border: 2px solid green;background-color: lightgrey;"><strong>ProductSP : ${data.productSP}</strong>
+                            <br><strong>Petrol : ${data.petrol}</strong>
+                            <br><strong>ProductCP : ${data.productCP}</strong>
+                            <br><strong>Tracking Link : ${data.trackingLink}</strong></div>`;
+
+                        orderDiv.innerHTML += `
+                            <button class="dispatchButton">Dispatch</button>
+                            <button id="confirmedButton${createdCounter}" style="background-color:green;" class="confirmButton">Confirm</button>
+                            <button style="background-color:lightgreen;" class="delayButton">Delay/Book</button>
+                            <button style="background-color:red;" class="cancelButton">Cancel</button>
+                            <button class="deleteButton">Delete</button>
+                        </div>`;
+                        dataDisplay.appendChild(orderDiv);
+                        createdCounter++;
+                    }
+                }
+                await updateConfirm();
+                Array.from(editButtons).forEach(button => {
+                    button.style.display = 'block';
+                    button.addEventListener('click', (event) => {
+                        const docId = button.dataset.docId;
+                        const fieldName = button.dataset.fieldName;
+                        const isDropdown = button.dataset.isDropdown === 'true';
+                        editField(docId, fieldName, isDropdown, event);
+                    });
+                });
+                addEventListenersToButtons(querySnapshot);
+            } else if (collectionID === "dispatched") {
+                addReorderButtonEventListeners(querySnapshot, collectionID);
+                addEventListenersToButtons1(querySnapshot);
             }
         }
-        if(collectionID === "orders"){
-        await updateConfirm();
-        // Add event listeners for edit buttons after all elements are created
-        
-        Array.from(editButtons).forEach(button => {
-            button.style.display = 'block'; // Ensure you're targeting each button correctly
-            button.addEventListener('click', (event) => { // Don't forget to include event as a parameter here
-                const docId = button.dataset.docId; // Get docId from data attribute
-                const fieldName = button.dataset.fieldName; // Get fieldName from data attribute
-                const isDropdown = button.dataset.isDropdown === 'true'; // Check if isDropdown is true
-        
-                // Call editField with the retrieved parameters
-                editField(docId, fieldName, isDropdown, event);
-            });
-        });
-        
-    
-        
-        
-        
-        
-       
-   
-        addEventListenersToButtons(querySnapshot);}
-
-
-        else if(collectionID === "dispatched"){
-            addReorderButtonEventListeners(querySnapshot, collectionID);
-    
-            // Add event listeners to the newly added buttons
-            addEventListenersToButtons1(querySnapshot);
-        }
-        
-        }
+    }
         
     const login = document.getElementById("login");
     const dispatchForm = document.getElementById("dispatchForm");
@@ -2511,46 +2444,46 @@ function incrementStock(orderData) {
   <span style={{ color: 'red', fontWeight: 'bolder', fontSize: '75px' }} id="count">0</span>
 </div>
 
-<div className="sidebar" style={{ display: 'none' }}>
-  <button id="sidebarToggle" style={{ color: 'black', backgroundColor: 'whitesmoke', width: '28px' }} onClick={toggleSidebar}>&#9776;</button>
+<div className="sidebar" style={{ display: 'none',left: '-164px' }}>
+  <button id="sidebarToggle"  style={{ color: 'white', backgroundColor: 'black', width: '28px' }} onClick={toggleSidebar}>&#9776;</button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getData">
-    <img src="./assets/images/gift.png" alt="gift" />
+    <img src="/dashboard/gift.png" alt="gift" />
     NEW ORDERS
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getDispatch">
-    <img src="./assets/images/contact.png" alt="contact" />
+    <img src="/dashboard/contact.png" alt="contact" />
     DISPATCHED
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getDelivered">
-    <img src="./assets/images/delivered.png" alt="delivered" />
+    <img src="/dashboard/delivered.png" alt="delivered" />
     DELIVERED
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getReturns">
-    <img src="./assets/images/return.png" alt="return" />
+    <img src="/dashboard/return.png" alt="return" />
     RETURNED
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getDelayed">
-    <img src="./assets/images/delayed.png" alt="delayed" />
+    <img src="/dashboard/delayed.png" alt="delayed" />
     DELAYED
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getCancelled">
-    <img src="./assets/images/cancelled.png" alt="cancelled" />
+    <img src="/dashboard/cancelled.png" alt="cancelled" />
     CANCELLED
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getCustomers">
-    <img src="./assets/images/data.png" alt="data" />
+    <img src="/dashboard/data.png" alt="data" />
     CUSTOMERS DATA
   </button>
   <br />
   <button style={{ marginLeft: '7px' }} id="getProducts">
-    <img src="./assets/images/ims.png" alt="ims" />
+    <img src="dashboard/ims.png" alt="ims" />
     Add Products
   </button>
   <br />

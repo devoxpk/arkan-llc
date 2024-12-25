@@ -1,6 +1,7 @@
 body{
     background-color:black;
     color: white;
+
 }
 
 
@@ -66,7 +67,7 @@ body{
     margin-top: 10px;
     position: relative;
     left: -24px;
-    height: 335px;
+    
 }
 
 .details-row div {
@@ -269,6 +270,7 @@ body{
 .confirm-button-unique {
     background-color: #28a745;
     color: white;
+    
     padding: 10px 20px;
     border: none;
     border-radius: 5px;

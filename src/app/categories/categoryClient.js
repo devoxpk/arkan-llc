@@ -1,7 +1,7 @@
 "use client"; // Ensure this is a client component
 
 import React, { useState, useEffect, Suspense } from "react";
-import Products from "../components/productsWindow";
+
 
 function CategoryClient({ category }) {
   const [categoryState, setCategory] = useState([category]);

@@ -1627,6 +1627,9 @@ h1, h4, p {
 
 
 @media screen and (max-width: 767px) {
+  .gallery-imagex{
+    height: 90vh;
+  }
   .product-list.responsive-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

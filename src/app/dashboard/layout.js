@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }) {
       flexDirection: "column",
       minHeight: "100vh",
       margin: 0,
-      padding: 0,
+      padding: "20px"
     }}
   >
         {children}

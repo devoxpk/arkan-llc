@@ -29,15 +29,23 @@
         `;
         container.appendChild(addButton);
     
-        // Create Add Category button
-        const addCategoryButton = document.createElement('button');
-        addCategoryButton.type = 'button';
-        addCategoryButton.className = 'button';
-        addCategoryButton.id = `Add-Category-${divID}`;
-        addCategoryButton.innerHTML = `
-            <span class="button__text">Add Category</span>
-        `;
-        container.appendChild(addCategoryButton);
+        // Check if Add Category button already exists
+        let addCategoryButton = document.getElementById(`Add-Category`);
+        if (!addCategoryButton) {
+            // Create Add Category button
+            addCategoryButton = document.createElement('button');
+            addCategoryButton.type = 'button';
+            addCategoryButton.className = 'button';
+            addCategoryButton.id = `Add-Category`;
+            addCategoryButton.innerHTML = `
+                <span class="button__text">Add Category</span>
+            `;
+            addCategoryButton.style.zIndex = '9';
+            addCategoryButton.style.position = 'fixed';
+            addCategoryButton.style.bottom = '10px';
+            addCategoryButton.style.cursor = 'pointer';
+            container.appendChild(addCategoryButton);
+        }
     
         // Create form container for product
         const formContainer = document.createElement('div');
@@ -239,7 +247,6 @@
           // Add category and product to Firestore
           const categoryRef = doc(db, String(nextCategoryId), '1');
           await setDoc(categoryRef, {
-              headers: [firstHeader, secondHeader],
               productName,
               price: productPrice,
               productCP: productCost,
@@ -247,6 +254,13 @@
               dPrice: discountPrice,
               createdAt: serverTimestamp()
           });
+
+          // Set headers for the category
+          const headersRef = doc(db, String(nextCategoryId), 'headers');
+          await setDoc(headersRef, {
+              header: [firstHeader, secondHeader]
+          });
+
           await forceRefreshProducts(divID);
           console.log('Category and product added successfully');
       } catch (error) {

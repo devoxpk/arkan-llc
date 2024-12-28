@@ -6,6 +6,7 @@ import Sizes from "./sizes";
 import Cart from './cart';
 import Chatbot from './chatbot.jsx';
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { useAuth, useSignOut } from '../context/AuthContext';
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
@@ -231,7 +232,7 @@ function Navbar() {
             
               <Link href="/" legacyBehavior>
                 <a className="logo">
-                  <img id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="auto" />
+                  <Image id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="0" style={{height:"auto"}} />
                 </a>
               </Link>
           <span id='brandNameSpan'>
@@ -294,7 +295,7 @@ function Navbar() {
                   
                   <Link href="/" legacyBehavior>
                     <a className="logo">
-                      <img src="/logo/dwlogo.png" alt="Nouve Shirts in Pakistan" width="55" height="auto" />
+                      <Image src="/logo/dwlogo.png" alt="Nouve Shirts in Pakistan" width="55" height="0" style={{height:"auto"}} />
                     </a>
                   </Link>
               <button className="nav-close-btn" onClick={toggleNavbar} aria-label="Close Menu">

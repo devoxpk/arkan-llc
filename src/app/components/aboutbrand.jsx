@@ -3,7 +3,7 @@ import { db } from "../firebase"; // Server-side Firebase import
 import Link from "next/link";
 import '../css/aboutbrand.css';
 import AboutBrandEditor from './AboutBrandEditor'; // Import the client component
-
+import Image from 'next/image'
 const AboutBrand = async () => {
   let imgLink = "";
 

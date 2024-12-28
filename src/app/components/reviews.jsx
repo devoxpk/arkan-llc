@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { db, storage } from "../firebase";
+import Image from 'next/image'
 import {
   doc,
   getDoc,
@@ -339,7 +340,7 @@ const Reviews = ({ productName }) => {
                       {showImageIds.includes(review.id) ? "Hide Review Image" : "Show Review Image"}
                     </button>
                     {showImageIds.includes(review.id) && (
-                      <img src={review.imgSrc} alt="Review" style={{ width: "100px", height: "auto" }} />
+                      <img src={review.imgSrc} alt="Review" style={{ width: "100px", height: "auto" }} layout="intrinsic"/>
                     )}
                   </>
                 )}

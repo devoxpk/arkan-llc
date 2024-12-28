@@ -141,7 +141,7 @@ export default function Sizes(){
       };
       
 
-      const handleUpdate = async (fieldName, docID, updatedValues) => {
+      const handleUpdate = async (fieldName, docID="sizechart", updatedValues) => {
         try {
           // Reference the document within the "sizeChart" collection
           const docRef = doc(db, colID, docID);
@@ -163,7 +163,7 @@ export default function Sizes(){
       };
 
       
-      const handleDelete = async (fieldName, docID) => {
+      const handleDelete = async (fieldName, docID="sizechart") => {
         try {
           // Reference the document within the "sizeChart" collection
           const docRef = doc(db, colID, docID);
@@ -261,8 +261,8 @@ export default function Sizes(){
     console.log("Starting fetch for size chart...");
 
     try {
-        setSizeChart(null);
-        setColID(null);
+      setSizeChart(null);
+        setColID(collectionID);
         setiSSizeChart(false);
      
       const collectionRef = collection(db, collectionID);
@@ -294,7 +294,7 @@ export default function Sizes(){
           // Update the state with size chart data
 
           setSizeChart(sizeChartData);
-          setColID(collectionID)
+         
           
           console.log(iSSizeChart);
           
@@ -608,6 +608,7 @@ return(
     <button
       className="cartBtn"
       onClick={() => handleCart()}
+      style={{width:"355px",marginLeft:"-7%"}}
     >
       Checkout
     </button>
@@ -616,6 +617,7 @@ return(
   <button
     className="cartBtn"
     onClick={() => handleCart()}
+   
   >
     Add to Cart
   </button>

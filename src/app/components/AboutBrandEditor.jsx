@@ -11,13 +11,16 @@ const AboutBrandEditor = ({ currentImgLink }) => {
     const checkEditCondition = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const edit = searchParams.get("edit");
-
+      console.log(edit)
       if (
-        edit !== null &&
-        localStorage.getItem(process.env.NEXT_PUBLIC_PUBLIC_EDIT_KEY) ===
+        edit &&
+        localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY) ===
           process.env.NEXT_PUBLIC_EDIT_VALUE
       ) {
+        console.log("about brand edit enable")
         setIsEditing(true);
+      }else{
+        console.log("about brand edit disable")
       }
     };
 

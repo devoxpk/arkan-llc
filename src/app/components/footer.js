@@ -4,6 +4,7 @@ import { db } from '../firebase'; // Import Firestore instance
 import { doc, getDoc } from 'firebase/firestore';
 import saveContact from '../utilis/saveContact';
 import Link from "next/link";
+import Image from 'next/image'
 
 function Footer() {
   const [categories, setCategories] = useState([]);
@@ -125,9 +126,16 @@ function Footer() {
         <div className="footer-top">
           <div className="container">
             <div className="footer-brand">
-              <a href="#" className="logo">
-                <img style={{ marginTop: '-25%' }} src="/logo/dwlogo.png" alt="Nouve logo" />
-              </a>
+            <Link href="/" legacyBehavior>
+  <a className="logo">
+    <img 
+      style={{ marginTop: '-25%' }} 
+      src="/logo/dwlogo.png" 
+      alt="Nouve logo" 
+    />
+  </a>
+</Link>
+
               <p className="footer-text">
                 Nouve is a fashion theme for presenting a complete wardrobe of uniquely crafted Ethnic Wear, Casuals,
                 Edgy Denims, & Accessories inspired by the most contemporary styles.

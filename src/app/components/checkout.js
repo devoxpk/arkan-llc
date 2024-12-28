@@ -18,9 +18,7 @@ let isAvailable;
 let initializePage;
 export default function Checkout() {
     const [renderReviews, setRenderReviews] = useState(isAvailable);
-    useEffect(() => {
-        console.log("Checkout run");
-    }, []);
+  
 
     // Use the custom hook from the context
     const { setIsReviewVisible } = useReviewVisibility();
@@ -30,6 +28,7 @@ export default function Checkout() {
     // Delay the execution by 5 seconds
 
     function openSizeChart() {
+        console.log("opening sizechart")
         fetchSizeChart(getQueryParameter("cat"));
     }
     useEffect(() => {
@@ -610,40 +609,72 @@ export default function Checkout() {
                         className="btn normal"
                         onClick={(event) => {
                             const params = new URLSearchParams(window.location.search);
-                            document.querySelector(".cartBtn").innerText = "Add";
-
-                            // Extract product details and trim "Rs. " from the price
+                            let baseUrl = params.get("ImageSrc");
+                            const token = params.get("token");
+                        
+                            if (baseUrl) {
+                                baseUrl = baseUrl
+                                    .replace(/(products\/)/, "products%2F") // Encode "products/"
+                                    .replace(/ /g, "%20") // Encode spaces
+                                    .replace(/\|/g, "%7C") // Encode "|"
+                                    .replace(/\(/g, "%28") // Encode "("
+                                    .replace(/\)/g, "%29"); // Encode ")"
+                            }
+                        
+                            const pic = token ? `${baseUrl}&token=${token}` : baseUrl;
+                        
                             const product = {
-                                pic: params.get("ImageSrc"),
+                                pic: pic,
                                 productName: params.get("pname"),
                                 price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
                                 id: Date.now() // Generate unique ID based on current time
                             };
-
+                        
                             // Call handleCart with the product and cart items
                             handleCart(event, product, cartItems, setCartItems);
+                            openSizeChart();
                         }}
+                        
                     >
                         Add to Cart
                     </button>
                     <button style={{ background: "black", display: "flex", color: "white", width: "100%", marginTop: " 6%",
-                        justifyContent: "center" }} onClick={(event) => {
+                        justifyContent: "center" }}
+                        onClick={(event) => {
                             const params = new URLSearchParams(window.location.search);
-                            document.querySelector(".cartBtn").innerText = "checkout";
-                            // Extract product details and trim "Rs. " from the price
+                        
+                            // Get and encode ImageSrc
+                            let baseUrl = params.get("ImageSrc");
+                            const token = params.get("token");
+                        
+                            if (baseUrl) {
+                                baseUrl = baseUrl
+                                    .replace(/(products\/)/, "products%2F") // Encode "products/"
+                                    .replace(/ /g, "%20") // Encode spaces
+                                    .replace(/\|/g, "%7C") // Encode "|"
+                                    .replace(/\(/g, "%28") // Encode "("
+                                    .replace(/\)/g, "%29"); // Encode ")"
+                            }
+                        
+                            const pic = token ? `${baseUrl}&token=${encodeURIComponent(token)}` : baseUrl;
+                        
+                            // Extract product details
                             const product = {
-                                pic: params.get("ImageSrc"),
+                                pic: pic, // Final encoded URL
                                 productName: params.get("pname"),
-                                price: params.get("pprice")?.replace("Rs. ", ""),
-                                id: Date.now()
+                                price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
+                                id: Date.now() // Generate unique ID based on current time
                             };
-
+                        
                             // Call handleCart with the product and cart items
                             handleCart(event, product, cartItems, setCartItems);
+                            openSizeChart();
+                        
+                            // Store purchase status in localStorage
                             localStorage.setItem("purchase", "0010");
+                        }}
 
-
-                        }} >
+>
                         Buy it now
                     </button>
 
@@ -683,6 +714,7 @@ export default function Checkout() {
                                 alt="T shirts"
                                 src="/logo/sizecharticon.png"
                                 style={{ width: "10%" }}
+                               
                             />
                             SIZE GUIDE
                         </span>

@@ -12,6 +12,12 @@
   margin-top: 8%;
   margin-bottom: 6%;
  }
+ @media screen and (min-width:768px) {
+  .custom-dropdown{
+  width: 30%;
+  border-right: 1px solid black;
+  }
+ }
 @media screen and (max-width: 767px){
     .Sizes{
         width: 80px;
@@ -178,7 +184,7 @@
   .custom-dropdown {
     position: fixed;
     background-color: white;
-    width: 57vh;
+    width: 100%;
     border-radius: 8px;
     padding: 20px;
     top: 0px;

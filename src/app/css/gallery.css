@@ -81,6 +81,12 @@
       .gallery-image {
         height: 100vh;
       }
+      .edit-buttonxx{
+        position:relative;
+        top: -44px;
+        z-index: 1000;
+
+      }
     
       .gallery-container {
         overflow-y: scroll; /* Enable vertical scrolling */
@@ -112,6 +118,7 @@
     border: 1px solid #ccc;
     color: #333;
     cursor: pointer;
+
     padding: 5px 10px;
     margin-left: 5px;
     font-size: 14px;

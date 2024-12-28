@@ -159,7 +159,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                       <div className="product-card">
                         <figure className="card-banner">
                           {canEdit ? (
-                            <img
+                            <Image
                               src={product.pic}
                               alt={product.productName}
                               loading="lazy"
@@ -174,7 +174,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                               legacyBehavior
                             >
                               <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                <img
+                                <Image
                                   src={product.pic}
                                   alt={product.productName}
                                   loading="lazy"
@@ -298,7 +298,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                           <div className="product-card">
                             <figure className="card-banner">
                               {canEdit ? (
-                                <img
+                                <Image
                                   src={product.pic}
                                   alt={product.productName}
                                   loading="lazy"
@@ -313,7 +313,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                   legacyBehavior
                                 >
                                   <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                    <img
+                                    <Image
                                       src={product.pic}
                                       alt={product.productName}
                                       loading="lazy"

@@ -5,7 +5,7 @@ import { db, storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import Link from 'next/link';
 import "../css/corouselposter.css";
-
+import Image from 'next/image'
 const FIRST_IMAGE_CACHE_KEY = "cachedFirstImage";
 
 const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirstImage }) => {

@@ -8,7 +8,7 @@ import postOrder from "../utilis/postOrder"; // Ensure postOrder is imported
 import updateOrderField, { updateProductField, deleteProduct } from "../utilis/updateOrder"; // Import update and delete functions
 import deleteOrder from "../utilis/deleteOrder"; // Add deleteOrder import
 import Link from 'next/link';
-
+import Image from 'next/image';
 export default function ThanksPage({ orderDetails, error, docid }) {
     const [trackingInfo, setTrackingInfo] = useState(null);
     const [showCard, setShowCard] = useState(false);
@@ -378,7 +378,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                                                     ×
                                                 </span>
                                             )}
-                                            <img src={product.pic} alt={product.productName} style={{ width: "100px", height: "100px", objectFit: "cover" }} />
+                                            <Image src={product.pic} alt={product.productName} width={0} height={0} style={{ width: "100px", height: "100px", objectFit: "cover" }} layout="intrinsic"/>
                                             <div className="product-info">
                                                 <p><strong>{product.productName}</strong></p>
                                                 <p>Price: {product.price}</p>

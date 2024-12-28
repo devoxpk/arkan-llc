@@ -107,7 +107,7 @@ const Cart = ({cartStyle = false}) => {
         if(!cartStyle){
             const handleClickOutside = (event) => {
                 if (cartRef.current && !cartRef.current.contains(event.target)) {
-                    const cartCard = document.querySelector(".cart-card");
+                    const cartCard = document.querySelector("#cart-out");
                     if (cartCard) {
                         cartCard.style.display = "none"; // Close the cart
                     }
@@ -218,6 +218,7 @@ const Cart = ({cartStyle = false}) => {
     return (
 <div
       ref={cartRef}
+      id='cart-out'
       className={`cart-card ${cartStyle ? "purchase-cart" : ""}`}
       style={{ display: cartStyle ? "block" : "none" }}
     >
@@ -251,7 +252,7 @@ const Cart = ({cartStyle = false}) => {
                                             {/* Add a span for the size below the product name */}
                                             {item.size && (
     <span className="text-muted" style={{ fontSize: "0.9em",fontWeight:"bolder" }} value={item.size}>
-    {item.size === 36 ? 'Small' : item.size === 40 ? 'Medium' : item.size === 45 ? 'Large' : 'Unknown'}
+    {item.size === 36 ? 'Small' : item.size === 40 ? 'Medium' : item.size === 45 ? 'Large' :item.size === 48 ? 'Extra Large': 'Unknown'}
     </span>
 )}
 

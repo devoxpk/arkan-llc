@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection,updateDoc, deleteField,getDo
 import saveContact from '../utilis/saveContact'
 import showMessageBox from '../utilis/showMessageBox'
 import { useRouter } from 'next/navigation';
-
+import Image from 'next/image'
 export default function PurchaseComponent() {
     const router = useRouter();
 
@@ -295,7 +295,7 @@ let items;
        <>
             <div id="fabricDiv">
                 <h2 id="fabricHead">N O U V E</h2>
-                <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" />
+                <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" alt='TShirts' layout="intrinsic"/>
             </div>
 <div id="purchaseCartMedia">
             <div className="containerx">

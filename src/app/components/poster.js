@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import '../css/poster.css';
-
+import Image from 'next/image'
 const Poster = () => {
   const posters = [
     { 

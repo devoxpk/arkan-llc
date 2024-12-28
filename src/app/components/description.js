@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase"; // Firestore instance
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firestore methods
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"; // Firestore methods
 
 export default function Description() {
   const params = new URLSearchParams(window.location.search);
@@ -31,7 +31,9 @@ export default function Description() {
           const data = docSnap.data();
           setSections(data.sections || []); // Load sections
         } else {
-          console.log("No document found!");
+          console.log("No document found! Setting default document.");
+          await setDoc(docRef, { sections: [] });
+          setSections([]); // Initialize with empty sections
         }
       } catch (error) {
         console.error("Error fetching document:", error);
@@ -154,7 +156,7 @@ export default function Description() {
                 placeholder="Header"
                 value={newHeader}
                 onChange={(e) => setNewHeader(e.target.value)}
-                style={{ display: "block", marginBottom: "10px" }}
+                style={{ display: "block", marginBottom: "10px" ,border:"1px solid black",width:"50%"}}
               />
               <textarea
                 placeholder="Content"
@@ -162,16 +164,16 @@ export default function Description() {
                 onChange={(e) => setNewContent(e.target.value)}
                 rows="5"
                 cols="50"
-                style={{ display: "block", marginBottom: "10px" }}
+                style={{ display: "block", marginBottom: "10px" ,border:"1px solid black",width:"100%"}}
               ></textarea>
               {editingIndex !== null ? (
-                <button onClick={handleSaveEdit}>Save Edit</button>
+                <button onClick={handleSaveEdit} style={{marginBottom:"12px"}}>Save Edit</button>
               ) : (
-                <button onClick={handleAddSection}>Add Section</button>
+                <button onClick={handleAddSection} style={{marginBottom:"12px"}}>Add Section</button>
               )}
               <button
                 onClick={handleSaveChanges}
-                style={{ marginLeft: "10px", display: "block" }}
+                style={{ marginLeft: "10px", display: "block" ,marginBottom:"12px"}}
               >
                 Save All Changes
               </button>

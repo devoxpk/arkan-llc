@@ -4,7 +4,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import "../css/gallery.css";
-
+import Image from 'next/image'
 const FIRST_IMAGE_CACHE_KEY = "cachedFirstImageGallery";
 
 const GalleryClient = ({ galleryImages: initialGalleryImages, initialFirstImage }) => {
@@ -135,7 +135,7 @@ const GalleryClient = ({ galleryImages: initialGalleryImages, initialFirstImage 
       <div className="gallery-container">
         {firstImage ? (
           <div className="image-wrapper">
-            <img src={firstImage} alt="First Image" className="gallery-image" />
+          <img src={firstImage} alt="First Image" className="gallery-image" />
             {isEditing && (
               <>
                 <button

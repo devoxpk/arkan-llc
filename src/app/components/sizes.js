@@ -256,7 +256,7 @@ export default function Sizes(){
     console.log("iSSizeChart updated:", iSSizeChart);
   }, [iSSizeChart]);
 
-  const fetchSizeChart = async (collectionID) => {
+   fetchSizeChart = async (collectionID) => {
     console.log(collectionID);
     console.log("Starting fetch for size chart...");
   

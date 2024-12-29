@@ -128,8 +128,9 @@ function Footer() {
             <div className="footer-brand">
             <Link href="/" legacyBehavior>
   <a className="logo">
-    <img 
-      style={{ marginTop: '-25%' }} 
+    <Image
+    width="100%" height={0} 
+      style={{ marginTop: '-25%',height:"auto"  }} 
       src="/logo/dwlogo.png" 
       alt="Nouve logo" 
     />
@@ -156,8 +157,8 @@ function Footer() {
                   <a className="footer-link">About Brand</a>
                 </Link>
               </li>
-              <li><a href="#" className="footer-link">Payment Type</a></li>
-              
+              {/* <li><a href="#" className="footer-link">Payment Type</a></li> */}
+              <li><Link href='/tracking' legacyBehavior><a className="footer-link">Order Tracking</a></Link></li>
             </ul>
 
             {/* Dynamic Categories List */}
@@ -178,7 +179,7 @@ function Footer() {
               <li><Link href='/FAQ' legacyBehavior><a  className="footer-link">FAQ Information</a></Link></li>
               <li><Link href='Return' legacyBehavior><a  className="footer-link">Return Policy</a></Link></li>
               <li><Link href='/shipping' legacyBehavior><a  className="footer-link">Shipping & Delivery</a></Link></li>
-              <li><Link href='/tracking' legacyBehavior><a className="footer-link">Order Tracking</a></Link></li>
+             
             </ul>
           </div>
         </div>

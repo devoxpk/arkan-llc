@@ -17,9 +17,9 @@ const SearchBar = () => {
   };
 
   const handleSearch = async (keyword) => {
-    if(keyword === ""){
-        showMessageBox("Please enter a keyword","Find Products entering related keyword",false)
-    return;
+    if (keyword === "") {
+        showMessageBox("Please enter a keyword", "Find Products entering related keyword", false);
+        return;
     }
     console.log('Searching for:', keyword);
     setIsLoading(true);
@@ -33,7 +33,7 @@ const SearchBar = () => {
         while (true) {
             console.log('Checking collection:', numericValue);
 
-            // Check if any document exists in the collection
+            // Fetch headers and desc documents
             const headersDocRef = doc(db, numericValue.toString(), "headers");
             const headersDocSnapshot = await getDoc(headersDocRef);
 
@@ -47,6 +47,8 @@ const SearchBar = () => {
 
             // Check numeric products within the collection
             let productNumber = 1;
+            let productsFound = false;
+
             while (true) {
                 const productDocRef = doc(db, numericValue.toString(), productNumber.toString());
                 const productDocSnapshot = await getDoc(productDocRef);
@@ -66,10 +68,62 @@ const SearchBar = () => {
                             pic: productData.pic,
                         });
                         console.log('Found product:', productData.productName);
+                        productsFound = true;
                     }
                 }
 
                 productNumber++;
+            }
+
+            // If no matching product is found, check headers and desc
+            if (!productsFound) {
+                let headersMatched = false;
+                if (headersDocSnapshot.exists()) {
+                    const headersData = headersDocSnapshot.data();
+                    const headersArray = headersData.header || [];
+
+                    headersMatched = headersArray.some(header => 
+                        keywordParts.every(part => header.toLowerCase().includes(part))
+                    );
+                }
+
+                let descMatched = false;
+                if (descDocSnapshot.exists()) {
+                    const descData = descDocSnapshot.data();
+                    const sectionsArray = descData.sections || [];
+
+                    descMatched = sectionsArray.some(section => {
+                        const content = section.content?.toLowerCase() || "";
+                        const header = section.header?.toLowerCase() || "";
+
+                        return keywordParts.every(part => 
+                            content.includes(part) || header.includes(part)
+                        );
+                    });
+                }
+
+                // If headers or desc matches, push all products of the collection
+                if (headersMatched || descMatched) {
+                    productNumber = 1;
+                    while (true) {
+                        const productDocRef = doc(db, numericValue.toString(), productNumber.toString());
+                        const productDocSnapshot = await getDoc(productDocRef);
+                        if (!productDocSnapshot.exists()) break;
+
+                        const productData = productDocSnapshot.data();
+                        searchResults.push({
+                            id: productNumber,
+                            productName: productData.productName,
+                            dPrice: productData.dPrice,
+                            productCP: productData.productCP,
+                            price: productData.price,
+                            createdAt: productData.createdAt,
+                            pic: productData.pic,
+                        });
+
+                        productNumber++;
+                    }
+                }
             }
 
             numericValue++;
@@ -89,6 +143,7 @@ const SearchBar = () => {
         setIsLoading(false);
     }
 };
+
 
 
 

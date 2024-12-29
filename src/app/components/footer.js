@@ -129,8 +129,8 @@ function Footer() {
             <Link href="/" legacyBehavior>
   <a className="logo">
     <Image
-    width="100%" height={0} 
-      style={{ marginTop: '-25%',height:"auto"  }} 
+    width={100} height={0} 
+      style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
       src="/logo/dwlogo.png" 
       alt="Nouve logo" 
     />

@@ -373,14 +373,15 @@ display:flex;
         outline: none;
     }
 
-#prodetails .single-pro-details input{
+    #prodetails .single-pro-details input:not(.review-parent input):not(.review-form input) {
         width: 50px;
         height: 40px;
         padding-left: 10px;
-font-size:16px;
+        font-size: 16px;
         margin-right: 10px;
         outline: none;
     }
+    
 
 #prodetails .single-pro-details button{
 
@@ -1297,9 +1298,9 @@ flex-direction: column;
 #prodetails .single-pro-image{
 width: 112%;
 position:relative;
-top: -290px;
+top: -294px;
 margin-right: 0px;
-height: 50%;
+height: 462px;
 margin-left: -6%;
 border-bottom: 1px solid black;
 
@@ -1758,7 +1759,8 @@ margin-left: 111px;
   }
   @media screen and (max-width:767px){
     #imgLoading{
-         margin-top: '-3%';
+         margin-top: -54%;
+         margin-bottom: 75%;
     }
   
   }

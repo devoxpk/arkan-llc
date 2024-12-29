@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { db, storage } from "../firebase";
 import Image from 'next/image'
+import router from 'next/navigation'
 import {
   doc,
   getDoc,
@@ -26,11 +27,13 @@ import { useReviewVisibility } from '../context/ReviewVisibilityContext'; // Upd
 let isReviewAvailable = false; // Shared state to track availability
 let isAvailable;
 let checkReviewAvailability = () => {
+  
   isReviewAvailable = isAvailable;
   return isReviewAvailable;
 };
 
 const Reviews = ({ productName }) => {
+ 
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [countReviews, setCountReviews] = useState(0);
@@ -126,22 +129,23 @@ const Reviews = ({ productName }) => {
       const querySnapshot = await getDocs(
         collection(db, "reviews", productName, "userReviews")
       );
-
+  
       let totalRating = 0;
       const ratingCountTemp = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
       const fetchedReviews = [];
-
+  
       querySnapshot.forEach((docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           const rating = data.rating;
-
+  
           totalRating += rating;
           ratingCountTemp[rating] = (ratingCountTemp[rating] || 0) + 1;
-
+  
           fetchedReviews.push({
             id: docSnap.id,
             ...data,
+            hasImage: Boolean(data.imageUrl), // Ensure it's a boolean
             timestamp: data.timestamp?.toDate().toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
@@ -150,27 +154,37 @@ const Reviews = ({ productName }) => {
           });
         }
       });
-
+  
+      // Sorting based on priority
       if (priority === "new") {
         fetchedReviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       } else if (priority === "ratings") {
         fetchedReviews.sort((a, b) => b.rating - a.rating);
+      } else if (priority === "high") {
+        fetchedReviews.sort((a, b) => b.rating - a.rating); // High to low ratings
+      } else if (priority === "low") {
+        fetchedReviews.sort((a, b) => a.rating - b.rating); // Low to high ratings
+      } else if (priority === "image") {
+        fetchedReviews.sort((a, b) => b.hasImage - a.hasImage); // Reviews with images first
       }
-
+  
       const avgRating = fetchedReviews.length
         ? (totalRating / fetchedReviews.length).toFixed(1)
         : 0;
-
+  
+      // Update state
       setReviews(fetchedReviews);
       setAverageRating(avgRating);
       setCountReviews(fetchedReviews.length);
       setRatingCounts(ratingCountTemp);
-
+  
       isAvailable = fetchedReviews.length > 0;
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
+  
+  
 
   const deleteReview = async (productName, docId) => {
     try {
@@ -190,7 +204,7 @@ const Reviews = ({ productName }) => {
       {isFormVisible && (
         <div className="review-form" id="reviewFormContainer">
           <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#333' }}>Post Review</h2>
-          <span onClick={() => setIsFormVisible(false)} style={{color:"black",position:"absolute",left:"16px"}}>X</span>
+          <span onClick={() => setIsFormVisible(false)} style={{color:"black",position:"absolute",right:"16px"}}>X</span>
           <form id="reviewForm" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <input type="hidden" id="product" name="product" />
 
@@ -278,27 +292,65 @@ const Reviews = ({ productName }) => {
               <nav className="popup-window" style={{ maringLeft: "-18%", marginTop: "50%" }}>
                 <legend>Sort by</legend>
                 <ul>
-                  <li>
-                    <button onClick={() => { loadReviews(localStorage.getItem("filteredProduct"), "ratings") }}>
-                      {/* Icon for Highest Ratings */}
-                      <svg
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        height="14"
-                        width="14"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M12 15l-3.09-6.26L2 9.27l5-4.87-1.18-6.86L12 6.23l6.18-3.26L17 9.14l5 4.87-6.91 1.01L12 15z"></path>
-                      </svg>
-                      <span>Highest Ratings</span>
-                    </button>
-                  </li>
-                  {/* Add other sorting options as needed */}
-                </ul>
+  <li>
+    <button onClick={() => { loadReviews(localStorage.getItem("filteredProduct"), "ratings") }}>
+      {/* Icon for Highest Ratings */}
+      <svg
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        viewBox="0 0 24 24"
+        height="14"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 15l-3.09-6.26L2 9.27l5-4.87-1.18-6.86L12 6.23l6.18-3.26L17 9.14l5 4.87-6.91 1.01L12 15z"></path>
+      </svg>
+      <span>Highest Ratings</span>
+    </button>
+  </li>
+  <li>
+    <button onClick={() => { loadReviews(localStorage.getItem("filteredProduct"), "low") }}>
+      {/* Icon for Lowest Ratings */}
+      <svg
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        viewBox="0 0 24 24"
+        height="14"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 9l3.09 6.26L22 14.73l-5 4.87 1.18 6.86L12 17.77l-6.18 3.26L7 14.86l-5-4.87 6.91-1.01L12 9z"></path>
+      </svg>
+      <span>Lowest Ratings</span>
+    </button>
+  </li>
+  <li>
+    <button onClick={() => { loadReviews(localStorage.getItem("filteredProduct"), "image") }}>
+      {/* Icon for Image Priority */}
+      <svg
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        viewBox="0 0 24 24"
+        height="14"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 5h14v14H5zM12 11.5l2.5 3h-5z"></path>
+      </svg>
+      <span>Image Priority</span>
+    </button>
+  </li>
+</ul>
+
               </nav>
             </label>
           </div>
@@ -340,7 +392,7 @@ const Reviews = ({ productName }) => {
                       {showImageIds.includes(review.id) ? "Hide Review Image" : "Show Review Image"}
                     </button>
                     {showImageIds.includes(review.id) && (
-                      <img src={review.imgSrc} alt="Review" style={{ width: "100px", height: "auto" }} layout="intrinsic"/>
+                      <img src={review.imgSrc} alt="Review" width={0} height={0} style={{ width: "100px", height: "auto" }}/>
                     )}
                   </>
                 )}

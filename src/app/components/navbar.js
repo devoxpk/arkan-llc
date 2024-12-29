@@ -6,12 +6,13 @@ import Sizes from "./sizes";
 import Cart from './cart';
 import Chatbot from './chatbot.jsx';
 import Link from 'next/link'
-import Image from 'next/image'
 
+import Image from 'next/image'
+import Announcement from './announcement'
 import { useAuth, useSignOut } from '../context/AuthContext';
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
-
+import SearchBar, { toggleSearchBar } from './searchBar'
 import UserSession from './UserSession';
 import EditModeButton from './editmode';
 
@@ -139,6 +140,7 @@ function Navbar() {
 
   return (
     <>
+    <SearchBar/>
 <EditModeButton/>
 <Cart/>
     
@@ -153,77 +155,10 @@ function Navbar() {
           alignItems: 'center',
         }}
       >
-        <span
-          style={{
-            color: '#a5a5a5',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          id="freetext"
-        >
-          FREE DELIVERY NATIONWIDE
-        </span>
+        <Announcement/>
       </div>
 
-      <div className="input__container input__container--variant" style={{ display: 'none' }}>
-        <div id="wifi-loader" data-text="Searching" className="text" style={{ display: 'none' }}></div>
-
-        <div className="shadow__input shadow__input--variant"></div>
-        <input
-          type="text"
-          name="text"
-          className="input__search input__search--variant"
-          placeholder="Search..."
-        />
-
-        <button
-          onClick={() => {
-            const searchTerm = document.querySelector('.input__search--variant').value;
-            const textElement = document.querySelector('.text');
-
-            // Show the loader (no change in text)
-            textElement.style.display = 'block';
-
-            // Perform the search in the .section only
-            const sectionElements = document.querySelectorAll('.section *');
-            let found = false;
-
-            sectionElements.forEach((element) => {
-              if (element.innerText.includes(searchTerm)) {
-                found = true;
-                // Scroll to the found element
-                element.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'center',
-                });
-              }
-            });
-
-            // Hide the loader after a delay
-            setTimeout(() => {
-            
-              textElement.style.display = 'none';
-              document.querySelector('.input__container--variant').style.display = 'none';
-            }, 1000);
-          }}
-          className="input__button__shadow input__button__shadow--variant"
-        >
-          <svg
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            height="1.5em"
-            width="13em"
-          >
-            <path
-              d="M4 9a5 5 0 1110 0A5 5 0 014 9zm5-7a7 7 0 104.2 12.6.999.999 0 00.093.107l3 3a1 1 0 001.414-1.414l-3-3a.999.999 0 00-.107-.093A7 7 0 009 2z"
-              fillRule="evenodd"
-              fill="#FFF"
-            ></path>
-          </svg>
-        </button>
-      </div>
+      
 
       <header className="header" data-header ref={headerRef}>
         <div className="container">
@@ -248,7 +183,7 @@ function Navbar() {
 
             <button
               onClick={() => {
-                document.querySelector('.input__container--variant').style.display = 'block';
+               toggleSearchBar();
               }}
               className="header-action-btn"
             >

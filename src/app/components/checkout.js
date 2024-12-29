@@ -17,6 +17,17 @@ import { fetchSizeChart } from './sizes';
 let isAvailable;
 let initializePage;
 export default function Checkout() {
+
+
+   window.onload = function () {
+    if(typeof window !== 'undefined'){
+        const reviewPost = getQueryParameter("action");
+        if(reviewPost === "reviewPost")
+            {
+                setIsReviewVisible(true)
+            }
+    }
+}
     const [renderReviews, setRenderReviews] = useState(isAvailable);
   
 
@@ -467,7 +478,7 @@ export default function Checkout() {
 
     async function addData() {
         console.log("Add Data is Running ");
-
+    
         // Retrieve data from URL query parameters or local storage
         var productName =
             decodeURIComponent(getQueryParameter("pname")) ||
@@ -477,29 +488,29 @@ export default function Checkout() {
             localStorage.getItem("productPrice");
         var productImageSrc =
             getQueryParameter("ImageSrc") || localStorage.getItem("productImageSrc");
-        var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || ""; // Fetch dPrice from query parameters
+        var dPrice = decodeURIComponent(getQueryParameter("dPrice")) || "00.0"; // Default to 00.0 if undefined
         var token = getQueryParameter("token");
-
+    
         if (productImageSrc) {
             productImageSrc = productImageSrc.replace(/(products\/)/, "products%2F");
             productImageSrc = productImageSrc
                 .replace(/ /g, "%20")
                 .replace(/\(/g, "%28")
                 .replace(/\)/g, "%29");
-
+    
             if (token) {
                 productImageSrc += `&token=${token}`;
             }
         } else {
             productImageSrc = localStorage.getItem("productImageSrc");
         }
-
+    
         // Update the product details in the HTML
         var productNameElement = document.getElementById("productName");
         var productPriceElement = document.getElementById("productPrice");
         var mainImgElement = document.getElementById("MainImg");
         var cuttedProductPriceElement = document.getElementById("cuttedProductPrice");
-
+    
         // Function to load an image and return a Promise
         function loadImage(src) {
             return new Promise((resolve, reject) => {
@@ -509,22 +520,25 @@ export default function Checkout() {
                 img.onerror = () => reject(new Error("Image failed to load"));
             });
         }
-
+    
         try {
             // Update product image and wait for it to load
             if (productImageSrc) {
-                await loadImage(productImageSrc);
+                await loadImage(productImageSrc); // Ensure the image is fully loaded
                 mainImgElement.src = productImageSrc;
             } else {
                 showMessageBox("Image Not found", "Contact Us if not Resolved", false);
+                return; // Exit if image not found
             }
-
+    
+            // Proceed with setting other product details
+    
             // Update product name
             productNameElement.innerText = productName || "Not found";
-
+    
             // Update product price
             productPriceElement.innerText = productPrice || "Not found";
-
+    
             // Update cutted price if dPrice is available
             if (dPrice) {
                 cuttedProductPriceElement.innerText = `Rs. ${dPrice}`;
@@ -532,7 +546,9 @@ export default function Checkout() {
             } else {
                 cuttedProductPriceElement.innerText = "Not found";
             }
+    
             await loadProductImages();
+    
             // Display image-details and hide imgLoading
             document.getElementById("image-details").style.display = "block";
             document.getElementById("imgLoading").style.display = "none";
@@ -542,6 +558,7 @@ export default function Checkout() {
             // Handle image load error if needed
         }
     }
+    
 
     useEffect(() => {
         initializePage()
@@ -731,12 +748,17 @@ export default function Checkout() {
                             })()}
                         />
 
-                        {renderReviews && <span
-                            style={{ textDecoration: "underline", cursor: "pointer", color: "black", marginLeft: "6px" }}
-                            onClick={handleClick}
-                        >
-                            Reviews
-                        </span>}
+                        {renderReviews && <> <br/><span
+    style={{
+        textDecoration: "underline",
+        cursor: "pointer",
+        color: "black",
+        marginLeft: "6px"
+    }}
+    onClick={handleClick}
+>
+    View Reviews
+</span></>}
                     </div>
 
 

@@ -256,54 +256,61 @@ export default function Sizes(){
     console.log("iSSizeChart updated:", iSSizeChart);
   }, [iSSizeChart]);
 
-   fetchSizeChart = async (collectionID) => {
-    console.log(collectionID)
+  const fetchSizeChart = async (collectionID) => {
+    console.log(collectionID);
     console.log("Starting fetch for size chart...");
-
+  
     try {
       setSizeChart(null);
-        setColID(collectionID);
-        setiSSizeChart(false);
-     
+      setColID(collectionID);
+      setiSSizeChart(false);
+  
       const collectionRef = collection(db, collectionID);
       console.log("Firestore collection reference created:", collectionRef);
-
+  
       // Fetch all documents in the collection
       const querySnapshot = await getDocs(collectionRef);
-
+  
       console.log("Documents fetched:", querySnapshot.docs);
       setiSSizeChart(true);
+  
       // Loop through each document and check if it matches the "sizechart" document
       querySnapshot.forEach((doc) => {
         if (doc.id === "sizechart") {
           const sizeChartData = doc.data();
           console.log("Fetched size chart data:", sizeChartData);
-
+  
           // Log array fields and their values for specific indices
           Object.keys(sizeChartData).forEach((field) => {
             const arrayField = sizeChartData[field];
             if (Array.isArray(arrayField)) {
               console.log(`Values for field "${field}":`, arrayField);
-
-        
             } else {
               console.warn(`Field "${field}" is not an array.`);
             }
           });
-
+  
+          // Retrieve the saved button ID from localStorage
+          const savedButtonId = localStorage.getItem('clickedSize');
+          if (savedButtonId) {
+            const savedButton = document.getElementById(savedButtonId);
+            if (savedButton) {
+              savedButton.style.cssText = ''; // Reset existing styles
+              savedButton.style.backgroundColor = 'black';
+              savedButton.style.color = 'white';
+            }
+          }
+  
           // Update the state with size chart data
-
           setSizeChart(sizeChartData);
-         
-          
           console.log(iSSizeChart);
-          
         }
       });
     } catch (error) {
       console.error("Error fetching size chart:", error);
     }
   };
+  
  
     
     function generateRandom() {
@@ -415,23 +422,7 @@ export default function Sizes(){
     
     
     // Function to run on page load and apply saved button styles
-    if(typeof window !== "undefined"){
-    window.onload = function() {
-      let savedButtonId;
-      if(typeof window !== "undefined"){
-        localStorage.removeItem("purchase");
-         savedButtonId = localStorage.getItem('clickedSize');}
-        console.log(savedButtonId)
-        if (savedButtonId) {
-            const savedButton = document.getElementById(savedButtonId);
-            if (savedButton) {
-                console.log(savedButton)
-                savedButton.style.cssText = '';
-                savedButton.style.backgroundColor = 'black';
-                savedButton.style.color = 'white';
-            }
-        }
-    };}
+  
 
     function changeSize(size) {
         

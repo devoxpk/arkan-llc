@@ -1,12 +1,12 @@
 "use client";
 import React from 'react';
 import '../css/poster.css';
-
+import Image from 'next/image'
 
 const Video = () => {
   return (
     <div className="poster-container" style={{minHeight:'0vh',backgroundColor:'white'}}>
-      <img loading='lazy' style={{width:"100%"}} alt='Poster Video' src='/videoplayback.gif' />
+      <Image loading='lazy' width={0} height={0} style={{width:"100%",height:"auto"}} alt='Poster Video' src='/videoplayback.gif' />
       
       <div className="poster-bottom-space"></div>
     </div>

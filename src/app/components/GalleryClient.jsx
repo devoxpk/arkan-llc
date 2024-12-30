@@ -135,7 +135,15 @@ const GalleryClient = ({ galleryImages: initialGalleryImages, initialFirstImage 
       <div className="gallery-container">
         {firstImage ? (
           <div className="image-wrapper">
-          <img src={firstImage} alt="First Image" className="gallery-image" />
+<Image 
+  src={firstImage} 
+  alt="First Image" 
+  width={500} 
+  height={500} 
+  
+  className="gallery-image" 
+  
+/>
             {isEditing && (
               <>
                 <button
@@ -159,7 +167,16 @@ const GalleryClient = ({ galleryImages: initialGalleryImages, initialFirstImage 
 
         {galleryImages.slice(1).map((image, index) => (
           <div key={index + 1} className="image-wrapper">
-            <img src={image} alt={`Gallery ${index + 1}`} className="gallery-image" />
+            <Image 
+  src={image} 
+  alt={`Gallery ${index + 1}`} 
+  className="gallery-image" 
+  width={500} 
+  height={500} 
+ 
+  
+/>
+
             {isEditing && (
               <>
                 <button

@@ -167,11 +167,13 @@ function Navbar() {
             
               <Link href="/" legacyBehavior>
                 <a className="logo">
-                  <Image id="logoimg" src="/logo/dwlogo.png" alt="Devox Anime T Shirts in Pakistan" width="55" height="0" style={{height:"auto"}} />
+                  <Image id="logoimg" src="/logo/dwlogo.png" alt="LOW PRICE IN PAKISTAN" width="55" height="0" style={{height:"auto"}} />
                 </a>
               </Link>
           <span id='brandNameSpan'>
+            <Link href="/" >
             <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>N O U V E</h1>
+          </Link>
           </span>
 
           <div className="header-actions">

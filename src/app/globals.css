@@ -1,3 +1,7 @@
+/* Import Outfit font globally */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+
 /* Import Ionicons globally */
 @import url('https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css');
 
@@ -10,7 +14,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', Arial, Helvetica, sans-serif; /* Set Outfit as the primary font */
 }
 
 @layer utilities {

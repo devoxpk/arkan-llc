@@ -174,7 +174,16 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
       <div className="gallery-containerx">
         {galleryImages.map((image, index) => (
           <div id={`image-${index}`} key={index} className="image-wrapperx">
-            <img src={image} alt={`poster ${index}`} className="gallery-imagex" />
+<Image 
+  src={image} 
+  alt={`poster ${index}`} 
+  width={500} // Set a higher width for better quality
+  height={500} // Set a corresponding height or omit if using "intrinsic"
+  className="gallery-imagex" 
+  quality={100} // Adjust quality (0-100) to improve clarity
+  priority
+/>
+
             {isEditing && (
               <>
                 <button onClick={() => handleDeleteImage(index)} className="delete-buttonx">

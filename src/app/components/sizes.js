@@ -5,7 +5,7 @@ import {updateCartBadge} from "./cart"
 import {db} from '../firebase'
 import { collection, getDocs,doc,updateDoc,setDoc,getDoc,deleteField } from "firebase/firestore";
 import Link from 'next/link'
-
+import showMessageBox from "../utilis/showMessageBox";
 
 let fetchSizeChart;
 
@@ -17,6 +17,7 @@ export default function Sizes(){
     const [newValues, setNewValues] = useState(["", "", "", ""]); // For indices 0-3
     const [canEdit, setCanEdit] = useState(false);
     const [colID, setColID] = useState("");
+    const [ims,setIms] = useState("")
     let isPurchase;
     if(typeof window !== "undefined"){
  isPurchase = localStorage.getItem("purchase");
@@ -256,60 +257,127 @@ export default function Sizes(){
     console.log("iSSizeChart updated:", iSSizeChart);
   }, [iSSizeChart]);
 
-   fetchSizeChart = async (collectionID) => {
+  fetchSizeChart = async (collectionID, imsRef) => {
     console.log(collectionID);
     console.log("Starting fetch for size chart...");
-  
+console.log(imsRef)
+    const sizeAvailability = await updateSizeOptions(imsRef); // Assuming this returns the array like [false, true, true, false]
+    console.log("Size Availability: ", sizeAvailability);
+
     try {
-      setSizeChart(null);
-      setColID(collectionID);
-      setiSSizeChart(false);
-  
-      const collectionRef = collection(db, collectionID);
-      console.log("Firestore collection reference created:", collectionRef);
-  
-      // Fetch all documents in the collection
-      const querySnapshot = await getDocs(collectionRef);
-  
-      console.log("Documents fetched:", querySnapshot.docs);
-      setiSSizeChart(true);
-  
-      // Loop through each document and check if it matches the "sizechart" document
-      querySnapshot.forEach((doc) => {
-        if (doc.id === "sizechart") {
-          const sizeChartData = doc.data();
-          console.log("Fetched size chart data:", sizeChartData);
-  
-          // Log array fields and their values for specific indices
-          Object.keys(sizeChartData).forEach((field) => {
-            const arrayField = sizeChartData[field];
-            if (Array.isArray(arrayField)) {
-              console.log(`Values for field "${field}":`, arrayField);
-            } else {
-              console.warn(`Field "${field}" is not an array.`);
+        setSizeChart(null);
+        setColID(collectionID);
+        setiSSizeChart(false);
+
+        const collectionRef = collection(db, collectionID);
+        console.log("Firestore collection reference created:", collectionRef);
+
+        // Fetch all documents in the collection
+        const querySnapshot = await getDocs(collectionRef);
+
+        console.log("Documents fetched:", querySnapshot.docs);
+        setiSSizeChart(true);
+
+        // Loop through each document and check if it matches the "sizechart" document
+        querySnapshot.forEach((doc) => {
+            if (doc.id === "sizechart") {
+                const sizeChartData = doc.data();
+                console.log("Fetched size chart data:", sizeChartData);
+
+                // Log array fields and their values for specific indices
+                Object.keys(sizeChartData).forEach((field) => {
+                    const arrayField = sizeChartData[field];
+                    if (Array.isArray(arrayField)) {
+                        console.log(`Values for field "${field}":`, arrayField);
+                    } else {
+                        console.warn(`Field "${field}" is not an array.`);
+                    }
+                });
+
+                // Retrieve the saved button ID from localStorage
+                const savedButtonId = localStorage.getItem('clickedSize');
+                if (savedButtonId) {
+                    const savedButton = document.getElementById(savedButtonId);
+                    if (savedButton) {
+                        savedButton.style.cssText = ''; // Reset existing styles
+                        savedButton.style.backgroundColor = 'black';
+                        savedButton.style.color = 'white';
+                    }
+                }
+
+                // Map size availability to buttons
+                const sizeButtons = ['s', 'm', 'l', 'xl'];
+                sizeButtons.forEach((size, index) => {
+                    const button = document.getElementById(size);
+                    if (button) {
+                        if (!sizeAvailability[index]) {
+                            button.style.backgroundColor = 'red'; // Set background to red
+                            button.disabled = true; // Disable the button
+                            button.removeEventListener('click', button.onclick); // Remove event listener
+                        } else {
+                            button.style.backgroundColor = ''; // Reset background color
+                            button.disabled = false; // Enable the button
+                        }
+                    }
+                });
+
+                // Update the state with size chart data
+                setSizeChart(sizeChartData);
+                console.log(iSSizeChart);
             }
-          });
-  
-          // Retrieve the saved button ID from localStorage
-          const savedButtonId = localStorage.getItem('clickedSize');
-          if (savedButtonId) {
-            const savedButton = document.getElementById(savedButtonId);
-            if (savedButton) {
-              savedButton.style.cssText = ''; // Reset existing styles
-              savedButton.style.backgroundColor = 'black';
-              savedButton.style.color = 'white';
-            }
-          }
-  
-          // Update the state with size chart data
-          setSizeChart(sizeChartData);
-          console.log(iSSizeChart);
-        }
-      });
+        });
     } catch (error) {
-      console.error("Error fetching size chart:", error);
+        console.error("Error fetching size chart:", error);
     }
-  };
+};
+
+
+
+
+async function updateSizeOptions(productName) {
+  setIms(null);
+  try {
+      console.log("Fetching size options for product:", productName);
+
+      // Access Firestore collection and document
+      const productRef = doc(collection(db, "clothsims"), productName);
+
+      // Get document data asynchronously
+      const docSnapshot = await getDoc(productRef);
+
+      if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+
+          // Convert size fields from strings to integers and handle missing fields
+          const sizes = {
+              s: data.s ? parseInt(data.s, 10) : null,
+              m: data.m ? parseInt(data.m, 10) : null,
+              l: data.l ? parseInt(data.l, 10) : null,
+              xl: data.xl ? parseInt(data.xl, 10) : null
+          };
+
+          // Create an array of booleans based on size availability
+          const sizeAvailability = [
+              sizes.s === null || sizes.s >= 1,
+              sizes.m === null || sizes.m >= 1,
+              sizes.l === null || sizes.l >= 1,
+              sizes.xl === null || sizes.xl >= 1
+          ];
+
+          console.log("Size availability calculated:", sizeAvailability);
+          setIms(sizeAvailability);
+          return sizeAvailability; // Return the array
+      } else {
+          console.error("Document does not exist for product:", productName);
+          return [true, true, true, true]; // Default return for non-existing document
+      }
+  } catch (error) {
+      console.error("Error updating size options:", error);
+      return [true, true, true, true]; // Default return on error
+  }
+}
+
+
   
  
     
@@ -558,40 +626,50 @@ return(
             </div>
             
             <div className="sizingBtns">
-            <button 
-  className="size-button" 
-  value="36" 
-  id="s" 
-  onClick={() => changeSizeAndStyle("s", 36)}
->
-  Small
-</button>
-<button 
-  className="size-button" 
-  value="40" 
-  id="m" 
-  onClick={() => changeSizeAndStyle("m", 40)}
->
-  Medium
-</button>
-<button 
-  className="size-button" 
-  value="45" 
-  id="l" 
-  onClick={() => changeSizeAndStyle("l", 45)}
->
-  Large
-</button>
-<button 
-  className="size-button" 
-  value="48" 
-  id="xl" 
-  onClick={() => changeSizeAndStyle("xl", 48)}
->
-  XL
-</button>
-
+  <button
+    className={`size-button ${!ims[0] ? 'diagonal-line' : ''}`}
+    value="36"
+    id="s"
+    onClick={() => (!ims[0] 
+      ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false)
+      : changeSizeAndStyle('s', 36))}
+  >
+    Small
+  </button>
+  <button
+    className={`size-button ${!ims[1] ? 'diagonal-line' : ''}`}
+    value="40"
+    id="m"
+    onClick={() => (!ims[1] 
+      ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
+      : changeSizeAndStyle('m', 40))}
+  >
+    Medium
+  </button>
+  <button
+    className={`size-button ${!ims[2] ? 'diagonal-line' : ''}`}
+    value="45"
+    id="l"
+    onClick={() => (!ims[2] 
+      ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
+      : changeSizeAndStyle('l', 45))}
+  >
+    Large
+  </button>
+  <button
+    className={`size-button ${!ims[3] ? 'diagonal-line' : ''}`}
+    value="48"
+    id="xl"
+    onClick={() => (!ims[3] 
+      ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
+      : changeSizeAndStyle('xl', 48))}
+  >
+    XL
+  </button>
 </div>
+
+
+
 <div className="sizingBtns">
     
 {isPurchase ? (

@@ -11,6 +11,10 @@ import Image from 'next/image'
 export default function PurchaseComponent() {
     const router = useRouter();
 
+
+
+
+    
     function saveCustomerIdToLocalStorage() {
         let customerId;
         if(typeof window !== "undefined"){
@@ -27,94 +31,142 @@ export default function PurchaseComponent() {
     
 
 
+// Add a 'storage' event listener to sync changes to localStorage
+useEffect(() => {
+    const handleStorageChange = (event) => {
+        if (event.key === "cartItems") {
+            const updatedCartItems = event.newValue ? JSON.parse(event.newValue) : [];
+            console.log("LocalStorage updated, syncing UI");
 
-    
-    async function validatePromo(event) {
-        event.preventDefault(); // Prevent the page from reloading
-    
-        const promoInput = document.querySelector(".input_field").value.trim();
-        if (!promoInput) {
-            showMessageBox("Invalid Promo", "Please enter a promo code.", false);
-            return;
+            // Select all price elements on the page
+            const priceElements = document.querySelectorAll(".priceElement");
+let priceText;
+            priceElements.forEach((priceElement, index) => {
+                if (updatedCartItems[index]) {
+                    const { price, quantity } = updatedCartItems[index];
+                     priceText = (price * quantity).toFixed(2);
+
+                    // Update price text conditionally
+                    priceElement.textContent = index === 2 
+                        ? `PKR ${priceText}` 
+                        : priceText;
+                } else {
+                    // Clear element content if no corresponding item
+                    priceElement.textContent = priceText;
+                }
+            });
         }
-    
-        try {
-            // Reference the specific document `codes` inside the `promos` collection
-            const promoDocRef = doc(db, "promos", "codes");
-    
-            // Fetch the document
-            const promoDoc = await getDoc(promoDocRef);
-    
-            if (promoDoc.exists()) {
-                const promoData = promoDoc.data();
-    
-                // Check if the promo code exists as a field in the document
-                if (promoData[promoInput] !== undefined) {
-                    let discount = promoData[promoInput]; // Get the discount percentage
-    
-                    // Log discount for debugging
-                    console.log("Fetched Discount Value:", discount);
-    
-                    // Handle discount being a string with a % symbol
-                    if (typeof discount === "string" && discount.includes("%")) {
-                        discount = discount.replace("%", ""); // Remove % symbol
-                    }
-    
-                    discount = parseFloat(discount); // Parse as a number
-    
-                    // Log parsed discount for debugging
-                    console.log("Parsed Discount Value:", discount);
-    
-                    // Ensure discount is a valid number
-                    if (!isNaN(discount)) {
-                        const priceElements = document.querySelectorAll(".priceElement");
-    
-                        priceElements.forEach(priceElement => {
-                            let originalPriceText = priceElement.textContent.replace("PKR", "").trim();
-    
-                            // Remove unexpected characters and parse as a number
-                            originalPriceText = originalPriceText.replace(/[^0-9.]/g, "");
-                            const originalPrice = parseFloat(originalPriceText);
-    
-                            // Log parsed original price
-                            console.log("Parsed Original Price:", originalPrice);
-    
-                            const discountedPrice = originalPrice - (originalPrice * discount) / 100;
-    
-                            // Update the price element's text content
-                            priceElement.textContent = `PKR ${discountedPrice.toFixed(2)}`;
-    
-                            // Log discounted price
-                            console.log("Discounted Price:", discountedPrice);
-                        });
-    
+    };
 
-  const updates = {};
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+        window.removeEventListener("storage", handleStorageChange);
+    };
+}, []);
+
+
+
+    
+async function validatePromo(event) {
+    event.preventDefault(); // Prevent the page from reloading
+
+    const promoInput = document.querySelector(".input_field").value.trim();
+    if (!promoInput) {
+        showMessageBox("Invalid Promo", "Please enter a promo code.", false);
+        return;
+    }
+
+    try {
+        // Reference the specific document `codes` inside the `promos` collection
+        const promoDocRef = doc(db, "promos", "codes");
+
+        // Fetch the document
+        const promoDoc = await getDoc(promoDocRef);
+
+        if (promoDoc.exists()) {
+            const promoData = promoDoc.data();
+
+            // Check if the promo code exists as a field in the document
+            if (promoData[promoInput] !== undefined) {
+                let discount = promoData[promoInput]; // Get the discount percentage
+
+                // Handle discount being a string with a % symbol
+                if (typeof discount === "string" && discount.includes("%")) {
+                    discount = discount.replace("%", ""); // Remove % symbol
+                }
+
+                discount = parseFloat(discount); // Parse as a number
+
+                // Ensure discount is a valid number
+                if (!isNaN(discount)) {
+                    // Get cart items from localStorage
+                    let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+                    if (cartItems.length > 0) {
+                        // Sum up all prices in the cart
+                        const totalOriginalPrice = cartItems.reduce((sum, item) => {
+                            return sum + parseFloat(item.price) * item.quantity;
+                        }, 0);
+
+                        // Calculate the total discount amount
+                        const totalDiscount = (Math.floor(totalOriginalPrice) * discount) / 100;
+
+                        // Apply discount proportionally to each item
+                        let distributedDiscount = 0;
+                        cartItems = cartItems.map((item) => {
+                            const itemOriginalPrice = parseFloat(item.price) * item.quantity;
+                            const itemDiscount = (Math.floor(itemOriginalPrice) / Math.floor(totalOriginalPrice)) * totalDiscount;
+
+                            // Update item's price after discount
+                            const discountedPricePerUnit = Math.floor((itemOriginalPrice - itemDiscount) / item.quantity);
+
+                            distributedDiscount += itemDiscount;
+
+                            return {
+                                ...item,
+                                price: `${discountedPricePerUnit}.00` // Always ends with .00
+                            };
+                        });
+
+                        // Update cartItems in localStorage
+                        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+                        // Manually trigger the storage event
+                        window.dispatchEvent(new StorageEvent("storage", {
+                            key: "cartItems",
+                            newValue: JSON.stringify(cartItems),
+                        }));
+
+                        // Remove the used promo code from the database
+                        const updates = {};
                         updates[promoInput] = deleteField();
                         await updateDoc(promoDocRef, updates);
-    
 
                         // Show success message
-                        showMessageBox("Promo Applied", `You have received a ${discount}% discount! `, true);
+                        showMessageBox("Promo Applied", `You have received a ${discount}% discount!`, true);
                     } else {
-                        console.error("Invalid discount value:", discount);
-                        showMessageBox("Error", "Invalid discount value received.", false);
+                        showMessageBox("Cart Empty", "Your cart is empty.", false);
                     }
                 } else {
-                    // Promo code not found
-                    showMessageBox("Invalid Promo", "Please use a correct promo code.", false);
+                    console.error("Invalid discount value:", discount);
+                    showMessageBox("Error", "Invalid discount value received.", false);
                 }
             } else {
-                console.error("Promo codes document does not exist.");
-                showMessageBox("Error", "Promo codes are not available.", false);
+                // Promo code not found
+                showMessageBox("Invalid Promo", "Please use a correct promo code.", false);
             }
-        } catch (error) {
-            console.error("Error validating promo:", error);
-            showMessageBox("Error", "An error occurred while applying the promo code.", false);
+        } else {
+            console.error("Promo codes document does not exist.");
+            showMessageBox("Error", "Promo codes are not available.", false);
         }
+    } catch (error) {
+        console.error("Error validating promo:", error);
+        showMessageBox("Error", "An error occurred while applying the promo code.", false);
     }
-    
+}
 
+        
     
   
    
@@ -168,6 +220,12 @@ export default function PurchaseComponent() {
       const submitButton = document.getElementById("submitButton");
       const handleOrderPlacement = async (e) => {
         e.preventDefault();
+        const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+if (cartItems.length === 0) {
+    showMessageBox("Cart is Empty", "Kindly add items to cart to proceed", false);
+    return;
+}
+
         submitButton.innerText = "Please Wait...";
   
         const customerName = document.getElementById("customerName").value.trim();
@@ -220,7 +278,7 @@ export default function PurchaseComponent() {
           
           showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
           saveContact(userContact,userEmail,"purchase")
-          router.push(`thanks?docId=${docRef.id}`);
+          router.push(`thanks/${docRef.id}`);
           
           if(typeof window !== "undefined"){
           localStorage.removeItem("cartItems");

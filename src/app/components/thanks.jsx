@@ -378,7 +378,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                                                     ×
                                                 </span>
                                             )}
-                                            <Image src={product.pic} alt={product.productName} width={0} height={0} style={{ width: "100px", height: "100px", objectFit: "cover" }} layout="intrinsic"/>
+                                            <Image src={product.pic} alt={product.productName} width={500} height={500} style={{ width: "100px", height: "100px", objectFit: "cover" }} quality={100}/>
                                             <div className="product-info">
                                                 <p><strong>{product.productName}</strong></p>
                                                 <p>Price: {product.price}</p>

@@ -248,19 +248,22 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   
-  .size-button:hover {
+  .size-button:hover:not(.diagonal-line) {
     background-color: black;
     color: white;
   }
+  
   
   .size-button:focus {
     outline: none;
   }
   
-  .size-button.active {
+  .size-button.active:not(.diagonal-line) {
     background-color: black;
     color: white;
   }
+
+  
   
   
   .size-table th {
@@ -317,3 +320,9 @@
     width: 20px;
   }
   
+
+  .diagonal-line {
+  
+    background: linear-gradient(to bottom left, transparent 49%, red 49%, red 52%, transparent 51%);
+    border: 1px solid #000; /* Optional border for visibility */
+  }

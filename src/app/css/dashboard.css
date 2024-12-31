@@ -734,3 +734,8 @@ display: block;  overflow: hidden;
 
 
 
+@media screen and (min-width:768px) {
+  .sidebar{
+    width: 16%;
+  }
+} 

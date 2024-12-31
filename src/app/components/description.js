@@ -119,7 +119,7 @@ export default function Description() {
             <div key={index} style={{ marginBottom: "10px" }}>
               <div
                 onClick={() => toggleExpand(index)}
-                className="description-header"
+                className="description-header" style={{fontWeight:"bold"}}
               >
                 {section.header}
                 <span className="expand-symbol">{section.expanded ? "-" : "+"}</span>

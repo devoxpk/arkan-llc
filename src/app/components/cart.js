@@ -12,16 +12,48 @@ const Cart = ({cartStyle = false}) => {
 
 
   // Safe access to localStorage on the client-side
-  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+  if (typeof window !== "undefined") {
     storedCartItems = localStorage.getItem('cartItems');
   }
 
-
+// Manually trigger the storage event
+window.dispatchEvent(new StorageEvent("storage", {
+    key: "cartItems",
+    newValue: storedCartItems
+}));
         return storedCartItems ? JSON.parse(storedCartItems) : [];
     });
 
     const cartRef = useRef(null); // Create a reference for the cart container
 
+
+        // Add a 'storage' event listener to sync changes to localStorage
+        useEffect(() => {
+            const handleStorageChange = (event) => {
+                if (event.key === "cartItems") {
+                    const updatedCartItems = event.newValue ? JSON.parse(event.newValue) : [];
+                    console.log("LocalStorage updated, syncing UI");
+                    setCartItems(updatedCartItems);
+                }
+            };
+        
+            window.addEventListener("storage", handleStorageChange);
+        
+            return () => {
+                window.removeEventListener("storage", handleStorageChange);
+            };
+        }, []);
+        
+        const updateCartItems = (newItems) => {
+            localStorage.setItem("cartItems", JSON.stringify(newItems)); // Update localStorage
+            // Manually dispatch the storage event
+            window.dispatchEvent(new StorageEvent("storage", {
+                key: "cartItems",
+                newValue: JSON.stringify(newItems),
+            }));
+        };
+        
+    
     // Load cart items from localStorage when the cart is opened
     const handleCartOpen = () => {
         // Always fetch the most recent cart items from localStorage
@@ -29,7 +61,7 @@ const Cart = ({cartStyle = false}) => {
 
        
           // Safe access to localStorage on the client-side
-          if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+          if (typeof window !== "undefined" ) {
             storedCartItems = localStorage.getItem('cartItems');
           }
         
@@ -41,7 +73,7 @@ const Cart = ({cartStyle = false}) => {
             console.log("No stored cart items found, initializing empty cart");
           
                 // Safe access to localStorage on the client-side
-                if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                if (typeof window !== "undefined") {
                   localStorage.setItem("preCartItems", JSON.stringify([]));
                 }
               
@@ -74,7 +106,7 @@ const Cart = ({cartStyle = false}) => {
     useEffect(() => {
       
             // Safe access to localStorage on the client-side
-            if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+            if (typeof window !== "undefined" ) {
                 localStorage.setItem("preCartItems", JSON.stringify([]));
             }
           
@@ -87,7 +119,7 @@ const Cart = ({cartStyle = false}) => {
 
         // Retrieve cart items from localStorage
         let cartItems = null;
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        if (typeof window !== "undefined" ) {
             cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
         }
         
@@ -135,7 +167,7 @@ const Cart = ({cartStyle = false}) => {
     
         // Retrieve existing `preCartItems` from localStorage or initialize as an empty array
         let preCartItems;
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        if (typeof window !== "undefined" ) {
             preCartItems = JSON.parse(localStorage.getItem("preCartItems")) || [];
         }
     
@@ -158,7 +190,7 @@ const Cart = ({cartStyle = false}) => {
         }
     
         // Update `preCartItems` in localStorage
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        if (typeof window !== "undefined" ) {
             localStorage.setItem("preCartItems", JSON.stringify(preCartItems));
         }
         // Update `cartItems` state to reflect changes in the UI
@@ -176,7 +208,11 @@ const Cart = ({cartStyle = false}) => {
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        window.dispatchEvent(new StorageEvent("storage", {
+            key: "cartItems",
+            newValue: JSON.stringify(updatedCartItems),
+        }));
+        if (typeof window !== "undefined") {
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
     };
@@ -189,7 +225,11 @@ const Cart = ({cartStyle = false}) => {
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        window.dispatchEvent(new StorageEvent("storage", {
+            key: "cartItems",
+            newValue: JSON.stringify(updatedCartItems),
+        }));
+        if (typeof window !== "undefined" ) {
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
     };
@@ -198,7 +238,7 @@ const Cart = ({cartStyle = false}) => {
         const updatedCartItems = cartItems.filter(item => item.id !== id);
         
         setCartItems(updatedCartItems); // Update state with the remaining items
-        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+        if (typeof window !== "undefined" ) {
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with remaining items
         }
         // Adjust the badge count
@@ -209,6 +249,10 @@ const Cart = ({cartStyle = false}) => {
             const newBadgeCount = currentBadgeCount - deletedItem.quantity;
             badgeElement.innerText = newBadgeCount;
         }
+        window.dispatchEvent(new StorageEvent("storage", {
+            key: "cartItems",
+            newValue: JSON.stringify(updatedCartItems),
+        }));
     };
     
 
@@ -312,7 +356,7 @@ const Cart = ({cartStyle = false}) => {
                             <div style={{ fontWeight: "bolder" }} className="col">TOTAL PRICE</div>
                             <div style={{ fontWeight: "bolder" }} className="col text-right">Rs. {totalAmount + shippingAmount}</div>
                         </div>
-                        <Link href='/purchase'><button
+                       {cartItems.length>0 && <Link href='/purchase' ><button
   className="cart-btn"
   style={{
     width: '100%',
@@ -326,7 +370,7 @@ const Cart = ({cartStyle = false}) => {
   }}
 >
   CHECKOUT
-</button></Link>
+</button></Link>}
 
                     </div>
                 </div>

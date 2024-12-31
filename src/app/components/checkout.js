@@ -40,7 +40,7 @@ export default function Checkout() {
 
     function openSizeChart() {
         console.log("opening sizechart")
-        fetchSizeChart(getQueryParameter("cat"));
+        fetchSizeChart(getQueryParameter("cat"),getQueryParameter('pname'));
     }
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -607,7 +607,7 @@ export default function Checkout() {
 
                 <div className="single-pro-details">
                     <div id='productDetails'>
-                        <h4 id="productName" style={{ color: "black" }}></h4><div style={{ display: 'flex', columnGap: "3%" }}>
+                        <h4 id="productName" style={{ color: "black" ,fontWeight:"bold" }}></h4><div style={{ display: 'flex', columnGap: "3%"}}>
 
 
                             <h2 id="productPrice" style={{ color: "black" }}></h2>
@@ -719,7 +719,7 @@ export default function Checkout() {
                             style={{
                                 textDecoration: "none",
                                 color: "black",
-                                fontWeight: "lighter",
+                            
                                 display: "flex",
                                 fontSize: "18px",
                                 columnGap: "2%",

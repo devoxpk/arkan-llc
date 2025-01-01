@@ -208,7 +208,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                             <button
                               className="card-action-btn cart-btn"
                               onClick={(event) => {
-                                fetchSizeChart(collectionId); // Call the function here if needed
+                                fetchSizeChart(collectionId,product.productName); // Call the function here if needed
                                 handleCart(event, product, cartItems, setCartItems);
                               }}
                             >
@@ -349,7 +349,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                 <button
                                   className="card-action-btn cart-btn"
                                   onClick={(event) => {
-                                    fetchSizeChart(collectionId); // Call the function here if needed
+                                    fetchSizeChart(collectionId,product.productName); // Call the function here if needed
                                     handleCart(event, product, cartItems, setCartItems);
                                   }}
                                 >
@@ -365,7 +365,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                       params = new URLSearchParams(window.location.search);
                                     }
 
-                                    fetchSizeChart(collectionId);
+                                    fetchSizeChart(collectionId,product.productName);
 
                                     if (params && params.get('ImageSrc')) {
                                       // Product details from URL parameters

@@ -412,12 +412,7 @@ export default function Checkout() {
             localStorage.setItem("filteredProduct", productName.trim());
             console.log(productName.trim());
 
-            if (productName) {
-                updateSizeOptions(productName);
-
-            } else {
-                console.error("Product name is empty or undefined.");
-            }
+           
         };
 
         initializePage();
@@ -431,38 +426,7 @@ export default function Checkout() {
 
 
 
-    function updateSizeOptions(productName) {
-        try {
-            // Access Firestore collection and document
-            const productRef = doc(collection(db, "clothsims"), productName);
-
-            // Get document data asynchronously
-            getDoc(productRef)
-                .then((docSnapshot) => {
-                    if (docSnapshot.exists()) {
-                        const data = docSnapshot.data();
-
-                        // Convert size fields from strings to integers
-                        const sizes = {
-                            s: parseInt(data.s, 10),
-                            m: parseInt(data.m, 10),
-                            l: parseInt(data.l, 10)
-                        };
-
-                        // Update size options based on availability
-
-                    } else {
-                        console.error("Document does not exist for product:", productName);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error getting document:", error);
-                });
-        } catch (error) {
-            console.error("Error updating size options:", error);
-        }
-    }
-
+   
 
 
 

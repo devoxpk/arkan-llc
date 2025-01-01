@@ -34,7 +34,7 @@ export default function PurchaseComponent() {
 // Add a 'storage' event listener to sync changes to localStorage
 useEffect(() => {
     const handleStorageChange = (event) => {
-        if (event.key === "cartItems") {
+        if (event.key === "cartItems" && typeof window !== "undefined") {
             const updatedCartItems = event.newValue ? JSON.parse(event.newValue) : [];
             console.log("LocalStorage updated, syncing UI");
 
@@ -133,10 +133,11 @@ async function validatePromo(event) {
                         localStorage.setItem("cartItems", JSON.stringify(cartItems));
 
                         // Manually trigger the storage event
+                        if (typeof window !== "undefined"){
                         window.dispatchEvent(new StorageEvent("storage", {
                             key: "cartItems",
                             newValue: JSON.stringify(cartItems),
-                        }));
+                        }));}
 
                         // Remove the used promo code from the database
                         const updates = {};

@@ -16,11 +16,7 @@ const Cart = ({cartStyle = false}) => {
     storedCartItems = localStorage.getItem('cartItems');
   }
 
-// Manually trigger the storage event
-window.dispatchEvent(new StorageEvent("storage", {
-    key: "cartItems",
-    newValue: storedCartItems
-}));
+
         return storedCartItems ? JSON.parse(storedCartItems) : [];
     });
 
@@ -30,7 +26,7 @@ window.dispatchEvent(new StorageEvent("storage", {
         // Add a 'storage' event listener to sync changes to localStorage
         useEffect(() => {
             const handleStorageChange = (event) => {
-                if (event.key === "cartItems") {
+                if (event.key === "cartItems" && typeof window !== "undefined") {
                     const updatedCartItems = event.newValue ? JSON.parse(event.newValue) : [];
                     console.log("LocalStorage updated, syncing UI");
                     setCartItems(updatedCartItems);
@@ -47,10 +43,11 @@ window.dispatchEvent(new StorageEvent("storage", {
         const updateCartItems = (newItems) => {
             localStorage.setItem("cartItems", JSON.stringify(newItems)); // Update localStorage
             // Manually dispatch the storage event
+            if (typeof window !== "undefined"){
             window.dispatchEvent(new StorageEvent("storage", {
                 key: "cartItems",
                 newValue: JSON.stringify(newItems),
-            }));
+            }));}
         };
         
     
@@ -208,10 +205,11 @@ window.dispatchEvent(new StorageEvent("storage", {
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
+        if (typeof window !== "undefined"){
         window.dispatchEvent(new StorageEvent("storage", {
             key: "cartItems",
             newValue: JSON.stringify(updatedCartItems),
-        }));
+        }));}
         if (typeof window !== "undefined") {
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
@@ -225,10 +223,11 @@ window.dispatchEvent(new StorageEvent("storage", {
         );
         
         setCartItems(updatedCartItems); // Update state with new quantities
+        if (typeof window !== "undefined"){
         window.dispatchEvent(new StorageEvent("storage", {
             key: "cartItems",
             newValue: JSON.stringify(updatedCartItems),
-        }));
+        }));}
         if (typeof window !== "undefined" ) {
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Update localStorage with new quantities
         }
@@ -249,10 +248,11 @@ window.dispatchEvent(new StorageEvent("storage", {
             const newBadgeCount = currentBadgeCount - deletedItem.quantity;
             badgeElement.innerText = newBadgeCount;
         }
+        if (typeof window !== "undefined"){
         window.dispatchEvent(new StorageEvent("storage", {
             key: "cartItems",
             newValue: JSON.stringify(updatedCartItems),
-        }));
+        }));}
     };
     
 

@@ -583,7 +583,7 @@ export default function DashboardComponent() {
             SERVICES: parseFloat(service.value) || "",
         };
         
-        await fetch('https://sheetdb.io/api/v1/i3ir3go9w9mmv', {
+        await fetch(process.env.NEXT_PUBLIC_SHEET_ADS, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1831,7 +1831,7 @@ function incrementStock(orderData) {
             QUANTITY: orderData.Quantity || ""
         };
     
-        await fetch('https://sheetdb.io/api/v1/pctufd2ifs8te', {
+        await fetch(process.env.NEXT_PUBLIC_SHEET_SALES, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1925,7 +1925,7 @@ function incrementStock(orderData) {
             QUANTITY: orderData.Quantity || "",
         };
     
-        await fetch('https://sheetdb.io/api/v1/pctufd2ifs8te', {
+        await fetch(process.env.NEXT_PUBLIC_SHEET_SALES, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

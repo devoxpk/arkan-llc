@@ -208,7 +208,11 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                             <button
                               className="card-action-btn cart-btn"
                               onClick={(event) => {
-                                fetchSizeChart(collectionId,product.productName); // Call the function here if needed
+                                if (product && product.productName) {
+                                    fetchSizeChart(collectionId, product.productName);
+                                } else {
+                                    console.error('Product name is undefined');
+                                }
                                 handleCart(event, product, cartItems, setCartItems);
                               }}
                             >
@@ -349,7 +353,11 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                 <button
                                   className="card-action-btn cart-btn"
                                   onClick={(event) => {
-                                    fetchSizeChart(collectionId,product.productName); // Call the function here if needed
+                                    if (product && product.productName) {
+                                        fetchSizeChart(collectionId, product.productName);
+                                    } else {
+                                        console.error('Product name is undefined');
+                                    }
                                     handleCart(event, product, cartItems, setCartItems);
                                   }}
                                 >

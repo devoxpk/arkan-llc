@@ -1,5 +1,6 @@
 import { db } from '../firebase.js'
 import { collection, doc, getDoc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore'
+import crypto from 'crypto';
 
 import Products from './productsClient.jsx'
 
@@ -52,15 +53,18 @@ async function inlist(divID) {
                     data.createdAt = new Date(data.createdAt.seconds * 1000 + data.createdAt.nanoseconds / 1000000).toISOString();
                 }
 
+                const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
+                const productId = `${divID}$${docId}$${randomFourDigit}`;
+
                 collectionData.push({
-                    id: docId,
+                    id: productId, // Use collectionId and docId as id
                     ...data,
                 });
             }
         });
 
         // Sort data numerically by ID
-        collectionData.sort((a, b) => a.id - b.id);
+        collectionData.sort((a, b) => a.id.localeCompare(b.id));
 
         console.log(`Fetched data for ${divID}.`);
 

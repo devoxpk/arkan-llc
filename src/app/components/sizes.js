@@ -17,7 +17,7 @@ export default function Sizes(){
     const [newValues, setNewValues] = useState(["", "", "", ""]); // For indices 0-3
     const [canEdit, setCanEdit] = useState(false);
     const [colID, setColID] = useState("");
-    const [ims,setIms] = useState("")
+    const [ims,setIms] = useState([true, true, true, true]); // Default to all sizes available
     let isPurchase;
     if(typeof window !== "undefined"){
  isPurchase = localStorage.getItem("purchase");
@@ -55,7 +55,7 @@ export default function Sizes(){
           } else {
             // Add as a new product if the size or name is different
             const newItem = {
-              id: generateRandom(), // Generate a new id for the product
+              id: productToAdd.id, // Generate a new id for the product
               productName: productToAdd.productName,
               price: productToAdd.price,
               pic: productToAdd.pic,
@@ -258,6 +258,7 @@ export default function Sizes(){
   }, [iSSizeChart]);
 
   fetchSizeChart = async (collectionID, imsRef) => {
+
     console.log(collectionID);
     console.log("Starting fetch for size chart...");
 console.log(imsRef)
@@ -322,6 +323,7 @@ console.log(imsRef)
                 });
 
                 // Update the state with size chart data
+                
                 setSizeChart(sizeChartData);
                 console.log(iSSizeChart);
             }
@@ -627,40 +629,40 @@ return(
             
             <div className="sizingBtns">
   <button
-    className={`size-button ${!ims[0] ? 'diagonal-line' : ''}`}
+    className={`size-button ${ims && !ims[0] ? 'diagonal-line' : ''}`}
     value="36"
     id="s"
-    onClick={() => (!ims[0] 
+    onClick={() => (ims && !ims[0] 
       ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false)
       : changeSizeAndStyle('s', 36))}
   >
     Small
   </button>
   <button
-    className={`size-button ${!ims[1] ? 'diagonal-line' : ''}`}
+    className={`size-button ${ims && !ims[1] ? 'diagonal-line' : ''}`}
     value="40"
     id="m"
-    onClick={() => (!ims[1] 
+    onClick={() => (ims && !ims[1] 
       ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
       : changeSizeAndStyle('m', 40))}
   >
     Medium
   </button>
   <button
-    className={`size-button ${!ims[2] ? 'diagonal-line' : ''}`}
+    className={`size-button ${ims && !ims[2] ? 'diagonal-line' : ''}`}
     value="45"
     id="l"
-    onClick={() => (!ims[2] 
+    onClick={() => (ims && !ims[2] 
       ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
       : changeSizeAndStyle('l', 45))}
   >
     Large
   </button>
   <button
-    className={`size-button ${!ims[3] ? 'diagonal-line' : ''}`}
+    className={`size-button ${ims && !ims[3] ? 'diagonal-line' : ''}`}
     value="48"
     id="xl"
-    onClick={() => (!ims[3] 
+    onClick={() => (ims && !ims[3] 
       ? showMessageBox("Out of Stock", "Your Selected size is out of stock", false) 
       : changeSizeAndStyle('xl', 48))}
   >

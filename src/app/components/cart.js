@@ -169,7 +169,7 @@ const Cart = ({cartStyle = false}) => {
         }
     
         // Check if the product already exists in `preCartItems`
-        const existingProductIndex = preCartItems.findIndex(item => item.productName === product.productName);
+        const existingProductIndex = preCartItems.findIndex(item => item.id === product.id);
     
         if (existingProductIndex !== -1) {
             // If the product exists, update its quantity
@@ -179,7 +179,6 @@ const Cart = ({cartStyle = false}) => {
             // If the product doesn't exist, add it as a new product
             const newProduct = {
                 ...product,
-                id: Date.now() + Math.random(), // Generate a unique ID
                 quantity: 1, // Set initial quantity
             };
             preCartItems.push(newProduct);

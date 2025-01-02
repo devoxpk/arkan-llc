@@ -170,7 +170,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                           ) : (
                             <Link
                               className='checkoutLink'
-                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
                               legacyBehavior
                             >
                               <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
@@ -195,7 +195,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                           <div className="card-actions">
                             <Link
                              className='checkoutLink'
-                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
                             >
                               <button
                                 className="card-action-btn"
@@ -209,11 +209,11 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                               className="card-action-btn cart-btn"
                               onClick={(event) => {
                                 if (product && product.productName) {
-                                    fetchSizeChart(collectionId, product.productName);
+                                  fetchSizeChart(collectionId, product.productName);
                                 } else {
-                                    console.error('Product name is undefined');
+                                  console.error('Product name is undefined');
                                 }
-                                handleCart(event, product, cartItems, setCartItems);
+                                handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
                               }}
                             >
                               <ion-icon name="cart-outline"></ion-icon>
@@ -235,16 +235,16 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                     pic: params.get('ImageSrc'),
                                     productName: params.get('pname'),
                                     price: params.get('pprice')?.replace('Rs. ', ''),
-                                    id: Date.now(),
+                                    id: product.id, // Use encoded productCP as id
                                   };
 
-                                  handleCart(event, product, cartItems, setCartItems());
-                                  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                                  handleCart(event, product, cartItems, setCartItems);
+                                  if (typeof window !== "undefined") {
                                     localStorage.setItem('purchase', '0010');
                                   }
                                 } else {
-                                  handleCart(event, product, cartItems, setCartItems());
-                                  if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                                  handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
+                                  if (typeof window !== "undefined" ) {
                                     localStorage.setItem('purchase', '0010');
                                   }
                                 }
@@ -313,7 +313,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                               ) : (
                                 <Link
                                   className='checkoutLink'
-                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
                                   legacyBehavior
                                 >
                                   <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
@@ -340,7 +340,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                 <Link
                                 
                                  className='checkoutLink'
-                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}`}
+                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
                                 >
                                   <button
                                     className="card-action-btn"
@@ -358,7 +358,8 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                     } else {
                                         console.error('Product name is undefined');
                                     }
-                                    handleCart(event, product, cartItems, setCartItems);
+                                    
+                                    handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
                                   }}
                                 >
                                   {!productsStyle &&  <ion-icon name="cart-outline"></ion-icon>}
@@ -382,7 +383,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                         pic: params.get('ImageSrc'),
                                         productName: params.get('pname'),
                                         price: params.get('pprice')?.replace('Rs. ', ''),
-                                        id: Date.now(),
+                                        id: params.get("ref"), // Use encoded productCP as id
                                       };
 
                                       handleCart(event, product, cartItems, setCartItems);
@@ -390,7 +391,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                         localStorage.setItem('purchase', '0010');
                                       }
                                     } else {
-                                      handleCart(event, product, cartItems, setCartItems);
+                                      handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
                                       if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
                                         localStorage.setItem('purchase', '0010');
                                       }

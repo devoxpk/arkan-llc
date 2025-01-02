@@ -604,11 +604,13 @@ export default function Checkout() {
                         
                             const pic = token ? `${baseUrl}&token=${token}` : baseUrl;
                         
+                            const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
+                            const productId = `${getQueryParameter("ref")}$${randomFourDigit}`;
                             const product = {
                                 pic: pic,
                                 productName: params.get("pname"),
                                 price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
-                                id: Date.now() // Generate unique ID based on current time
+                                id: productId // Use ref as product ID
                             };
                         
                             // Call handleCart with the product and cart items
@@ -640,11 +642,12 @@ export default function Checkout() {
                             const pic = token ? `${baseUrl}&token=${encodeURIComponent(token)}` : baseUrl;
                         
                             // Extract product details
+                            const productId = getQueryParameter("ref");
                             const product = {
                                 pic: pic, // Final encoded URL
                                 productName: params.get("pname"),
                                 price: params.get("pprice")?.replace("Rs. ", ""), // Remove "Rs. " from price
-                                id: Date.now() // Generate unique ID based on current time
+                                id: productId // Use ref as product ID
                             };
                         
                             // Call handleCart with the product and cart items
@@ -737,3 +740,4 @@ export default function Checkout() {
         </>
     );
 }
+    

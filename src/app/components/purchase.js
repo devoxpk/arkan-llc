@@ -8,6 +8,7 @@ import saveContact from '../utilis/saveContact'
 import showMessageBox from '../utilis/showMessageBox'
 import { useRouter } from 'next/navigation';
 import Image from 'next/image'
+import Loader from './loader'
 export default function PurchaseComponent() {
     const router = useRouter();
 
@@ -226,6 +227,7 @@ if (cartItems.length === 0) {
     showMessageBox("Cart is Empty", "Kindly add items to cart to proceed", false);
     return;
 }
+document.getElementById(".loader").style.display = 'block'
 
         submitButton.innerText = "Please Wait...";
   
@@ -242,6 +244,7 @@ if (cartItems.length === 0) {
         }
   
         try {
+          const totalCP = await fetchCP(cartItems);
           const day = new Date().toDateString();
           const time = new Date().toLocaleTimeString();
           const details = document.getElementById("additionalDetails").value;
@@ -260,6 +263,7 @@ if (cartItems.length === 0) {
           const docData = {
             productsData,
             productSP:subtotal,
+            productCP: totalCP,
             Address: userAddress,
             Contact: userContact,
             Name: customerName,
@@ -280,6 +284,7 @@ if (cartItems.length === 0) {
           showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
           saveContact(userContact,userEmail,"purchase")
           router.push(`thanks/${docRef.id}`);
+          document.getElementById(".loader").style.display = 'none'
           
           if(typeof window !== "undefined"){
           localStorage.removeItem("cartItems");
@@ -350,8 +355,34 @@ let items;
         }
     }
 
+    async function fetchCP(cartItems) {
+        let totalCP = 0;
+
+        for (const item of cartItems) {
+            const [collectionId, docId] = item.id.split('$').slice(0, 2);
+            try {
+                const productRef = doc(db, collectionId, docId);
+                const productSnap = await getDoc(productRef);
+
+                if (productSnap.exists()) {
+                    const productData = productSnap.data();
+                    const productCP = productData.productCP || 0;
+                    totalCP += productCP;
+                } else {
+                    totalCP += 0; // Default to 0 if product not found
+                }
+            } catch (error) {
+                console.error(`Error fetching productCP for ${item.id}:`, error);
+                totalCP += 0; // Default to 0 in case of error
+            }
+        }
+
+        return totalCP;
+    }
+
     return (
        <>
+       <Loader/>
             <div id="fabricDiv">
                 <h2 id="fabricHead">N O U V E</h2>
                 <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" alt='TShirts' layout="intrinsic"/>

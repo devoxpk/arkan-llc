@@ -227,7 +227,7 @@ if (cartItems.length === 0) {
     showMessageBox("Cart is Empty", "Kindly add items to cart to proceed", false);
     return;
 }
-document.getElementById(".loader").style.display = 'block'
+document.querySelector(".loader").style.display = 'block'
 
         submitButton.innerText = "Please Wait...";
   
@@ -284,7 +284,7 @@ document.getElementById(".loader").style.display = 'block'
           showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
           saveContact(userContact,userEmail,"purchase")
           router.push(`thanks/${docRef.id}`);
-          document.getElementById(".loader").style.display = 'none'
+          document.querySelector(".loader").style.display = 'none'
           
           if(typeof window !== "undefined"){
           localStorage.removeItem("cartItems");
@@ -366,8 +366,8 @@ let items;
 
                 if (productSnap.exists()) {
                     const productData = productSnap.data();
-                    const productCP = productData.productCP || 0;
-                    totalCP += productCP;
+                    let productCP = parseInt(productData.productCP || '0', 10); // Convert to integer
+                    totalCP += productCP * item.quantity; // Multiply by quantity
                 } else {
                     totalCP += 0; // Default to 0 if product not found
                 }

@@ -228,14 +228,23 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                   params = new URLSearchParams(window.location.search);
                                 }
 
+                                // Log to check if product is defined
+                                console.log('Product:', product);
+
+                                if (product && product.productName) {
+                                  console.log('Product name is defined:', product.productName);
+                                  fetchSizeChart(collectionId, product.productName);
+                                } else {
+                                  console.error('Product name is undefined');
+                                }
+
                                 if (params && params.get('ImageSrc')) {
                                   // Product details from URL parameters
-
                                   const product = {
                                     pic: params.get('ImageSrc'),
                                     productName: params.get('pname'),
                                     price: params.get('pprice')?.replace('Rs. ', ''),
-                                    id: product.id, // Use encoded productCP as id
+                                    id: params.get("ref"), // Use encoded productCP as id
                                   };
 
                                   handleCart(event, product, cartItems, setCartItems);
@@ -244,7 +253,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                   }
                                 } else {
                                   handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                                  if (typeof window !== "undefined" ) {
+                                  if (typeof window !== "undefined") {
                                     localStorage.setItem('purchase', '0010');
                                   }
                                 }
@@ -378,7 +387,9 @@ export default function Products({ collectionData, headers, collectionsToFetch =
 
                                     if (params && params.get('ImageSrc')) {
                                       // Product details from URL parameters
-
+                                      if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                                        localStorage.setItem('purchase', '0010');
+                                      }
                                       const product = {
                                         pic: params.get('ImageSrc'),
                                         productName: params.get('pname'),
@@ -386,15 +397,27 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                         id: params.get("ref"), // Use encoded productCP as id
                                       };
 
-                                      handleCart(event, product, cartItems, setCartItems);
-                                      if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-                                        localStorage.setItem('purchase', '0010');
-                                      }
+                                      if (product && product.productName) {
+                                        console.error('Product name is defined');
+                                        fetchSizeChart(collectionId, product.productName);
                                     } else {
+                                        console.error('Product name is undefined');
+                                    }
+
+                                      handleCart(event, product, cartItems, setCartItems);
+                                      
+                                    } else {
+                                      if (product && product.productName) {
+                                        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                                          localStorage.setItem('purchase', '0010');
+                                        }
+                                        console.error('Product name is undefined');
+                                        fetchSizeChart(collectionId, product.productName);
+                                    } else {
+                                        console.error('Product name is undefined');
+                                    }
                                       handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                                      if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-                                        localStorage.setItem('purchase', '0010');
-                                      }
+                                     
                                     }
                                   }}
                                 >

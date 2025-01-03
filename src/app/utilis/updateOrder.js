@@ -81,10 +81,16 @@ export async function updateProductField(docid, productIndex, field, value) {
             const updatedProductSP = parseInt(parseFloat(data.productSP || '0') - oldProductSP + newProductSP);
             await updateDoc(orderDocRef, { productCP: updatedProductCP, productSP: updatedProductSP });
 
+            // Calculate the new total amount using the price field
+            const updatedTotalAmount = products.reduce((total, prod, index) => {
+                const prodQuantity = index === productIndex ? value : prod.quantity;
+                return total + parseFloat(productData.price || '0') * prodQuantity;
+            }, 0);
+
             // Update the UI amount
             const totalAmountElement = document.querySelector('.priceElement');
             if (totalAmountElement) {
-                totalAmountElement.textContent = updatedProductSP.toFixed(2);
+                totalAmountElement.textContent = updatedTotalAmount.toFixed(2);
             }
         }
 

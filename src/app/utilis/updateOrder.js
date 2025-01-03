@@ -54,13 +54,42 @@ export async function updateProductField(docid, productIndex, field, value) {
             throw new Error("Invalid product index.");
         }
 
+        const product = products[productIndex];
+        const [collectionId, docId] = product.id.split('$').slice(0, 2);
+        const productRef = doc(db, collectionId, docId);
+        const productSnap = await getDoc(productRef);
+
+        if (!productSnap.exists()) {
+            throw new Error("Product not found.");
+        }
+
+        const productData = productSnap.data();
+        const productCP = parseFloat(productData.productCP || '0');
+        
+        
+        const productSP = parseFloat(productData.price || '0');
+
+        if (field === 'quantity') {
+            const oldQuantity = product.quantity;
+            const oldProductCP = productCP * oldQuantity;
+            const newProductCP = productCP * value;
+            const oldProductSP = productSP * oldQuantity;
+            const newProductSP = productSP * value;
+
+            // Update the order's productCP and productSP
+            const updatedProductCP = parseInt(parseFloat(data.productCP || '0') - oldProductCP + newProductCP);
+            const updatedProductSP = parseInt(parseFloat(data.productSP || '0') - oldProductSP + newProductSP);
+            await updateDoc(orderDocRef, { productCP: updatedProductCP, productSP: updatedProductSP });
+
+            // Update the UI amount
+            const totalAmountElement = document.querySelector('.priceElement');
+            if (totalAmountElement) {
+                totalAmountElement.textContent = updatedProductSP.toFixed(2);
+            }
+        }
+
         // Update the specific field of the product
         products[productIndex][field] = value;
-
-        // If the field is 'size', ensure it's stored as a number
-        if (field === 'size') {
-            products[productIndex][field] = parseInt(value, 10);
-        }
 
         // Update the 'productsData' field with the new products array
         await updateDoc(orderDocRef, { productsData: JSON.stringify(products) });

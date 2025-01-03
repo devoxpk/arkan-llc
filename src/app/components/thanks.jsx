@@ -9,6 +9,8 @@ import updateOrderField, { updateProductField, deleteProduct } from "../utilis/u
 import deleteOrder from "../utilis/deleteOrder"; // Add deleteOrder import
 import Link from 'next/link';
 import Image from 'next/image';
+import showMessageBox from "../utilis/showMessageBox";
+import { revalidateThanks } from "../thanks/[docid]/page";
 export default function ThanksPage({ orderDetails, error, docid }) {
     const [trackingInfo, setTrackingInfo] = useState(null);
     const [showCard, setShowCard] = useState(false);
@@ -109,7 +111,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
             setShowCard(true);
         } catch (err) {
             console.error("Error confirming order:", err);
-            alert("Failed to confirm the order. Please try again.");
+            showMessageBox("Order Confirmation Error", "Failed to confirm the order. Please try again.", false);
         } finally {
             setIsLoading(false);
         }
@@ -118,18 +120,18 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     const handleDeleteOrder = async () => {
         try {
             await deleteOrder(docid);
-            alert("Order canceled successfully.");
+            showMessageBox("Order Cancellation", "Order canceled successfully.", true);
             // Optionally, redirect or update UI accordingly
         } catch (error) {
             console.error("Error canceling order:", error);
-            alert("Failed to cancel the order. Please try again.");
+            showMessageBox("Order Cancellation Error", "Failed to cancel the order. Please try again.", false);
         }
     };
 
     const handleRemoveProduct = async (productId) => {
         const productIndex = order.products.findIndex(p => p.id === productId);
         if (productIndex === -1) {
-            alert("Product not found.");
+            showMessageBox("Product Not Found", "Product not found.", false);
             return;
         }
         if (confirm("Are you sure you want to delete this product?")) {
@@ -153,9 +155,9 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                 const newAmount = (total / 2).toFixed(2);
                 await updateOrderField(docid, 'amount', newAmount);
 
-                alert("Product deleted successfully and Amount updated.");
+                showMessageBox("Product Deletion Success", "Product deleted successfully and Amount updated.", true);
             } catch (error) {
-                alert("Failed to delete the product. Please try again.");
+                showMessageBox("Product Deletion Error", "Failed to delete the product. Please try again.", false);
             }
         }
     };
@@ -189,12 +191,12 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                     // Update amount in Firestore
                     await updateOrderField(docid, 'amount', (order.amount / 2 + parsedQuantity * unitPrice / 2).toFixed(2));
 
-                    alert("Quantity and Amount updated successfully.");
+                    showMessageBox("Quantity Update Success", "Quantity and Amount updated successfully.", true);
                 } catch (error) {
-                    alert("Failed to update quantity and amount. Please try again.");
+                    showMessageBox("Quantity Update Error", "Failed to update quantity and amount. Please try again.", false);
                 }
             } else {
-                alert("Invalid quantity entered.");
+                showMessageBox("Invalid Quantity", "Invalid quantity entered.", false);
             }
         }
     };
@@ -202,7 +204,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     const handleEditProductField = async (productId, field, currentValue) => {
         const productIndex = order.products.findIndex(p => p.id === productId);
         if (productIndex === -1) {
-            alert("Product not found.");
+            showMessageBox("Product Not Found", "Product not found.", false);
             return;
         }
 
@@ -228,12 +230,12 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                     return { ...prevOrder, products: updatedProducts };
                 });
 
-                alert("Size updated successfully.");
+                showMessageBox("Size Update Success", "Size updated successfully.", true);
             } catch (error) {
-                alert("Failed to update size. Please try again.");
+                showMessageBox("Size Update Error", "Failed to update size. Please try again.", false);
             }
         } else if (newSizeLabel !== null) {
-            alert("Invalid size selected. Please choose from the provided options.");
+            showMessageBox("Invalid Size", "Invalid size selected. Please choose from the provided options.", false);
         }
     };
 
@@ -258,7 +260,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                             city: newValue,
                             billingAddress: updatedAddress
                         }));
-                        alert(`${field} and Address updated successfully.`);
+                        showMessageBox("Field Update Success", `${field} and Address updated successfully.`, true);
                     } else {
                         // If address format is unexpected, only update 'City'
                         await updateOrderField(docid, 'city', newValue);
@@ -266,21 +268,23 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                             ...prevOrder,
                             city: newValue
                         }));
-                        alert(`${field} updated successfully.`);
+                        await revalidateThanks();
+                        showMessageBox("Field Update Success", `${field} updated successfully.`, true);
                     }
                 } else {
                 await updateOrderField(docid, field, newValue);
             setOrder(prevOrder => ({
                 ...prevOrder,
-                [field]: newValue
+                [field.toLowerCase()]: newValue
             }));
-                alert(`${field} updated successfully.`);
+                showMessageBox("Field Update Success", `${field} updated successfully.`, true);
                 }
             } catch (error) {
-                alert(`Failed to update ${field}. Please try again.`);
+                showMessageBox("Field Update Error", `Failed to update ${field}. Please try again or complain through the contact form.`, false);
             }
         } else {
-            alert(`Invalid ${field} entered.`);
+         
+            showMessageBox("Invalid Field", `Invalid ${field} entered.`, false)
         }
     };
 
@@ -295,8 +299,8 @@ export default function ThanksPage({ orderDetails, error, docid }) {
             ) : (
                 <>
                     <navbar style={{ justifyContent: "center", display: "flex", position: "relative", marginTop: "2%" }}>
-                        <span style={{marginTop:"6px"}}>Thanks {order.name} for Ordering</span>
-                        <span style={{ backgroundColor: "green", color: "white", borderRadius: "50%", padding: "5px", marginLeft: "10px" }}>
+                        <span style={{marginTop:"3px",fontSize:"20px"}}>Thanks {order.name} for Ordering</span>
+                        <span style={{ backgroundColor: "green", color: "white", borderRadius: "50%", padding: "5px", marginLeft: "10px", display: "flex", justifyContent: "center", width: "8%" }}>
                             ✓
                         </span>
                     </navbar>
@@ -424,7 +428,17 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                                 <p>Location data is unavailable.</p>
                             )}
                         </div>
+                       
                     </div>
+
+
+                    {!action &&<div style={{ display: "flex", justifyContent: "center" }}>
+                           <Link href='/'> <button style={{ background: "lightgreen", border: "1px solid black", color: "black", borderRadius: "7px", padding: "8px", marginBottom: "10%" }}>
+                                Continue Shopping
+                            </button>
+                            </Link>
+                        </div>
+}
 
                     {action === 'confirm' && (
                         <>

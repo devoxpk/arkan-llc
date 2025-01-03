@@ -11,6 +11,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import showMessageBox from "../utilis/showMessageBox";
 import { revalidateThanks } from "../thanks/[docid]/page";
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+
 export default function ThanksPage({ orderDetails, error, docid }) {
     const [trackingInfo, setTrackingInfo] = useState(null);
     const [showCard, setShowCard] = useState(false);
@@ -94,6 +97,26 @@ export default function ThanksPage({ orderDetails, error, docid }) {
         }
     }, [orderDetails, action, error]);
 
+    useEffect(() => {
+        if (!docid) return;
+
+        const orderDocRef = doc(db, "orders", docid);
+        const unsubscribe = onSnapshot(orderDocRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                const productSP = data.productSP || 0;
+
+                // Update the UI with the productSP as the total amount
+                const totalAmountElement = document.querySelector('.priceElement');
+                if (totalAmountElement) {
+                    totalAmountElement.textContent = productSP.toFixed(2);
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, [docid]);
+
     const handleConfirm = async () => {
         setIsLoading(true);
         try {
@@ -174,26 +197,17 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                     // Update local state
                     setOrder(prevOrder => {
                         const updatedProducts = prevOrder.products.map(p => 
-                            p.id === productId ? { ...p, quantity: parsedQuantity, price: (parsedQuantity * parseFloat(p.price)).toString() } : p
+                            p.id === productId ? { ...p, quantity: parsedQuantity } : p
                         );
-                        
-                        // Calculate new amount
-                        const total = updatedProducts.reduce((sum, p) => sum + (p.quantity * parseFloat(p.price)), 0);
-                        const newAmount = (total / 2).toFixed(2);
-                        
                         return { 
-                    ...prevOrder,
-                            products: updatedProducts,
-                            amount: newAmount
+                            ...prevOrder,
+                            products: updatedProducts
                         };
                     });
 
-                    // Update amount in Firestore
-                    await updateOrderField(docid, 'amount', (order.amount / 2 + parsedQuantity * unitPrice / 2).toFixed(2));
-
-                    showMessageBox("Quantity Update Success", "Quantity and Amount updated successfully.", true);
+                    showMessageBox("Quantity Update Success", "Quantity updated successfully.", true);
                 } catch (error) {
-                    showMessageBox("Quantity Update Error", "Failed to update quantity and amount. Please try again.", false);
+                    showMessageBox("Quantity Update Error", "Failed to update quantity. Please try again.", false);
                 }
             } else {
                 showMessageBox("Invalid Quantity", "Invalid quantity entered.", false);
@@ -352,7 +366,8 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                                 </p>
                                 <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
                                 <p>
-                                    <strong>Amount:</strong> {order.amount}
+                                  
+                                    <strong >Amount:</strong> <span id='totalAmount'>{order.amount || order.productSP}</span>
                                 </p>
                             </div>
                         </div>

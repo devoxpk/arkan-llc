@@ -24,6 +24,7 @@ export default async function ThanksServer({ params }) {
             error = "Order not found.";
         } else {
             const data = orderSnap.data();
+            console.log(data)
             const products = JSON.parse(data.productsData || "[]");
             const amount = products.reduce((total, product) => {
                 const price = parseFloat(product.price) || 0;
@@ -46,6 +47,7 @@ export default async function ThanksServer({ params }) {
                 currentLoc: data.currentLoc || "",
                 confirm: data.confirm || "Not Confirmed",
                 city: data.City || "N/A",
+                productSP: data.productSP,
                 customerID: data.customerID || "N/A",
             };
         }

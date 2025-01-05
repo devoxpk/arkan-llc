@@ -8,8 +8,15 @@
     export default function SkinServer({ purchase = false }) {
       const [selectedSkinTone, setSelectedSkinTone] = useState(null);
       const [error, setError] = useState('');
-      const [isFormVisible, setIsFormVisible] = useState(purchase ? !localStorage.getItem('skin') : false);
+      const [isFormVisible, setIsFormVisible] = useState(false);
       const [currentPath, setCurrentPath] = useState('');
+
+      useEffect(() => {
+        if (typeof window !== 'undefined') {
+          const storedSkin = localStorage.getItem('skin');
+          setIsFormVisible(purchase ? !storedSkin : false);
+        }
+      }, [purchase]);
 
       useEffect(() => {
         if (typeof window !== 'undefined') {

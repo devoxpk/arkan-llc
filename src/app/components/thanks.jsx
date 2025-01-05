@@ -10,7 +10,7 @@ import deleteOrder from "../utilis/deleteOrder"; // Add deleteOrder import
 import Link from 'next/link';
 import Image from 'next/image';
 import showMessageBox from "../utilis/showMessageBox";
-import { revalidateThanks } from "../thanks/[docid]/page";
+
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -282,7 +282,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                             ...prevOrder,
                             city: newValue
                         }));
-                        await revalidateThanks();
+                        
                         showMessageBox("Field Update Success", `${field} updated successfully.`, true);
                     }
                 } else {

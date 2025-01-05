@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "NOUVE - Dashboard",
+  title: "TSOA - Dashboard",
   description: "Dashboard layout",
 };
 

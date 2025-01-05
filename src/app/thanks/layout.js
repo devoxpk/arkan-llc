@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "NOUVE - Thanks",
+  title: "TSOA - Thanks",
   description: "Thanks layout",
 };
 
@@ -33,7 +33,7 @@ export default function ThanksLayout({ children }) {
       />
 
       {/* Existing Clarity Script */}
-      <Script
+      {/* <Script
         id="clarity-script-thanks"
         type="text/javascript"
         strategy="afterInteractive"
@@ -44,7 +44,7 @@ export default function ThanksLayout({ children }) {
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "ouxc4oeliv");`,
         }}
-      />
+      /> */}
     </div>
   );
 }

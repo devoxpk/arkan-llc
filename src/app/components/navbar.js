@@ -172,7 +172,7 @@ function Navbar() {
               </Link>
           <span id='brandNameSpan'>
             <Link href="/" >
-            <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>N O U V E</h1>
+            <h1 id="brandName" style={{ color: 'black', position: 'relative' }}>T S O A</h1>
           </Link>
           </span>
 
@@ -232,7 +232,7 @@ function Navbar() {
                   
                   <Link href="/" legacyBehavior>
                     <a className="logo">
-                      <Image src="/logo/dwlogo.png" alt="Nouve Shirts in Pakistan" width="55" height="0" style={{height:"auto"}} />
+                      <Image src="/logo/dwlogo.png" alt="TSOA Shirts in Pakistan" width="55" height="0" style={{height:"auto"}} />
                     </a>
                   </Link>
               <button className="nav-close-btn" onClick={toggleNavbar} aria-label="Close Menu">
@@ -242,7 +242,8 @@ function Navbar() {
 
             <ul className="navbar-list">
               <li><Link href='/' legacyBehavior><a className="navbar-link" data-nav-link>Home</a></Link></li>
-                 
+              <li><Link href='/skinrecommender' legacyBehavior><a className="navbar-link" data-nav-link >Skin Recommendention</a></Link></li>
+
               <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
               <li><Link href='/contact' legacyBehavior><a className="navbar-link" data-nav-link>Contact Us</a></Link></li>
               <li>

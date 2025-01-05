@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "Privacy Policy - About",
+  title: " TSOA Privacy Policy",
   description: "Privacy Policy layout",
 };
 
@@ -18,7 +18,7 @@ export default function PrivacyLayout({ children }) {
   >
     {children}
     
-    <Script
+    {/* <Script
       id="clarity-script-privacypolicy"
       type="text/javascript"
       strategy="afterInteractive"
@@ -29,7 +29,7 @@ export default function PrivacyLayout({ children }) {
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "ouxc4oeliv");`,
       }}
-    />
+    /> */}
   </div>
   );
 }

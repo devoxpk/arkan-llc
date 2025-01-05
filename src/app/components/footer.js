@@ -132,13 +132,13 @@ function Footer() {
     width={100} height={0} 
       style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
       src="/logo/dwlogo.png" 
-      alt="Nouve logo" 
+      alt="TSOA logo" 
     />
   </a>
 </Link>
 
               <p className="footer-text">
-                Nouve is a fashion theme for presenting a complete wardrobe of uniquely crafted Ethnic Wear, Casuals,
+              TSOA is a fashion theme for presenting a complete wardrobe of uniquely crafted Ethnic Wear, Casuals,
                 Edgy Denims, & Accessories inspired by the most contemporary styles.
               </p>
 
@@ -187,7 +187,7 @@ function Footer() {
         <div className="footer-bottom">
           <div className="container">
             <p className="copyright">
-              &copy; 2024 <a href="#">Nouve</a>. All Rights Reserved.
+              &copy; 2024 <Link href='/' legacyBehavior><a href="/">TSOA</a></Link>. All Rights Reserved.
             </p>
             <ul className="footer-bottom-list">
               <li><Link href='/privacypolicy' legacyBehavior><a className="footer-bottom-link">Privacy Policy</a></Link></li>

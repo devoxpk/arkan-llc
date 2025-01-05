@@ -96,7 +96,7 @@ import {
         const promoCode = uuidv4().slice(0, 4).toUpperCase();
         promoCodes[promoCode] = discount; // Map promo code to discount
   
-        const promoMessage = `💥 Special Offer Just For You! 💥\n\nEnjoy ${discount} OFF on your favorite styles at Nouve! \nUse code ${promoCode} at checkout.\n\n🛒 Shop Now: https://nouvewear.com\n\nHurry! Offer valid for a limited time. 💌`;
+        const promoMessage = `💥 Special Offer Just For You! 💥\n\nEnjoy ${discount} OFF on your favorite styles at TSOA! \nUse code ${promoCode} at checkout.\n\n🛒 Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nHurry! Offer valid for a limited time. 💌`;
         emailMessages.push(encodeURIComponent(promoMessage));
       });
   
@@ -106,7 +106,7 @@ import {
         const promoCode = uuidv4().slice(0, 4).toUpperCase();
         promoCodes[promoCode] = discount; // Map promo code to discount
   
-        const promoMessage = `✨ Exclusive Savings Just For You! ✨\n\nYour style deserves ${discount} OFF at Nouve. \nUse code ${promoCode} at checkout.\n\n Shop Now: https://nouvewear.com\n\nAct fast—this deal won't last! 🎉`;
+        const promoMessage = `✨ Exclusive Savings Just For You! ✨\n\nYour style deserves ${discount} OFF at TSOA. \nUse code ${promoCode} at checkout.\n\n Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nAct fast—this deal won't last! 🎉`;
         contactMessages.push(encodeURIComponent(promoMessage));
       });
   
@@ -119,7 +119,7 @@ import {
           ","
         )}&msgs=${emailMessages.join(
           ","
-        )}&type=send&subject=${encodeURIComponent("NOUVE - Exclusive Discount Code")}`;
+        )}&type=send&subject=${encodeURIComponent("TSOA - Exclusive Discount Code")}`;
   
         try {
           const emailResponse = await fetch(emailApiUrl, { method: "GET" });

@@ -8,7 +8,7 @@ const Poster = () => {
     { 
       type: 'image', 
       src: '/poster/poster-gray.png', 
-      title: 'NOUVE', 
+      title: 'TSOA', 
       subtitle: 'COLLECTION', 
       volume: 'VOL-I',
       style: { 

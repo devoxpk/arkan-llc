@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 export default function ChatComponent() {
     const [userInput, setUserInput] = useState('');
     const [messages, setMessages] = useState([
-        { text: 'Nouve here, how may I assist?', type: 'incoming' }
+        { text: 'TSOA here, how may I assist?', type: 'incoming' }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(true); // Manage visibility of the chat

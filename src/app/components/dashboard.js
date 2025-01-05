@@ -102,7 +102,7 @@ function toggleSidebar() {
                         customerContact = "92" + customerContact.slice(1);
                     }
     
-                    let message = `Your Order Dispatched from Nouve \n\n` +
+                    let message = `Your Order Dispatched from TSOA \n\n` +
                         `Dear ${orderData.Name},\n\n` +
                         `Your ${orderData.productName} has been dispatched!\n\n`;
     
@@ -111,8 +111,8 @@ function toggleSidebar() {
                             `Tracking Number: ${orderData.tracking}\n\n`;
                     }
     
-                    message += `Thank you for choosing Nouve. Feel free to track your order for real-time updates.\n\n` +
-                        `Regards,\nNouve Team`;
+                    message += `Thank you for choosing TSOA. Feel free to track your order for real-time updates.\n\n` +
+                        `Regards,\TSOA Team`;
     
                     console.log("Prepared WhatsApp message", message);
     
@@ -2007,8 +2007,8 @@ function incrementStock(orderData) {
                 const customerNumber = `92${orderData.Contact}`;
     
                 // Compose the message for the Customer
-                const message = `*Nouve - ORDER CONFIRMATION*\n\n
-    Assalamualaikum ${orderData.Name},\n\n
+                const message = `*TSOA - ORDER CONFIRMATION*\n\n
+    Hey ${orderData.Name},\n\n
     ________________________________\n
     *Order Details:*\n
     - Product: ${orderData.productName}\n
@@ -2018,10 +2018,10 @@ function incrementStock(orderData) {
     - Quantity: ${orderData.Quantity}\n
     ________________________________\n
     *To confirm your order, click the link below:*\n\n
-    [nouvewear.com/confirm?doc=${encodeURIComponent(orderDocID)}]\n
+    [tsoa.vercel.app/confirm?doc=${encodeURIComponent(orderDocID)}]\n
     *Note:* It is compulsory to open this link to confirm your order and also recheck your details.\n\n
     Best regards,\n
-    Nouve Team`;
+    TSOA Team`;
     
                 // Encode message for URL
                 const encodedMessage = encodeURIComponent(message).replace(/%0A/g, '%0A');
@@ -2426,7 +2426,7 @@ function incrementStock(orderData) {
    <div style={{ display: 'none', position: 'fixed', marginTop: '120%', maxWidth: '50%', marginLeft: '19%' }} id="loader" />
 
 <div className="login-box" style={{ display: 'none' }}>
-  <h1 className="login-key" style={{ marginLeft: '34px' }}>Nouve - PANEL</h1>
+  <h1 className="login-key" style={{ marginLeft: '34px' }}>TSOA - PANEL</h1>
   <div id="creds" className="login-form">
     <h2 className="login-title">Username:</h2>
     <input id="username" className="form-control" placeholder="username" />

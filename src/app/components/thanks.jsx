@@ -77,7 +77,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                     const map = window.L.map('map').setView([latitude, longitude], 13);
         
                     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© NOUVE STREET MAP',
+                        attribution: '© TSOA STREET MAP',
                     }).addTo(map);
         
                     window.L.marker([latitude, longitude]).addTo(map)

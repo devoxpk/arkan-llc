@@ -4,12 +4,14 @@ import Cart from "../../components/cart";
 import Loader from "../../components/loader";
 import CategoryClient from "../categoryClient"; // Import the new client component
 import Products from "../../components/products";
+import SkinRecommender from "../../skinrecommender/skinserver";
 export default function CategoriesPage({ params }) {
   const category = params.category;
   console.log('Category:', category);
 
   return (
     <>
+    <SkinRecommender />
       <Navbar />
       <Cart />
 

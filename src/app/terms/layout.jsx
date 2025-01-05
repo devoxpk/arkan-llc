@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "NOUVE - Terms and Services",
+  title: "TSOA - Terms and Services",
   description: "Terms and Services layout",
 };
 
@@ -18,7 +18,7 @@ export default function TermsLayout({ children }) {
   >
       {children}
       
-      <Script
+      {/* <Script
         id="clarity-script-terms"
         type="text/javascript"
         strategy="afterInteractive"
@@ -29,7 +29,7 @@ export default function TermsLayout({ children }) {
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "ouxc4oeliv");`,
         }}
-      />
+      /> */}
     </div>
   );
 }

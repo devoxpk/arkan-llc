@@ -36,9 +36,9 @@ const emailMarketer = async () => {
     // Step 2: Prepare API data
     const jsonData = {
       business: {
-        name: "Nouve",
+        name: "TSOA",
         description: "Premium Old Money clothing including sweatshirts, trousers, and jackets.",
-        website: "https://nouvewear.com",
+        website: "https://tsoa.vercel.app",
         support_email: process.env.NEXT_PUBLIC_OWNER_EMAIL,
       },
       campaign: {
@@ -48,7 +48,7 @@ const emailMarketer = async () => {
       },
     };
 
-    const apiUrl = process.env.NEXT_PUBLIC_SERVER_API+`/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PRIVATE_EMAIL_PASS}&emails=${emails}&subject=Nouve%20-%20Sale%20Ending&jsonData=${encodeURIComponent(
+    const apiUrl = process.env.NEXT_PUBLIC_SERVER_API+`/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PRIVATE_EMAIL_PASS}&emails=${emails}&subject=TSOA%20-%20Sale%20Ending&jsonData=${encodeURIComponent(
       JSON.stringify(jsonData)
     )}&type=marketing`;
 

@@ -146,23 +146,24 @@
   color: #ffffff; /* White text */
   font-weight: 900;
 }
-.purchasePage .checkout .checkout-btn {
+.purchasePage .checkout-btn {
+  width: auto;
+  height: 36px;
+  padding: 0 0 0 12px;
+  border-radius: 5px;
+  outline: none;
+  border: 1px solid #2e2e2e; /* Dark gray */
+  background-color: #333333; /* Dark input background */
+  color: #ffffff; /* White text */
+  transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
   display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 150px;
-  height: 36px;
-  background: #555555; /* Medium gray button */
-  border-radius: 7px;
-  border: 1px solid #2e2e2e; /* Dark gray border */
-  color: #ffffff; /* White text */
-  font-size: 13px;
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+  font-size: 12px;
 }
 .purchasePage .checkout .checkout-btn:hover {
-  background-color: #777777; /* Slightly lighter gray on hover */
+  background-color: #555555; /* Medium gray on hover */
 }
 .purchasePage{
   background-color: #1c1c1c;

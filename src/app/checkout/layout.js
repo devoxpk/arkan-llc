@@ -19,7 +19,7 @@ export default function CheckoutLayout({ children }) {
   >
     {children}
     
-    <Script
+    {/* <Script
       id="clarity-script-checkout"
       type="text/javascript"
       strategy="afterInteractive"
@@ -30,7 +30,7 @@ export default function CheckoutLayout({ children }) {
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "ouxc4oeliv");`,
       }}
-    />
+    /> */}
   </div>
   </ReviewVisibilityProvider>
   );

@@ -18,7 +18,7 @@ export default function CategoriesLayout({ children }) {
   >
       {children}
       
-      <Script
+      {/* <Script
         id="clarity-script-categories"
         type="text/javascript"
         strategy="afterInteractive"
@@ -29,7 +29,7 @@ export default function CategoriesLayout({ children }) {
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "ouxc4oeliv");`,
         }}
-      />
+      /> */}
     </div>
   );
 }

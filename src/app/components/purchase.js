@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import "../css/purchase.css";
 import Cartitem from '../components/cart.js';
 import { db } from '../firebase'; 
@@ -9,13 +9,12 @@ import showMessageBox from '../utilis/showMessageBox'
 import { useRouter } from 'next/navigation';
 import Image from 'next/image'
 import Loader from './loader'
+import SkinRecommender from '../skinrecommender/skinserver';
+
 export default function PurchaseComponent() {
     const router = useRouter();
+    const [isSkinToneVisible, setIsSkinToneVisible] = useState(false);
 
-
-
-
-    
     function saveCustomerIdToLocalStorage() {
         let customerId;
         if(typeof window !== "undefined"){
@@ -277,6 +276,22 @@ document.querySelector(".loader").style.display = 'block'
           };
   
           await setDoc(docRef, docData);
+
+          if (localStorage.getItem('skin')) {
+            const skinTone = parseInt(localStorage.getItem('skin'), 10);
+            for (const item of cartItems) {
+              const [collectionId, docId] = item.id.split('$').slice(0, 2);
+              const productRef = doc(db, collectionId, docId);
+              const productSnap = await getDoc(productRef);
+              if (productSnap.exists()) {
+                const productData = productSnap.data();
+                const skinArray = productData.skin || [0, 0, 0];
+                skinArray[skinTone] = (skinArray[skinTone] || 0) + 1;
+                await updateDoc(productRef, { skin: skinArray });
+              }
+            }
+          }
+
           if(typeof window !== "undefined"){
           localStorage.setItem("count", parseInt(counts) + 1);
           }
@@ -380,11 +395,22 @@ let items;
         return totalCP;
     }
 
+    const handleSkinToneButtonClick = () => {
+        setIsSkinToneVisible(true);
+    };
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && !localStorage.getItem('skin')) {
+            setIsSkinToneVisible(false);
+        }
+    }, []);
+
     return (
        <>
+       {isSkinToneVisible && <SkinRecommender purchase={true}/>}
        <Loader/>
             <div id="fabricDiv">
-                <h2 id="fabricHead">N O U V E</h2>
+                <h2 id="fabricHead">T S O A</h2>
                 <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" alt='TShirts' layout="intrinsic"/>
             </div>
 <div id="purchaseCartMedia">
@@ -467,6 +493,14 @@ let items;
                             </div>
                             <hr />
 
+                            {typeof window !== "undefined" && !localStorage.getItem('skin') && (
+                                <button className="checkout-btn" style={{position: 'relative',
+                                    top: '121%',
+                                    color: 'rgb(243, 226, 203)'}} onClick={handleSkinToneButtonClick}>
+                                    SELECT SKIN TONE TO HELP OTHERS
+                                </button>
+                            )}
+
                             <div className="payments" style={{ marginTop: "18%" }}>
             <span>PAYMENT</span>
             <div className="details">
@@ -494,7 +528,7 @@ let items;
 
             <Cartitem cartStyle={true} /></div>
             <footer style={{ display: 'flex', justifyContent: 'center', color: 'white' }}>
-                &copy; All Rights Reserved by&nbsp;<h3 style={{ fontWeight: 'bolder', display: 'inline' }}>Nouve</h3>
+                &copy; All Rights Reserved by&nbsp;<h3 style={{ fontWeight: 'bolder', display: 'inline' }}>TSOA</h3>
             </footer>     
             </> 
     );

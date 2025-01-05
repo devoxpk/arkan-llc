@@ -1,11 +1,11 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - Shipping",
-  description: "Shipping layout",
+  title: "TSOA - Skin Recommendation",
+  description: "Automated skin recomendation system by smart outfit advisor",
 };
 
-export default function ShippingLayout({ children }) {
+export default function skinLayout({ children }) {
   return (
     <div
     style={{
@@ -19,7 +19,7 @@ export default function ShippingLayout({ children }) {
       {children}
       
       {/* <Script
-      id="clarity-script-shipping"
+        id="clarity-script-shop"
         type="text/javascript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{

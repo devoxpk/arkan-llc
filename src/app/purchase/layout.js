@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "Purchase - About",
+  title: "Purchase - TSOA",
   description: "Purchase layout",
 };
 
@@ -18,7 +18,7 @@ export default function PurchaseLayout({ children }) {
   >
     {children}
     
-    <Script
+    {/* <Script
       id="clarity-script-purchase"
       type="text/javascript"
       strategy="afterInteractive"
@@ -29,7 +29,7 @@ export default function PurchaseLayout({ children }) {
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "ouxc4oeliv");`,
       }}
-    />
+    /> */}
   </div>
   );
 }

@@ -1,5 +1,6 @@
 import { doc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { router } from 'next/navigation';
 
 /**
  * Deletes an order from the Firestore 'orders' collection.
@@ -16,7 +17,8 @@ export default async function deleteOrder(docid) {
     try {
         const orderDocRef = doc(db, "orders", docid);
         await deleteDoc(orderDocRef);
-        console.log(`Order with ID ${docid} has been deleted successfully.`);
+        console.log(`Order with ID ${docid} has been Cancelled successfully.`);
+        router.push("/");
     } catch (error) {
         console.error(`Failed to delete order with ID ${docid}:`, error);
         throw error;

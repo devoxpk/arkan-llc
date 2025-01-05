@@ -12,7 +12,7 @@ export default function SkinRecommenderPage() {
     <>
     <SkinRecommender />
       <Navbar />
-      <Products />
+      <Products styleHead='none'/>
       <Footer />
     </>
   );

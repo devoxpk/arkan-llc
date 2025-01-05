@@ -11,8 +11,12 @@ export default async function Products({ collectionsToFetch = [], styleHead = "g
     
     return (
         <div>
-
-            <ProductsServer collectionsToFetch={collectionsToFetch} styleHead={styleHead} productsStyle={productsStyle} trending={trending} />
+            <ProductsServer 
+                collectionsToFetch={collectionsToFetch} 
+                styleHead={styleHead} 
+                productsStyle={productsStyle} 
+                trending={trending} 
+            />
         </div>
     );
 } 

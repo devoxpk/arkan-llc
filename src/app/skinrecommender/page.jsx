@@ -1,18 +1,19 @@
+// page.js 
+export const dynamic = 'force-dynamic'; // Forces dynamic rendering for the entire page
+export const revalidate = 0; // No caching, revalidation on every request
 
-import SkinServer from './skinserver';
 import Navbar from '../components/navbar';
-import Footer from '../components/footer';
 import Products from '../components/products';
+import Footer from '../components/footer';
+import SkinRecommender from '../skinrecommender/skinserver';
 
-const SkinRecommenderPage = () => {
+export default function SkinRecommenderPage() {
   return (
-    <div>
+    <>
+    <SkinRecommender />
       <Navbar />
-      <SkinServer />
-      <Products styleHead="none"/>
+      <Products />
       <Footer />
-    </div>
+    </>
   );
-};
-
-export default SkinRecommenderPage;
+}

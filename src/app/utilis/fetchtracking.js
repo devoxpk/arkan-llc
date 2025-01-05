@@ -1,4 +1,5 @@
 import { collection, doc, getDocs } from "firebase/firestore";
+
 import { db } from "../firebase";
 
 export default async function fetchTrackingData() {

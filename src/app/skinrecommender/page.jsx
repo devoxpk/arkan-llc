@@ -9,7 +9,7 @@ const SkinRecommenderPage = () => {
     <div>
       <Navbar />
       <SkinServer />
-      {/* <Products styleHead="none"/> */}
+      <Products styleHead="none"/>
       <Footer />
     </div>
   );

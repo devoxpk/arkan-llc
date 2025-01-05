@@ -5,6 +5,7 @@
     import { db } from '../firebase';
     import './skin.css';
     import Image from 'next/image';
+    import React from 'react';
     export default function SkinServer({ purchase = false }) {
       const [selectedSkinTone, setSelectedSkinTone] = useState(null);
       const [error, setError] = useState('');

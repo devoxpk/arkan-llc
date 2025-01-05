@@ -90,7 +90,7 @@ export default function ChatComponent() {
       ref={chatRef}
     >
             <div className="chat-header">
-                <h2>Nouve - Assistant</h2>
+                <h2>TSOA - Assistant</h2>
             </div>
             <div className="chat-body" id="chatBody">
                 {messages.map((message, index) => (

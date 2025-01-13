@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 export default function ChatComponent() {
     const [userInput, setUserInput] = useState('');
     const [messages, setMessages] = useState([
-        { text: 'TSOA here, how may I assist?', type: 'incoming' }
+        { text: 'Devox here, how may I assist?', type: 'incoming' }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(true); // Manage visibility of the chat
@@ -90,7 +90,7 @@ export default function ChatComponent() {
       ref={chatRef}
     >
             <div className="chat-header">
-                <h2>TSOA - Assistant</h2>
+                <h2>Devox - Assistant</h2>
             </div>
             <div className="chat-body" id="chatBody">
                 {messages.map((message, index) => (

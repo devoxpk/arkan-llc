@@ -1542,7 +1542,9 @@ checkVisibility(); // Initial check
 
 
 */
-window.addEventListener('load', checkEditMode);
+if (typeof window !== "undefined") {
+  window.addEventListener('load', checkEditMode);
+}
 
 
 async function checkEditMode() {

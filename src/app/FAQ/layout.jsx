@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - FAQ",
+  title: "DEVOX - FAQ",
   description: "FAQ layout",
 };
 

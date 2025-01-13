@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import "../css/thanks.css";
@@ -77,7 +78,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
                     const map = window.L.map('map').setView([latitude, longitude], 13);
         
                     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© TSOA STREET MAP',
+                        attribution: '© DEVOX STREET MAP',
                     }).addTo(map);
         
                     window.L.marker([latitude, longitude]).addTo(map)

@@ -8,6 +8,7 @@ import {
   } from "firebase/firestore";
   import { db } from "../firebase";
   import { v4 as uuidv4 } from "uuid";
+  import sendWhatsapp from "./sendWhatsapp";
   
   /**
    * Retarget customers and send promotional messages if criteria are met.
@@ -96,7 +97,7 @@ import {
         const promoCode = uuidv4().slice(0, 4).toUpperCase();
         promoCodes[promoCode] = discount; // Map promo code to discount
   
-        const promoMessage = `💥 Special Offer Just For You! 💥\n\nEnjoy ${discount} OFF on your favorite styles at TSOA! \nUse code ${promoCode} at checkout.\n\n🛒 Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nHurry! Offer valid for a limited time. 💌`;
+        const promoMessage = `💥 Special Offer Just For You! 💥\n\nEnjoy ${discount} OFF on your favorite styles at DEVOX! \nUse code ${promoCode} at checkout.\n\n🛒 Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nHurry! Offer valid for a limited time. 💌`;
         emailMessages.push(encodeURIComponent(promoMessage));
       });
   
@@ -106,7 +107,7 @@ import {
         const promoCode = uuidv4().slice(0, 4).toUpperCase();
         promoCodes[promoCode] = discount; // Map promo code to discount
   
-        const promoMessage = `✨ Exclusive Savings Just For You! ✨\n\nYour style deserves ${discount} OFF at TSOA. \nUse code ${promoCode} at checkout.\n\n Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nAct fast—this deal won't last! 🎉`;
+        const promoMessage = `✨ Exclusive Savings Just For You! ✨\n\nYour style deserves ${discount} OFF at DEVOX. \nUse code ${promoCode} at checkout.\n\n Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nAct fast—this deal won't last! 🎉`;
         contactMessages.push(encodeURIComponent(promoMessage));
       });
   
@@ -115,11 +116,11 @@ import {
   
       // Step 5: Send email messages
       if (unusedEmails.length > 0) {
-        const emailApiUrl = `http://localhost:8080/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PUBLIC_EMAIL_PASS}&emails=${unusedEmails.join(
+        const emailApiUrl = `${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PUBLIC_EMAIL_PASS}&emails=${unusedEmails.join(
           ","
         )}&msgs=${emailMessages.join(
           ","
-        )}&type=send&subject=${encodeURIComponent("TSOA - Exclusive Discount Code")}`;
+        )}&type=send&subject=${encodeURIComponent("DEVOX - Exclusive Discount Code")}`;
   
         try {
           const emailResponse = await fetch(emailApiUrl, { method: "GET" });
@@ -132,16 +133,8 @@ import {
   
       // Step 6: Send WhatsApp messages
       if (unusedContacts.length > 0) {
-        const contactsString = unusedContacts.join(","); // Combine all contacts into a single comma-separated string
-        const messagesString = contactMessages.join(","); // Combine all messages into a single comma-separated string
-  
-        const whatsappApiUrl = `http://localhost:8080/send-message?num=${contactsString}&msg=${messagesString}&auth=${process.env.NEXT_PUBLIC_OWNER_AUTH}`;
-  
         try {
-          const whatsappResponse = await fetch(whatsappApiUrl, { method: "GET" });
-          if (!whatsappResponse.ok) {
-            throw new Error(`WhatsApp API failed with status: ${whatsappResponse.status}`);
-          }
+          await sendWhatsapp(unusedContacts, contactMessages);
           console.log("WhatsApp marketing campaign successfully initiated.");
         } catch (error) {
           console.error("Error sending WhatsApp messages:", error);

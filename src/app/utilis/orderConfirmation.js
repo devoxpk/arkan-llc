@@ -58,7 +58,7 @@ async function orderConfirmation() {
             attemptMessage = '*Second Attempt for confirming your order*';
           }
 
-          const message = `*TSOA - ORDER CONFIRMATION*\n\n${data.Name},\n\n${attemptMessage}\n\n_______________________________\n*Order Details:*\n${productDetails}\n- Total Payment: ${totalPrice}\n- Payment Mode: ${data.paymentMode}\n- Delivery Address: ${data.Address}, ${data.City}\n_______________________________\n*To confirm your order, click the link below:*\n\n[${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/thanks?docId=${docId}&action=confirm]\n\n*Note:* Recheck your details and confirm your order.\n\nBest regards,\nDevox Team`;
+          const message = `*DEVOX - ORDER CONFIRMATION*\n\n${data.Name},\n\n${attemptMessage}\n\n_______________________________\n*Order Details:*\n${productDetails}\n- Total Payment: ${totalPrice}\n- Payment Mode: ${data.paymentMode}\n- Delivery Address: ${data.Address}, ${data.City}\n_______________________________\n*To confirm your order, click the link below:*\n\n[${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/thanks?docId=${docId}&action=confirm]\n\n*Note:* Recheck your details and confirm your order.\n\nBest regards,\nDevox Team`;
 
           await sendData([formattedContact], [message]);
 
@@ -77,10 +77,8 @@ async function orderConfirmation() {
 
 async function sendData(contacts, messages) {
   try {
-    const formattedContacts = contacts.join(',');
-    const formattedMessages = messages.map(encodeURIComponent).join(',');
-
-    await sendWhatsapp(formattedContacts, formattedMessages);
+    // Directly pass the arrays to sendWhatsapp
+    await sendWhatsapp(contacts, messages);
     console.log('Messages sent successfully.');
   } catch (error) {
     console.error('Error sending messages:', error);

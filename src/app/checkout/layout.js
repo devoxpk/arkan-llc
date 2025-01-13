@@ -1,7 +1,7 @@
 import Script from "next/script";
 import { ReviewVisibilityProvider } from '../context/ReviewVisibilityContext';
 export const metadata = {
-  title: "NOUVE - Checkout",
+  title: "DEVOX - Checkout",
   description: "Checkout layout",
 };
 

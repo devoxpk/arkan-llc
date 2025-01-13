@@ -35,7 +35,7 @@ export default function ChatComponent() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`http://16.171.1.112:8080/get-response?msg=${encodeURIComponent(trimmedInput)}&auth=nouve`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_API}/get-response?msg=${encodeURIComponent(trimmedInput)}&auth=devox`);
             if (!response.ok) {
                 throw new Error("Failed to fetch response from server");
             }

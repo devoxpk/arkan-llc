@@ -21,8 +21,8 @@ const geistMono = localFont({
 
 // Metadata for the page
 export const metadata = {
-  title: "TSOA",
-  description: "THE SMART OUTFIT ADVISOR",
+  title: "DEVOX",
+  description: "ANIME EMBROIDERY IN PAKISTAN",
 };
 
 // Root layout component

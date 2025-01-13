@@ -410,7 +410,7 @@ let items;
        {isSkinToneVisible && <SkinRecommender purchase={true}/>}
        <Loader/>
             <div id="fabricDiv">
-                <h2 id="fabricHead">T S O A</h2>
+                <h2 id="fabricHead">D E V O X</h2>
                 <img id="fabric" style={{ width: "100%" }} src="/poster/fabric.jpg" alt='TShirts' layout="intrinsic"/>
             </div>
 <div id="purchaseCartMedia">
@@ -528,7 +528,7 @@ let items;
 
             <Cartitem cartStyle={true} /></div>
             <footer style={{ display: 'flex', justifyContent: 'center', color: 'white' }}>
-                &copy; All Rights Reserved by&nbsp;<h3 style={{ fontWeight: 'bolder', display: 'inline' }}>TSOA</h3>
+                &copy; All Rights Reserved by&nbsp;<h3 style={{ fontWeight: 'bolder', display: 'inline' }}>DEVOX</h3>
             </footer>     
             </> 
     );

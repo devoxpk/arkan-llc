@@ -7,11 +7,11 @@ import Products from "../../components/products";
 import SkinRecommender from "../../skinrecommender/skinserver";
 export default function CategoriesPage({ params }) {
   const category = params.category;
-  console.log('Category:', category);
+ 
 
   return (
     <>
-    <SkinRecommender />
+    {/* <SkinRecommender /> */}
       <Navbar />
       <Cart />
 

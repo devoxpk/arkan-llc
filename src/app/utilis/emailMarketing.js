@@ -36,14 +36,14 @@ const emailMarketer = async () => {
     // Step 2: Prepare API data
     const jsonData = {
       business: {
-        name: "TSOA",
-        description: "Premium Old Money clothing including sweatshirts, trousers, and jackets.",
-        website: "https://tsoa.vercel.app",
+        name: "DEVOX",
+        description: "Direct Embosed Anime Embroidery Brand with Premium Quality Embroidery and Stitching ",
+        website: process.env.NEXT_PUBLIC_REVIEW_DOMAIN,
         support_email: process.env.NEXT_PUBLIC_OWNER_EMAIL,
       },
       campaign: {
         goal: "Encourage the audience to make a purchase.",
-        target_audience: "Customers interested in Old Money fashion styles.",
+        target_audience: "Customers interested in Anime Embroidery and Stitching",
         cta: "Explore our premium collection today.",
       },
     };

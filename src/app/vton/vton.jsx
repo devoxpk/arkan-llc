@@ -9,7 +9,7 @@ import { storage } from '../firebase.js';
 const ModelAndProducts = ({ images = [] }) => {
     const [mainImage, setMainImage] = useState("https://firebasestorage.googleapis.com/v0/b/nouvedb-1328c.appspot.com/o/products%2FWAFFLE%20%7C%20SKIN?alt=media&token=be247bed-9cd0-44b5-abb1-eda16de638bd");
 
-    const convertToBase64 = async (imageUrl) => {
+    const convertToBase64 = async (imageUrl) => {                 
         try {
             const storageRef = ref(storage, imageUrl);
             const downloadURL = await getDownloadURL(storageRef);

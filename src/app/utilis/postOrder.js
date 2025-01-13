@@ -81,16 +81,16 @@ const postOrder = async (docId,dashboard=false) => {
             ? `92${orderData.Contact.slice(1)}`
             : orderData.Contact;
 console.log(trackingNumber)
-        const message = `TSOA,\n Thanks for confirming your order, it will be delivered within 3 working days. You can track your order from ${trackingLink}.\n Your tracking is ${trackingNumber} and you will receive daily tracking updates via WhatsApp.`;
+        const message = `DEVOX,\n Thanks for confirming your order, it will be delivered within 3 working days. You can track your order from ${trackingLink}.\n Your tracking is ${trackingNumber} and you will receive daily tracking updates via WhatsApp.`;
 
         if (dashboard) {
             if (confirm("Do you want to send the dispatch message to the customer?")) {
-                await sendWhatsapp(customerContact, message);
+                await sendWhatsapp([customerContact], [message]);
                 console.log('WhatsApp message sent');
             }
             showMessageBox('Success', 'Order has been successfully dispatched and the customer has been notified.', true);
         } else {
-            await sendWhatsapp(customerContact, message);
+            await sendWhatsapp([customerContact], [message]);
             console.log('WhatsApp message sent');
         }
 

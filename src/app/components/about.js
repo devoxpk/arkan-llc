@@ -1,4 +1,3 @@
-    // Start of Selection
     export default function AboutComponent() {
         return (
             <>
@@ -22,49 +21,46 @@
                             textAlign: 'center',
                         }}
                     >
-                        About TSOA
+                        About DEVOX
                     </h1>
-                    <hr style={{ border: '1px solid black', margin: '10px 0' ,width:"48%",marginLeft:"24%"}} />
+                    <hr style={{ border: '1px solid black', margin: '10px 0', width: "48%", marginLeft: "24%" }} />
                     <div style={{ textAlign: 'center', lineHeight: '1.6', color: '#333', fontSize: '16px' }}>
-                        <p><strong>TSOA</strong> is a luxury clothing brand that embodies the timeless appeal of &quot;old money&quot; aesthetics, merging sophistication, exclusivity, and refined minimalism. Designed for those who appreciate the subtle power of understated elegance, TSOA transcends fleeting trends, positioning itself as a classic choice for discerning individuals who value quality, heritage, and artistry.</p>
+                        <p><strong>DEVOX</strong> is Pakistan&apos;s first anime embroidery brand, specializing in premium imported fabrics with direct, embossed embroidery. Our brand is synonymous with luxury and affordability, offering high-quality embroidered and printed DTF t-shirts and sweatshirts. We operate in the UK, where our t-shirts are priced at 24 GBP, discounted from 30 GBP, with free delivery within 1-3 days. Appointments can be made to visit us by contacting the owner at 03279401866.</p>
                         
                         <h2>Brand Philosophy</h2>
-                        <p>At TSOA, we believe true style is timeless. Rooted in the principles of elegance and refinement, TSOA crafts garments that speak to the legacy of old money—styles that never demand attention but always command respect. Each piece is designed to celebrate the individuality of the wearer, encouraging confidence without the need for overt logos or loud designs. TSOA philosophy is simple: invest in quality, and cherish garments that will not only stand the test of time but become part of your personal story.</p>
+                        <p>At DEVOX, we believe in timeless style and premium quality. Our philosophy is to offer garments that are not only stylish but also affordable, making luxury accessible. We focus on creating pieces that reflect individuality and confidence, without the need for overt branding. Our commitment is to provide value through quality and craftsmanship.</p>
                         
                         <h2>Collection Aesthetic</h2>
-                        <p>TSOA collections are curated with meticulous attention to detail, embodying a palette and silhouette that resonates with subtle luxury:</p>
+                        <p>DEVOX collections are designed with a focus on anime-inspired aesthetics and premium quality:</p>
                         <ul>
-                            <li><strong>Neutral Tones:</strong> Earthy neutrals like creams, beiges, navy blues, rich browns, and forest greens evoke a classic, timeless feel.</li>
-                            <li><strong>Elegant Cuts:</strong> Precision tailoring with classic silhouettes, such as double-breasted blazers and structured trench coats, ensures a flattering, comfortable fit.</li>
-                            <li><strong>Quality Fabrics:</strong> Crafted from merino wool, Italian cashmere, silk, and organic cotton, each piece balances comfort and longevity.</li>
+                            <li><strong>Anime Embroidery:</strong> Unique, embossed designs that stand out.</li>
+                            <li><strong>Premium Fabrics:</strong> Imported materials that ensure comfort and durability.</li>
+                            <li><strong>Affordable Luxury:</strong> High-quality pieces at competitive prices.</li>
                         </ul>
                         
                         <h2>Craftsmanship and Quality</h2>
-                        <p>TSOA prioritizes craftsmanship and attention to detail, with each piece reflecting hours of dedication and artisanal skill. Our garments are handcrafted in small batches by skilled artisans in Italy and France, ensuring exclusivity and an unwavering commitment to quality.</p>
+                        <p>DEVOX is dedicated to exceptional craftsmanship, with each piece reflecting meticulous attention to detail. Our garments are crafted to offer both style and longevity, ensuring that each item is a worthy investment.</p>
     
                         <h2>Sustainability</h2>
-                        <p>In the spirit of enduring luxury, TSOA is committed to sustainable practices by:</p>
+                        <p>DEVOX is committed to sustainable practices, focusing on:</p>
                         <ul>
-                            <li><strong>Eco-Friendly Fabrics:</strong> Using biodegradable, ethically sourced materials.</li>
-                            <li><strong>Longevity:</strong> Challenging throwaway culture by creating pieces meant to be wardrobe staples.</li>
-                            <li><strong>Ethical Manufacturing:</strong> Partnering with small-scale ateliers for fair wages and safe working conditions.</li>
+                            <li><strong>Eco-Friendly Materials:</strong> Using biodegradable and ethically sourced fabrics.</li>
+                            <li><strong>Durability:</strong> Creating pieces that are meant to last and become wardrobe staples.</li>
+                            <li><strong>Ethical Production:</strong> Ensuring fair wages and safe working conditions for all artisans.</li>
                         </ul>
                         
-                        <h2>The TSOA Lifestyle</h2>
-                        <p>TSOA is more than a clothing brand; it’s a lifestyle for those who value heritage, culture, and tradition. Designed for professionals and tastemakers, TSOA pieces enhance any ambiance with subtle luxury, resonating with moments of understated elegance.</p>
+                        <h2>The DEVOX Lifestyle</h2>
+                        <p>DEVOX is more than just a brand; it&apos;s a lifestyle choice for those who appreciate heritage, culture, and tradition. Our pieces are designed to enhance any setting with their subtle luxury and elegance.</p>
                         
                         <h2>Iconic Pieces</h2>
-                        <p>Some of TSOA most sought-after items include:</p>
+                        <p>Some of DEVOX&apos;s most popular items include:</p>
                         <ul>
-                            <li><strong>Heritage Blazers:</strong> Italian wool blazers with subtle details like horn buttons and silk linings.</li>
-                            <li><strong>Cashmere Turtlenecks:</strong> Soft, versatile layers for classic style.</li>
-                            <li><strong>Tailored Trousers:</strong> Streamlined silhouettes for a refined look.</li>
-                            <li><strong>Signature Trench Coats:</strong> Water-resistant, timeless, and functional.</li>
-                            <li><strong>Classic Silk Scarves:</strong> Hand-printed patterns for a touch of sophistication.</li>
+                            <li><strong>Anime Embroidered T-Shirts:</strong> Unique designs that capture the essence of anime culture.</li>
+                            <li><strong>Premium Sweatshirts:</strong> Comfortable and stylish, perfect for any occasion.</li>
                         </ul>
     
-                        <h2>TSOA Vision</h2>
-                        <p>TSOA redefines luxury by emphasizing quality, legacy, and individual expression. Our mission is to create timeless pieces for a community that values craftsmanship, heritage, and understated elegance. In a world of fast fashion, TSOA stands as a beacon of style—a brand for those who invest in pieces that accompany them through life’s finest moments.</p>
+                        <h2>DEVOX Vision</h2>
+                        <p>DEVOX aims to redefine luxury by focusing on quality, heritage, and individual expression. Our mission is to create timeless pieces for a community that values craftsmanship and elegance. In a world of fast fashion, DEVOX stands as a beacon of style, offering pieces that accompany you through life&apos;s finest moments.</p>
                     </div>
                 </div>
             </>

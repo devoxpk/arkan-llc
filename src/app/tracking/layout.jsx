@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - Tracking",
+  title: "DEVOX - Tracking",
   description: "Tracking layout",
 };
 

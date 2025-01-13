@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - Return Policy",
+  title: "DEVOX - Return Policy",
   description: "Return layout",
 };
 

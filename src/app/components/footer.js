@@ -132,14 +132,13 @@ function Footer() {
     width={100} height={0} 
       style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
       src="/logo/dwlogo.png" 
-      alt="TSOA logo" 
+      alt="DEVOX logo" 
     />
   </a>
 </Link>
 
               <p className="footer-text">
-              TSOA is a fashion theme for presenting a complete wardrobe of uniquely crafted Ethnic Wear, Casuals,
-                Edgy Denims, & Accessories inspired by the most contemporary styles.
+              DEVOX is an anime embroidery brand specializing in embossed stitched designs crafted in Pakistan with fine quality. Our collection features a unique blend of traditional and contemporary styles, offering a wide range of products including Ethnic Wear, Casuals, Edgy Denims, and Accessories. Each piece is meticulously crafted to ensure superior quality and durability, making DEVOX the perfect choice for those who appreciate detailed artistry and exceptional craftsmanship.
               </p>
 
               <ul className="social-list">

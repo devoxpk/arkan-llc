@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "NOUVE - Categories",
+  title: "DEVOX - Categories",
   description: "Categories layout",
 };
 

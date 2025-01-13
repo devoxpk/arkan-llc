@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - Skin Recommendation",
+  title: "DEVOX - Skin Recommendation",
   description: "Automated skin recomendation system by smart outfit advisor",
 };
 

@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: " TSOA Privacy Policy",
+  title: " DEVOX Privacy Policy",
   description: "Privacy Policy layout",
 };
 

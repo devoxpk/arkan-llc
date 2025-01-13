@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "TSOA - Terms and Services",
+  title: "DEVOX - Terms and Services",
   description: "Terms and Services layout",
 };
 

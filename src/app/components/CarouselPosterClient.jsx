@@ -156,7 +156,7 @@ const CarouselPosterClient = ({ galleryImages: initialGalleryImages, initialFirs
     <div className="galleryx">
       <div className="text-overlayx">
         <p className="nouve-textx">Discover the</p>
-        <p className="nouve-textx bold">TSOA</p>
+        <p className="nouve-textx bold">DEVOX</p>
         <Link href="/shop" className="discover-now-buttonx">
           Explore Now
         </Link>

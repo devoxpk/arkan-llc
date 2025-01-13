@@ -10,7 +10,7 @@ import SkinRecommender from '../skinrecommender/skinserver';
 export default function Shop() {
   return (
     <>
-    <SkinRecommender />
+    {/* <SkinRecommender /> */}
       <Navbar />
       <Products />
       <Footer />

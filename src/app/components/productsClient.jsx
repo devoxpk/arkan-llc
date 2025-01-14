@@ -14,7 +14,7 @@ import { refreshProducts } from './products';
 import showMessageBox from '../utilis/showMessageBox';
 import addProduct from './ProductAdd';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function Products({ collectionData, headers, collectionsToFetch = [], styleHead = 'grid', productsStyle = false, trending = false, removeActions = true }) {
   const [loading, setLoading] = useState(false);
@@ -22,6 +22,7 @@ export default function Products({ collectionData, headers, collectionsToFetch =
   const [cartItems, setCartItems] = useState([]);
   const [canEdit, setEdit] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     if (searchParams.has('edit')) {
@@ -139,6 +140,12 @@ export default function Products({ collectionData, headers, collectionsToFetch =
     console.log("Loading..");
   }
 
+  const navigateToCheckout = (product, collectionId) => {
+    const url = `/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`;
+    console.log('Navigating to:', url);
+    router.push(url);
+  };
+
   return (
     <>
 
@@ -166,24 +173,21 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                               width="800"
                               height="1034"
                               className="w-100"
+                              onClick={() => navigateToCheckout(product, collectionId)}
                             />
                           ) : (
-                            <Link
-                              className='checkoutLink'
-                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                              legacyBehavior
-                            >
-                              <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                <Image
-                                  src={product.pic}
-                                  alt={product.productName}
-                                  loading="lazy"
-                                  width="800"
-                                  height="1034"
-                                  className="w-100"
-                                />
-                              </a>
-                            </Link>
+                            <Image
+                              src={product.pic}
+                              alt={product.productName}
+                              loading="lazy"
+                              width="800"
+                              height="1034"
+                              className="w-100"
+                              onClick={() => {
+                                document.querySelector('.loader').style.display = 'block';
+                                navigateToCheckout(product, collectionId);
+                              }}
+                            />
                           )}
                           {product.dPrice ? (
                             <div className="card-badge red">
@@ -193,21 +197,16 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                             <div className="card-badge green">New</div>
                           )}
                           <div className="card-actions">
-                            <Link
-                             className='checkoutLink'
-                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                            <button
+                              className="card-action-btn"
+                              aria-label="Quick view"
+                              onClick={() => {
+                                document.querySelector('.loader').style.display = 'block';
+                                navigateToCheckout(product, collectionId);
+                              }}
                             >
-                              <button
-                                className="card-action-btn"
-                                aria-label="Quick view"
-                                onClick={() => {
-                                  document.querySelector('.loader').style.display = 'block';
-                                  console.log('Product URL:', `/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`);
-                                }}
-                              >
-                                <ion-icon name="eye-outline"></ion-icon>
-                              </button>
-                            </Link>
+                              <ion-icon name="eye-outline"></ion-icon>
+                            </button>
                             <button
                               className="card-action-btn cart-btn"
                               onClick={(event) => {
@@ -321,24 +320,21 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                                   width="800"
                                   height="1034"
                                   className="w-100"
+                                  onClick={() => navigateToCheckout(product, collectionId)}
                                 />
                               ) : (
-                                <Link
-                                  className='checkoutLink'
-                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                                  legacyBehavior
-                                >
-                                  <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                    <Image
-                                      src={product.pic}
-                                      alt={product.productName}
-                                      loading="lazy"
-                                      width="800"
-                                      height="1034"
-                                      className="w-100"
-                                    />
-                                  </a>
-                                </Link>
+                                <Image
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                  onClick={() => {
+                                    document.querySelector('.loader').style.display = 'block';
+                                    navigateToCheckout(product, collectionId);
+                                  }}
+                                />
                               )}
                               {product.dPrice ? (
                                 <div className="card-badge red">
@@ -349,22 +345,16 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                               )}
                               {removeActions && 
                               <div className="card-actions">
-                                <Link
-                                
-                                 className='checkoutLink'
-                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                                <button
+                                  className="card-action-btn"
+                                  aria-label="Quick view"
+                                  onClick={() => {
+                                    document.querySelector('.loader').style.display = 'block';
+                                    navigateToCheckout(product, collectionId);
+                                  }}
                                 >
-                                  <button
-                                    className="card-action-btn"
-                                    aria-label="Quick view"
-                                    onClick={() => {
-                                      document.querySelector('.loader').style.display = 'block';
-                                      console.log('Product URL:', `/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`);
-                                    }}
-                                  >
-                                    <ion-icon name="eye-outline"></ion-icon>
-                                  </button>
-                                </Link>
+                                  <ion-icon name="eye-outline"></ion-icon>
+                                </button>
                                 <button
                                   className="card-action-btn cart-btn"
                                   onClick={(event) => {

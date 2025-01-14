@@ -1564,7 +1564,6 @@ async function checkEditMode() {
     urlParams = new URLSearchParams(window.location.search);
     hasEditParam = urlParams.has('edit');
   }
-  console.log("Has 'edit' parameter:", hasEditParam);
 
   let correctLocalStorageKey = false;
   let localStorageValue = null;
@@ -1572,20 +1571,10 @@ async function checkEditMode() {
     localStorageValue = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
     correctLocalStorageKey = localStorageValue === process.env.NEXT_PUBLIC_EDIT_VALUE;
   }
-  console.log("Correct local storage key:", correctLocalStorageKey);
-  console.log("LocalStorage value:", localStorageValue);
-  console.log("Environment variable key:", process.env.NEXT_PUBLIC_EDIT_KEY);
-  console.log("Environment variable value:", process.env.NEXT_PUBLIC_EDIT_VALUE);
 
   if (hasEditParam && correctLocalStorageKey) {
-    console.log("Editor mode");
-    console.log("Correct local storage key inside if block:", correctLocalStorageKey);
-    console.log("LocalStorage value inside if block:", localStorageValue);
-    console.log("Environment variable key inside if block:", process.env.NEXT_PUBLIC_EDIT_KEY);
-    console.log("Environment variable value inside if block:", process.env.NEXT_PUBLIC_EDIT_VALUE);
     try {
       setTimeout(async () => {
-        console.log("Executing editor functions");
         const divs = document.querySelectorAll('div[id]');
         for (const div of divs) {
           const id = parseInt(div.id, 10);
@@ -1593,12 +1582,9 @@ async function checkEditMode() {
             await edittor(id.toString());
           }
         }
-        console.log("Both editor functions have been executed.");
       }, 1000);
     } catch (error) {
       console.error("Error executing editor functions:", error);
     }
-  } else {
-    console.log("User is not in edit mode");
   }
 }

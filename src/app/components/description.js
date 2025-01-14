@@ -15,10 +15,10 @@ export default function Description() {
   const [newContent, setNewContent] = useState(""); // For new content
   const [hasAccess, setHasAccess] = useState(false); // Access state
   const [editingIndex, setEditingIndex] = useState(null); // Index of the section being edited
-  const validKey = "fabfbuygi328y902340"; // Required key for edit mode
+  const validKey = process.env.NEXT_PUBLIC_EDIT_VALUE; // Required key for edit mode
 
   useEffect(() => {
-    const storedKey = localStorage.getItem("A98398HBFBB93BNABSN");
+    const storedKey = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
     if (storedKey === validKey) {
       setHasAccess(true);
     }

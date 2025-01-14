@@ -127,7 +127,7 @@ export default function Checkout() {
                     // Append the image to the slide container
                     slideDiv.appendChild(imgElement);
 
-                    if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
+                    if (isEditMode && localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY) === process.env.NEXT_PUBLIC_EDIT_VALUE) {
                         // Create delete icon
                         const deleteIcon = document.createElement('span');
                         deleteIcon.id = `delete-btn-${index}`;
@@ -154,7 +154,7 @@ export default function Checkout() {
                 });
             }
 
-            if (isEditMode && localStorage.getItem("A98398HBFBB93BNABSN") === "fabfbuygi328y902340") {
+            if (isEditMode && localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY) === process.env.NEXT_PUBLIC_EDIT_VALUE) {
                 // Add Image button
                 if (!document.getElementById("addImgBtn")) {
                     const addButton = document.createElement('button');

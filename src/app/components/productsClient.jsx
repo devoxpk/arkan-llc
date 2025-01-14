@@ -1429,9 +1429,14 @@ async function updateFirestoreDocument(divId, docId, updateData) {
     else if (updateData.pic) {
       await setDoc(categoriesRef, { pic: updateData.pic }, { merge: true });
     } else if (updateData.sizes) {
-      const { s, m, l } = updateData.sizes;
+      const { s, m, l, xl } = updateData.sizes;
       const sizesRef = doc(db, 'clothsims', previousProductName);
-      await setDoc(sizesRef, { s: s || '0', m: m || '0', l: l || '0' }, { merge: true });
+      const sizesToUpdate = {};
+      if (s) sizesToUpdate.s = s;
+      if (m) sizesToUpdate.m = m;
+      if (l) sizesToUpdate.l = l;
+      if (xl) sizesToUpdate.xl = xl;
+      await setDoc(sizesRef, sizesToUpdate, { merge: true });
     } else if (updateData.price || updateData.dPrice || updateData.productCP) {
       await setDoc(categoriesRef, updateData, { merge: true });
     }

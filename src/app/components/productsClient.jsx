@@ -155,125 +155,131 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                   Array.isArray(collectionData[collectionId]) &&
                   collectionData[collectionId].map((product) => (
                     <li key={product.id} className="product-card">
-                      <figure className="card-banner">
-                        {canEdit ? (
-                          <Image
-                            src={product.pic}
-                            alt={product.productName}
-                            loading="lazy"
-                            width="800"
-                            height="1034"
-                            className="w-100"
-                          />
-                        ) : (
-                          <Link
-                            className='checkoutLink'
-                            href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                            legacyBehavior
-                          >
-                            <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                              <Image
-                                src={product.pic}
-                                alt={product.productName}
-                                loading="lazy"
-                                width="800"
-                                height="1034"
-                                className="w-100"
-                              />
-                            </a>
-                          </Link>
-                        )}
-                        {product.dPrice ? (
-                          <div className="card-badge red">
-                            -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
-                          </div>
-                        ) : (
-                          <div className="card-badge green">New</div>
-                        )}
-                        <div className="card-actions">
-                          <Link
-                            className='checkoutLink'
-                            href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                          >
+                      {/* Product card content */}
+                      <div className="product-card">
+                        <figure className="card-banner">
+                          {canEdit ? (
+                            <Image
+                              src={product.pic}
+                              alt={product.productName}
+                              loading="lazy"
+                              width="800"
+                              height="1034"
+                              className="w-100"
+                            />
+                          ) : (
+                            <Link
+                              className='checkoutLink'
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                              legacyBehavior
+                            >
+                              <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                                <Image
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                />
+                              </a>
+                            </Link>
+                          )}
+                          {product.dPrice ? (
+                            <div className="card-badge red">
+                              -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
+                            </div>
+                          ) : (
+                            <div className="card-badge green">New</div>
+                          )}
+                          <div className="card-actions">
+                            <Link
+                             className='checkoutLink'
+                              href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                            >
+                              <button
+                                className="card-action-btn"
+                                aria-label="Quick view"
+                                onClick={() => {
+                                  document.querySelector('.loader').style.display = 'block';
+                                  console.log('Product URL:', `/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`);
+                                }}
+                              >
+                                <ion-icon name="eye-outline"></ion-icon>
+                              </button>
+                            </Link>
+                            <button
+                              className="card-action-btn cart-btn"
+                              onClick={(event) => {
+                                if (product && product.productName) {
+                                  fetchSizeChart(collectionId, product.productName);
+                                } else {
+                                  console.error('Product name is undefined');
+                                }
+                                handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
+                              }}
+                            >
+                              <ion-icon name="cart-outline"></ion-icon>
+                              <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
+                            </button>
                             <button
                               className="card-action-btn"
-                              aria-label="Quick view"
-                              onClick={() => document.querySelector('.loader').style.display = 'block'}
+                              aria-label="Quick Buy"
+                              onClick={(event) => {
+                                let params;
+                                if (typeof window !== 'undefined') {
+                                  params = new URLSearchParams(window.location.search);
+                                }
+
+                                // Log to check if product is defined
+                                console.log('Product:', product);
+
+                                if (product && product.productName) {
+                                  console.log('Product name is defined:', product.productName);
+                                  fetchSizeChart(collectionId, product.productName);
+                                } else {
+                                  console.error('Product name is undefined');
+                                }
+
+                                if (params && params.get('ImageSrc')) {
+                                  // Product details from URL parameters
+                                  const product = {
+                                    pic: params.get('ImageSrc'),
+                                    productName: params.get('pname'),
+                                    price: params.get('pprice')?.replace('Rs. ', ''),
+                                    id: params.get("ref"), // Use encoded productCP as id
+                                  };
+
+                                  handleCart(event, product, cartItems, setCartItems);
+                                  if (typeof window !== "undefined") {
+                                    localStorage.setItem('purchase', '0010');
+                                  }
+                                } else {
+                                  handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
+                                  if (typeof window !== "undefined") {
+                                    localStorage.setItem('purchase', '0010');
+                                  }
+                                }
+                              }}
                             >
-                              <ion-icon name="eye-outline"></ion-icon>
+                              <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
                             </button>
-                          </Link>
-                          <button
-                            className="card-action-btn cart-btn"
-                            onClick={(event) => {
-                              if (product && product.productName) {
-                                fetchSizeChart(collectionId, product.productName);
-                              } else {
-                                console.error('Product name is undefined');
-                              }
-                              handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                            }}
-                          >
-                            <ion-icon name="cart-outline"></ion-icon>
-                            <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
-                          </button>
-                          <button
-                            className="card-action-btn"
-                            aria-label="Quick Buy"
-                            onClick={(event) => {
-                              let params;
-                              if (typeof window !== 'undefined') {
-                                params = new URLSearchParams(window.location.search);
-                              }
-
-                              // Log to check if product is defined
-                              console.log('Product:', product);
-
-                              if (product && product.productName) {
-                                console.log('Product name is defined:', product.productName);
-                                fetchSizeChart(collectionId, product.productName);
-                              } else {
-                                console.error('Product name is undefined');
-                              }
-
-                              if (params && params.get('ImageSrc')) {
-                                // Product details from URL parameters
-                                const product = {
-                                  pic: params.get('ImageSrc'),
-                                  productName: params.get('pname'),
-                                  price: params.get('pprice')?.replace('Rs. ', ''),
-                                  id: params.get("ref"), // Use encoded productCP as id
-                                };
-
-                                handleCart(event, product, cartItems, setCartItems);
-                                if (typeof window !== "undefined") {
-                                  localStorage.setItem('purchase', '0010');
-                                }
-                              } else {
-                                handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                                if (typeof window !== "undefined") {
-                                  localStorage.setItem('purchase', '0010');
-                                }
-                              }
-                            }}
-                          >
-                            <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                          </button>
-                        </div>
-                      </figure>
-                      <div className="card-content">
-                        <h3 className="h4 card-title">
-                          <a>{product.productName}</a>
-                        </h3>
-                        <div className="card-price">
-                          <data style={{ fontWeight: 'bolder' }} value={product.price}>
-                            {`Rs. ${product.price}`}
-                          </data>
-                          {product.dPrice && (
-                            <data className="dcard-price" value={product.dPrice}>
-                              Rs. {product.dPrice}
+                          </div>
+                        </figure>
+                        <div className="card-content">
+                          <h3 className="h4 card-title">
+                            <a>{product.productName}</a>
+                          </h3>
+                          <div className="card-price">
+                            <data style={{ fontWeight: 'bolder' }} value={product.price}>
+                              {`Rs. ${product.price}`}
                             </data>
-                          )}
+                            {product.dPrice && (
+                              <data className="dcard-price" value={product.dPrice}>
+                                Rs. {product.dPrice}
+                              </data>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </li>
@@ -304,135 +310,141 @@ export default function Products({ collectionData, headers, collectionsToFetch =
                     {Array.isArray(collectionData[collectionId]) &&
                       collectionData[collectionId].map((product) => (
                         <li key={product.id} className="product-card">
-                          <figure className="card-banner">
-                            {canEdit ? (
-                              <Image
-                                src={product.pic}
-                                alt={product.productName}
-                                loading="lazy"
-                                width="800"
-                                height="1034"
-                                className="w-100"
-                              />
-                            ) : (
-                              <Link
-                                className='checkoutLink'
-                                href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                                legacyBehavior
-                              >
-                                <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
-                                  <Image
-                                    src={product.pic}
-                                    alt={product.productName}
-                                    loading="lazy"
-                                    width="800"
-                                    height="1034"
-                                    className="w-100"
-                                  />
-                                </a>
-                              </Link>
-                            )}
-                            {product.dPrice ? (
-                              <div className="card-badge red">
-                                -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
-                              </div>
-                            ) : (
-                              <div className="card-badge green">New</div>
-                            )}
-                            {removeActions && 
-                            <div className="card-actions">
-                              <Link
-                              
-                               className='checkoutLink'
-                                href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
-                              >
+                          {/* Product card content */}
+                          <div className="product-card">
+                            <figure className="card-banner">
+                              {canEdit ? (
+                                <Image
+                                  src={product.pic}
+                                  alt={product.productName}
+                                  loading="lazy"
+                                  width="800"
+                                  height="1034"
+                                  className="w-100"
+                                />
+                              ) : (
+                                <Link
+                                  className='checkoutLink'
+                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                                  legacyBehavior
+                                >
+                                  <a className='checkoutLink' onClick={() => document.querySelector('.loader').style.display = 'block'}>
+                                    <Image
+                                      src={product.pic}
+                                      alt={product.productName}
+                                      loading="lazy"
+                                      width="800"
+                                      height="1034"
+                                      className="w-100"
+                                    />
+                                  </a>
+                                </Link>
+                              )}
+                              {product.dPrice ? (
+                                <div className="card-badge red">
+                                  -{Math.round(((product.dPrice - product.price) / product.dPrice) * 100)}%
+                                </div>
+                              ) : (
+                                <div className="card-badge green">New</div>
+                              )}
+                              {removeActions && 
+                              <div className="card-actions">
+                                <Link
+                                
+                                 className='checkoutLink'
+                                  href={`/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`}
+                                >
+                                  <button
+                                    className="card-action-btn"
+                                    aria-label="Quick view"
+                                    onClick={() => {
+                                      document.querySelector('.loader').style.display = 'block';
+                                      console.log('Product URL:', `/checkout?ImageSrc=${product.pic}&pname=${product.productName}&pprice=Rs. ${product.price}&dPrice=${product.dPrice}&cat=${collectionId}&ref=${product.id}`);
+                                    }}
+                                  >
+                                    <ion-icon name="eye-outline"></ion-icon>
+                                  </button>
+                                </Link>
+                                <button
+                                  className="card-action-btn cart-btn"
+                                  onClick={(event) => {
+                                    if (product && product.productName) {
+                                        fetchSizeChart(collectionId, product.productName);
+                                    } else {
+                                        console.error('Product name is undefined');
+                                    }
+                                    
+                                    handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
+                                  }}
+                                >
+                                  {!productsStyle &&  <ion-icon name="cart-outline"></ion-icon>}
+                                  <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
+                                </button>
                                 <button
                                   className="card-action-btn"
-                                  aria-label="Quick view"
-                                  onClick={() => document.querySelector('.loader').style.display = 'block'}
-                                >
-                                  <ion-icon name="eye-outline"></ion-icon>
-                                </button>
-                              </Link>
-                              <button
-                                className="card-action-btn cart-btn"
-                                onClick={(event) => {
-                                  if (product && product.productName) {
-                                      fetchSizeChart(collectionId, product.productName);
-                                  } else {
-                                      console.error('Product name is undefined');
-                                  }
-                                  
-                                  handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                                }}
-                              >
-                                {!productsStyle &&  <ion-icon name="cart-outline"></ion-icon>}
-                                <p>{productsStyle ? 'Add' : 'Add to Cart'}</p>
-                              </button>
-                              <button
-                                className="card-action-btn"
-                                aria-label="Quick Buy"
-                                onClick={(event) => {
-                                  let params;
-                                  if (typeof window !== 'undefined') {
-                                    params = new URLSearchParams(window.location.search);
-                                  }
-
-                                  fetchSizeChart(collectionId,product.productName);
-
-                                  if (params && params.get('ImageSrc')) {
-                                    // Product details from URL parameters
-                                    if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
-                                      localStorage.setItem('purchase', '0010');
+                                  aria-label="Quick Buy"
+                                  onClick={(event) => {
+                                    let params;
+                                    if (typeof window !== 'undefined') {
+                                      params = new URLSearchParams(window.location.search);
                                     }
-                                    const product = {
-                                      pic: params.get('ImageSrc'),
-                                      productName: params.get('pname'),
-                                      price: params.get('pprice')?.replace('Rs. ', ''),
-                                      id: params.get("ref"), // Use encoded productCP as id
-                                    };
 
-                                    if (product && product.productName) {
-                                      console.error('Product name is defined');
-                                      fetchSizeChart(collectionId, product.productName);
-                                  } else {
-                                      console.error('Product name is undefined');
-                                  }
+                                    fetchSizeChart(collectionId,product.productName);
 
-                                    handleCart(event, product, cartItems, setCartItems);
-                                    
-                                  } else {
-                                    if (product && product.productName) {
+                                    if (params && params.get('ImageSrc')) {
+                                      // Product details from URL parameters
                                       if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
                                         localStorage.setItem('purchase', '0010');
                                       }
-                                      console.error('Product name is undefined');
-                                      fetchSizeChart(collectionId, product.productName);
-                                  } else {
-                                      console.error('Product name is undefined');
-                                  }
-                                    handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
-                                   
-                                  }
-                                }}
-                              >
-                                <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                              </button>
-                            </div>}
-                          </figure>
-                          <div className="card-content">
-                            <h3 className="h4 card-title">
-                              <a>{product.productName}</a>
-                            </h3>
-                            <div className="card-price">
-                              <data style={{ fontWeight: 'bolder' }} value={product.price}>
-                                {`Rs. ${product.price}`}
-                              </data>
-                              {product.dPrice && (
-                                <data className="dcard-price" value={product.dPrice}>
-                                  Rs. {product.dPrice}
+                                      const product = {
+                                        pic: params.get('ImageSrc'),
+                                        productName: params.get('pname'),
+                                        price: params.get('pprice')?.replace('Rs. ', ''),
+                                        id: params.get("ref"), // Use encoded productCP as id
+                                      };
+
+                                      if (product && product.productName) {
+                                        console.error('Product name is defined');
+                                        fetchSizeChart(collectionId, product.productName);
+                                    } else {
+                                        console.error('Product name is undefined');
+                                    }
+
+                                      handleCart(event, product, cartItems, setCartItems);
+                                      
+                                    } else {
+                                      if (product && product.productName) {
+                                        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+                                          localStorage.setItem('purchase', '0010');
+                                        }
+                                        console.error('Product name is undefined');
+                                        fetchSizeChart(collectionId, product.productName);
+                                    } else {
+                                        console.error('Product name is undefined');
+                                    }
+                                      handleCart(event, { ...product, id: product.id }, cartItems, setCartItems);
+                                     
+                                    }
+                                  }}
+                                >
+                                  <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
+                                </button>
+                              </div>}
+                            </figure>
+                            <div className="card-content">
+                              <h3 className="h4 card-title">
+                                <a>{product.productName}</a>
+                              </h3>
+                              <div className="card-price">
+                                <data style={{ fontWeight: 'bolder' }} value={product.price}>
+                                  {`Rs. ${product.price}`}
                                 </data>
-                              )}
+                                {product.dPrice && (
+                                  <data className="dcard-price" value={product.dPrice}>
+                                    Rs. {product.dPrice}
+                                  </data>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </li>

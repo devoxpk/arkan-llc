@@ -130,7 +130,7 @@ function Footer() {
   <a className="logo">
     <Image
     width={100} height={0} 
-      style={{ marginTop: '-25%', height: "auto", width: "100%", filter: "invert(1)" }} 
+      style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
       src="/logo/dwlogo.png" 
       alt="DEVOX logo" 
     />
@@ -142,10 +142,9 @@ function Footer() {
               </p>
 
               <ul className="social-list">
-                <li><a href="#" className="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
-                <li><a href="#" className="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
-                <li><a href="#" className="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
-                <li><a href="#" className="social-link"><ion-icon name="logo-pinterest"></ion-icon></a></li>
+                <li><a href="https://www.facebook.com/people/Devox-Wears/61557279504240/" className="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                <li><a href="https://www.youtube.com/@devoxwears" className="social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+                <li><a href="https://www.instagram.com/devox.wears/" className="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
               </ul>
             </div>
 
@@ -186,7 +185,7 @@ function Footer() {
         <div className="footer-bottom">
           <div className="container">
             <p className="copyright">
-              &copy; 2024 <Link href='/' legacyBehavior><a href="/">TSOA</a></Link>. All Rights Reserved.
+              &copy; 2024 <Link href='/' legacyBehavior><a href="/">DEVOX</a></Link>. All Rights Reserved.
             </p>
             <ul className="footer-bottom-list">
               <li><Link href='/privacypolicy' legacyBehavior><a className="footer-bottom-link">Privacy Policy</a></Link></li>

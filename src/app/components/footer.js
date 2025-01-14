@@ -130,7 +130,7 @@ function Footer() {
   <a className="logo">
     <Image
     width={100} height={0} 
-      style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
+      style={{ marginTop: '-25%', height: "auto", width: "100%", filter: "invert(1)" }} 
       src="/logo/dwlogo.png" 
       alt="DEVOX logo" 
     />

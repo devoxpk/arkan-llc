@@ -167,7 +167,7 @@ function Navbar() {
             
               <Link href="/" legacyBehavior>
                 <a className="logo">
-                  <Image id="logoimg" src="/logo/dwlogo.png" alt="LOW PRICE IN PAKISTAN" width="55" height="0" style={{height:"auto"}} />
+                  <Image id="logoimg" src="/logo/dwlogo.png" alt="LOW PRICE IN PAKISTAN" width="55" height="0" style={{height:"auto", filter: "invert(1)"}} />
                 </a>
               </Link>
           <span id='brandNameSpan'>

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image'
 import Loader from './loader'
 import SkinRecommender from '../skinrecommender/skinserver';
+import sendWhatsapp from '../utilis/sendWhatsapp';
 
 export default function PurchaseComponent() {
     const router = useRouter();
@@ -276,6 +277,11 @@ document.querySelector(".loader").style.display = 'block'
           };
   
           await setDoc(docRef, docData);
+
+          // Send WhatsApp message to owner
+          const ownerContact = process.env.NEXT_PUBLIC_OWNER_CONTACT;
+          const orderDetails = `New order from ${customerName}, City: ${userCity}, Contact: ${userContact}, Total: PKR ${total.toFixed(2)}`;
+          await sendWhatsapp(ownerContact, orderDetails);
 
           if (localStorage.getItem('skin')) {
             const skinTone = parseInt(localStorage.getItem('skin'), 10);

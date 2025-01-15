@@ -15,6 +15,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } f
 import SearchBar, { toggleSearchBar } from './searchBar'
 import UserSession from './UserSession';
 import EditModeButton from './editmode';
+import serverWorker from '../utilis/serverworker'; // Ensure serverWorker is imported
 
   
 
@@ -138,25 +139,27 @@ function Navbar() {
     setNavActive((prev) => !prev);
   };
 
-  useEffect(() => {
-    const runServerWorker = async () => {
-        if (typeof window !== "undefined" && !sessionStorage.getItem('serverWorkerRun')) {
-            await new Promise(resolve => setTimeout(resolve, 5000)); // 5-second delay
-            await serverWorker();
-            sessionStorage.setItem('serverWorkerRun', 'true');
-        }
-    };
-
-    if (typeof window !== "undefined") {
-        window.addEventListener('load', runServerWorker, { once: true });
+  const runServerWorker = async () => {
+    console.log("navbar: Attempting to run serverWorker.");
+    if (typeof window !== "undefined" && !sessionStorage.getItem('serverWorkerRun')) {
+      try {
+        console.log("navbar: serverWorker will run after 5-second delay.");
+        await new Promise(resolve => setTimeout(resolve, 5000)); // 5-second delay
+        await serverWorker();
+        sessionStorage.setItem('serverWorkerRun', 'true');
+        console.log("navbar: serverWorker executed and sessionStorage updated.");
+      } catch (error) {
+        console.error("navbar: Error running serverWorker:", error);
+      }
+    } else {
+      console.log("navbar: serverWorker has already been run or window is undefined.");
     }
+  };
 
-    return () => {
-        if (typeof window !== "undefined") {
-            window.removeEventListener('load', runServerWorker);
-        }
-    };
-  }, []);
+  if (typeof window !== "undefined") {
+   runServerWorker();
+    console.log("navbar: Added load event listener for serverWorker.");
+  }
 
   return (
     <>
@@ -317,6 +320,13 @@ function Navbar() {
       <Sizes/>
     </>
   );
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener('load', async () => {
+    await runServerWorker();
+  }, { once: true });
+  console.log("navbar: Added load event listener for serverWorker.");
 }
 
 export default Navbar;

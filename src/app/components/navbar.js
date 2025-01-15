@@ -138,6 +138,26 @@ function Navbar() {
     setNavActive((prev) => !prev);
   };
 
+  useEffect(() => {
+    const runServerWorker = async () => {
+        if (typeof window !== "undefined" && !sessionStorage.getItem('serverWorkerRun')) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // 5-second delay
+            await serverWorker();
+            sessionStorage.setItem('serverWorkerRun', 'true');
+        }
+    };
+
+    if (typeof window !== "undefined") {
+        window.addEventListener('load', runServerWorker, { once: true });
+    }
+
+    return () => {
+        if (typeof window !== "undefined") {
+            window.removeEventListener('load', runServerWorker);
+        }
+    };
+  }, []);
+
   return (
     <>
     <SearchBar/>

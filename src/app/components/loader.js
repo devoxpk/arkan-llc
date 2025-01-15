@@ -5,7 +5,7 @@ import '../css/loader.css'; // Optional: If you have any specific styles for the
 import Image from 'next/image'
 const Loader = () => {
   return (
-    <div className="loader">
+    <div className="loader" style={{zIndex: 10000}}>
       <div className="box">
         <div className="logo">
           <img src='/logo/dwlogo.png' alt='Logo' />

@@ -223,99 +223,98 @@ async function validatePromo(event) {
       const handleOrderPlacement = async (e) => {
         e.preventDefault();
         const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
-if (cartItems.length === 0) {
-    showMessageBox("Cart is Empty", "Kindly add items to cart to proceed", false);
-    return;
-}
-document.querySelector(".loader").style.display = 'block'
+        if (cartItems.length === 0) {
+            showMessageBox("Cart is Empty", "Kindly add items to cart to proceed", false);
+            return;
+        }
+        document.querySelector(".loader").style.display = 'block';
 
         submitButton.innerText = "Please Wait...";
-  
+
         const customerName = document.getElementById("customerName").value.trim();
         const userCity = document.getElementById("userCity").value.trim();
         const userAddress = document.getElementById("userAddress").value.trim();
         const userContact = document.getElementById("userContact").value.trim();
         const userEmail = document.getElementById("userEmail").value.trim();
-  
+
         if (!customerName || !userCity || !userAddress || !userContact) {
-          showMessageBox("Fill Fields", "Fill all the Required Data", false);
-          submitButton.innerText = "Submit";
-          return;
+            showMessageBox("Fill Fields", "Fill all the Required Data", false);
+            submitButton.innerText = "Submit";
+            return;
         }
-  
+
         try {
-          const totalCP = await fetchCP(cartItems);
-          const day = new Date().toDateString();
-          const time = new Date().toLocaleTimeString();
-          const details = document.getElementById("additionalDetails").value;
-          let counts;
-          let customerId;
-          let productsData;
-          let currentLoc;
-          if(typeof window !== "undefined"){
-           counts = localStorage.getItem("count");
-           customerId = localStorage.getItem("customerNumber");
-           productsData = localStorage.getItem("cartItems");
-           currentLoc = localStorage.getItem("currentLoc");
-          }
-          const docRef = doc(db, "orders", `${customerId}(${customerName})-${counts}`);
-  const paymentMode=  document.getElementById("paymentMode").innerText;
-          const docData = {
-            productsData,
-            productSP:subtotal,
-            productCP: totalCP,
-            Address: userAddress,
-            Contact: userContact,
-            Name: customerName,
-            City: userCity,
-            paymentMode,
-            Email: userEmail,
-            Date: `${day} ${time}`,
-            Details: details,
-            customerID: customerId,
-            currentLoc,
-          };
-  
-          await setDoc(docRef, docData);
-
-          // Send WhatsApp message to owner
-          const ownerContact = process.env.NEXT_PUBLIC_OWNER_CONTACT;
-          const orderDetails = `New order from ${customerName}, City: ${userCity}, Contact: ${userContact}, Total: PKR ${total.toFixed(2)}`;
-          await sendWhatsapp(ownerContact, orderDetails);
-
-          if (localStorage.getItem('skin')) {
-            const skinTone = parseInt(localStorage.getItem('skin'), 10);
-            for (const item of cartItems) {
-              const [collectionId, docId] = item.id.split('$').slice(0, 2);
-              const productRef = doc(db, collectionId, docId);
-              const productSnap = await getDoc(productRef);
-              if (productSnap.exists()) {
-                const productData = productSnap.data();
-                const skinArray = productData.skin || [0, 0, 0];
-                skinArray[skinTone] = (skinArray[skinTone] || 0) + 1;
-                await updateDoc(productRef, { skin: skinArray });
-              }
+            const totalCP = await fetchCP(cartItems);
+            const day = new Date().toDateString();
+            const time = new Date().toLocaleTimeString();
+            const details = document.getElementById("additionalDetails").value;
+            let counts;
+            let customerId;
+            let productsData;
+            let currentLoc;
+            if(typeof window !== "undefined"){
+                counts = localStorage.getItem("count");
+                customerId = localStorage.getItem("customerNumber");
+                productsData = localStorage.getItem("cartItems");
+                currentLoc = localStorage.getItem("currentLoc");
             }
-          }
+            const docRef = doc(db, "orders", `${customerId}(${customerName})-${counts}`);
+            const paymentMode = document.getElementById("paymentMode").innerText;
+            const docData = {
+                productsData,
+                productSP: subtotal,
+                productCP: totalCP,
+                Address: userAddress,
+                Contact: userContact,
+                Name: customerName,
+                City: userCity,
+                paymentMode,
+                Email: userEmail,
+                Date: `${day} ${time}`,
+                Details: details,
+                customerID: customerId,
+                currentLoc,
+            };
 
-          if(typeof window !== "undefined"){
-          localStorage.setItem("count", parseInt(counts) + 1);
-          }
-          
-          showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
-          saveContact(userContact,userEmail,"purchase")
-          router.push(`thanks/${docRef.id}`);
-          document.querySelector(".loader").style.display = 'none'
-          
-          if(typeof window !== "undefined"){
-          localStorage.removeItem("cartItems");
-          }
+            await setDoc(docRef, docData);
+
+            const orderDetails = `Order Details:\nCustomer Name: ${customerName}\nCity: ${userCity}\nAddress: ${userAddress}\nContact: ${userContact}\nEmail: ${userEmail}\nPayment Mode: ${paymentMode}\nDate: ${day} ${time}\nDetails: ${details}\nProducts: ${cartItems.map(item => `\n- ${item.productName} (x${item.quantity}): PKR ${item.price}`).join('')}`;
+
+            // Trigger sendWhatsapp without awaiting its completion
+            sendWhatsapp(process.env.NEXT_PUBLIC_OWNER_CONTACT, orderDetails).catch(error => {
+                    console.error("Error sending WhatsApp message:", error);
+            });
+
+            if (localStorage.getItem('skin')) {
+                const skinTone = parseInt(localStorage.getItem('skin'), 10);
+                for (const item of cartItems) {
+                    const [collectionId, docId] = item.id.split('$').slice(0, 2);
+                    const productRef = doc(db, collectionId, docId);
+                    const productSnap = await getDoc(productRef);
+                    if (productSnap.exists()) {
+                        const productData = productSnap.data();
+                        const skinArray = productData.skin || [0, 0, 0];
+                        skinArray[skinTone] = (skinArray[skinTone] || 0) + 1;
+                        await updateDoc(productRef, { skin: skinArray });
+                    }
+                }
+            }
+
+            if(typeof window !== "undefined"){
+                localStorage.setItem("count", parseInt(counts) + 1);
+                localStorage.removeItem("cartItems");
+            }
+
+            showMessageBox("Thanks for order", "You will receive confirmation shortly", true);
+            saveContact(userContact, userEmail, "purchase");
+            router.push(`thanks/${docRef.id}`);
+            document.querySelector(".loader").style.display = 'none';
 
         } catch (error) {
-          console.error("Error adding document: ", error);
-          showMessageBox("An error occurred", "Please contact support", false);
+            console.error("Error adding document: ", error);
+            showMessageBox("An error occurred", "Please contact support", false);
         } finally {
-          submitButton.innerText = "Submit";
+            submitButton.innerText = "Submit";
         }
       };
   

@@ -9,12 +9,12 @@ async function sendWhatsapp(contact, msg) {
     if (!Array.isArray(contact) && !Array.isArray(msg)) {
         if (contact.includes(",") && msg.includes(",")) {
             // Case: Comma-separated numbers and messages
-            numbers = contact.split(",");
-            messages = msg.split(",");
+            numbers = contact.split(",").map(num => num.trim());
+            messages = msg.split(",").map(m => m.trim());
         } else {
             // Case: Single number and message provided
-            numbers = [contact];
-            messages = [msg];
+            numbers = [contact.trim()];
+            messages = [msg.trim()];
         }
     }
 
@@ -34,24 +34,34 @@ async function sendWhatsapp(contact, msg) {
         return number;
     });
 
-    // Encode messages
-    messages = messages.map(message => encodeURIComponent(message.trim()));
+    // Construct and send requests for each number-message pair
+    for (let i = 0; i < numbers.length; i++) {
+        const formattedMessage = encodeURIComponent(messages[i].trim());
+        const url = `${baseUrl}?num=${numbers[i]}&msg=${formattedMessage}&auth=${auth}&ownerContact=${formatOwnerContact(process.env.NEXT_PUBLIC_OWNER_CONTACT)}`;
 
-    // Construct the URL
-    const url = `${baseUrl}?num=${numbers.join(",")}&msg=${messages.join(",")}&auth=${auth}&ownerContact=${process.env.NEXT_PUBLIC_OWNER_CONTACT}`;
+        try {
+            console.log(url);
+            const response = await fetch(url);
 
-    try {
-        console.log(url);
-        const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to send WhatsApp message: ${response.status}`);
+            }
 
-        if (!response.ok) {
-            throw new Error(`Failed to send WhatsApp message: ${response.status}`);
+            console.log(`Message sent to ${numbers[i]}: ${messages[i]}`);
+        } catch (error) {
+            console.error("Error sending WhatsApp message:", error);
         }
-
-        console.log(`Messages sent to ${numbers.join(",")}: ${messages.join(",")}`);
-    } catch (error) {
-        console.error("Error sending WhatsApp message:", error);
     }
+}
+
+function formatOwnerContact(contact) {
+    contact = contact.trim();
+    if (contact.startsWith("0")) {
+        return "92" + contact.slice(1);
+    } else if (!contact.startsWith("92")) {
+        return "92" + contact;
+    }
+    return contact;
 }
 
 export default sendWhatsapp;

@@ -132,23 +132,23 @@ const Cart = ({cartStyle = false}) => {
     };
 
     // Close cart if clicked outside
-    useEffect(() => {
-        if(!cartStyle){
-            const handleClickOutside = (event) => {
-                if (cartRef.current && !cartRef.current.contains(event.target)) {
-                    const cartCard = document.querySelector("#cart-out");
-                    if (cartCard) {
-                        cartCard.style.display = "none"; // Close the cart
-                    }
-                }
-            };
+    // useEffect(() => {
+    //     if(!cartStyle){
+    //         const handleClickOutside = (event) => {
+    //             if (cartRef.current && !cartRef.current.contains(event.target)) {
+    //                 const cartCard = document.querySelector("#cart-out");
+    //                 if (cartCard) {
+    //                     cartCard.style.display = "none"; // Close the cart
+    //                 }
+    //             }
+    //         };
 
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-            };
-        }
-    }, [cartStyle]);
+    //         document.addEventListener('mousedown', handleClickOutside);
+    //         return () => {
+    //             document.removeEventListener('mousedown', handleClickOutside);
+    //         };
+    //     }
+    // }, [cartStyle]);
 
     // Update cart badge when cartStyle changes
     useEffect(() => {

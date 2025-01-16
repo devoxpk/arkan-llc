@@ -27,7 +27,7 @@ function ContactComponent() {
         setError('');
         setIsSubmitting(true);
 
-        const apiUrl = `${process.env.NEXT_PUBLIC_SERVER_API}/send-message?num=${encodeURIComponent(contact)}&msg=${encodeURIComponent(message)}&auth=${encodeURIComponent(process.env.NEXT_PUBLIC_OWNER_AUTH)}`;
+      sendWhatsappMessage(contact, message);
 
         try {
             const response = await fetch(apiUrl, {

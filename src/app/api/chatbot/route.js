@@ -18,7 +18,9 @@ export async function GET() {
 
 export async function POST(request) {
     try {
+        console.log("POST /api/chatbot called");
         const { entry } = await request.json();
+        console.log("Received entry:", entry);
         const data = fs.readFileSync(dataFilePath, 'utf8');
         const histories = JSON.parse(data);
         histories.push(entry);

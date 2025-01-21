@@ -2,6 +2,34 @@ import { db } from '../firebase';
 import { doc, updateDoc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import sendWhatsapp from './sendWhatsapp'; // Ensure the path is correct
 import showMessageBox from './showMessageBox';
+
+
+
+
+import { match } from 'string-similarity';
+
+async function fetchCityId(cityName) {
+    const url = "https://api.shooterdelivery.com/Apis/fetch-all-cities-and-status.php";
+    const response = await fetch(url);
+    const data = await response.json();
+    const cities = data.cities || [];
+
+    cityName = cityName.trim().toLowerCase();
+    let maxSimilarity = 0;
+    let matchedCityId = null;
+
+    for (const city of cities) {
+        const cityApiName = city.name.trim().toLowerCase();
+        const similarity = match(cityName, cityApiName);
+        if (similarity > maxSimilarity) {
+            maxSimilarity = similarity;
+            matchedCityId = city.id;
+        }
+    }
+
+    return matchedCityId;
+}
+
 const postOrder = async (docId,dashboard=false) => {
   if(dashboard){
     confirm('Are you sure you want to dispatch this order?');
@@ -108,14 +136,14 @@ console.log(trackingNumber)
 async function postToShooterDelivery(docId, orderData) {
     const {
         Address: address,
-        City: city,
+        City:city,
         Contact: contact,
         Name: name,
-        productSP: amount,
+        productSP,
         productsData,
         currentLoc,
     } = orderData;
-
+const matchedCity = await fetchCityId(city);
     const parsedProducts = JSON.parse(productsData);
     const description = parsedProducts
         .map(
@@ -141,10 +169,10 @@ async function postToShooterDelivery(docId, orderData) {
         consign_city: city,
         weight: `0.5Kg`,
         pieces: parsedProducts.length,
-        cd_amount: amount,
+        cd_amount: productSP,
         desc: `${description}\nCurrent Location: ${currentLoc}`,
         remarks: 'Allow check before pay',
-        to_city_id: 204,
+        to_city_id: matchedCity,
         uid: "726",
     };
 

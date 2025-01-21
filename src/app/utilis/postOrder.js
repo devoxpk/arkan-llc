@@ -6,7 +6,8 @@ import showMessageBox from './showMessageBox';
 
 
 
-import { match } from 'string-similarity';
+import stringSimilarity from 'string-similarity';
+
 
 async function fetchCityId(cityName) {
     const url = "https://api.shooterdelivery.com/Apis/fetch-all-cities-and-status.php";
@@ -20,7 +21,7 @@ async function fetchCityId(cityName) {
 
     for (const city of cities) {
         const cityApiName = city.name.trim().toLowerCase();
-        const similarity = match(cityName, cityApiName);
+        const similarity = stringSimilarity.compareTwoStrings(cityName, cityApiName);
         if (similarity > maxSimilarity) {
             maxSimilarity = similarity;
             matchedCityId = city.id;

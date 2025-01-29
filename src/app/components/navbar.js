@@ -266,6 +266,7 @@ function Navbar() {
             <ul className="navbar-list">
               <li><Link href='/' legacyBehavior><a className="navbar-link" data-nav-link>Home</a></Link></li>
               <li><Link href='/skinrecommender' legacyBehavior><a className="navbar-link" data-nav-link >Skin Recommendention</a></Link></li>
+              <li><Link href='/vton' legacyBehavior><a className="navbar-link" data-nav-link >Virtually Try On Clothes</a></Link></li>
 
               <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
               <li><Link href='/contact' legacyBehavior><a className="navbar-link" data-nav-link>Contact Us</a></Link></li>

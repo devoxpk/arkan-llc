@@ -258,7 +258,9 @@ async function validatePromo(event) {
                 productsData = localStorage.getItem("cartItems");
                 currentLoc = localStorage.getItem("currentLoc");
             }
-            const docRef = doc(db, "orders", `${customerId}(${customerName})-${counts}`);
+           
+            const sanitizedCustomerName = customerName.replace(/\s+/g, '_');
+            const docRef = doc(db, "orders", `${customerId}(${sanitizedCustomerName})-${counts}`);
             const paymentMode = document.getElementById("paymentMode").innerText;
             const docData = {
                 productsData,

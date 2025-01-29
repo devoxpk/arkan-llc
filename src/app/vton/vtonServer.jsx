@@ -29,7 +29,15 @@ export default async function VtonServer() {
 
             if (data.pic) {
                 console.log(`Found image in document ID: ${docId} in collection: ${collectionId}. Adding to images array.`);
-                images.push(data.pic);
+                const imageEntry = { 
+                    pic: data.pic, 
+                    ref: `${collectionId}/${docId}`, // Full reference path including collection and document ID
+                    collectionId: collectionId.toString() // Pass collection ID separately
+                };
+                if (data.vtonImage) {
+                    imageEntry.vtonImage = data.vtonImage;
+                }
+                images.push(imageEntry);
                 hasDocuments = true;
             }
 

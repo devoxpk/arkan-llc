@@ -42,8 +42,9 @@ export function useSignOut() {
 }
 
 export function useSignIn() {
-  const { signIn } = useAuth(); // Extract the signIn function from AuthContext
+  const { signIn, userDetails } = useAuth(); // Extract signIn and userDetails from AuthContext
 
+  useEffect(() => {
   if (userDetails) { // Ensure userDetails is not undefined or null
     if (userDetails.phoneNumber !== null) {
       saveContactInfo(userDetails.phoneNumber, userDetails.email, "main");
@@ -51,42 +52,50 @@ export function useSignIn() {
       saveContactInfo(null, userDetails.email, "main");
     }
   }
+  }, [userDetails]);
 
   return signIn; // Returning the signIn function
 }
 
-
-let userDetails;
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loginMethod, setLoginMethod] = useState(null); // State to track login method
+  const [userDetails, setUserDetailsState] = useState(null); // State for user details
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
 
-      if (user) {
-        // Save the user's details in IndexedDB
-         userDetails = {
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          uid: user.uid,
-          emailVerified: user.emailVerified,
-          phoneNumber: user.phoneNumber,
-          providerId: user.providerData[0]?.providerId, // Ensure we access the provider details
+      if (currentUser) {
+        // Determine login method
+        const providerId = currentUser.providerData[0]?.providerId;
+        const method = providerId === 'google.com' ? 'google' : 'form';
+        setLoginMethod(method);
+
+        // Prepare user details
+        const details = {
+          displayName: currentUser.displayName,
+          email: currentUser.email,
+          photoURL: method === 'google' ? currentUser.photoURL : "/path/to/default-black-image.png", // Default black image path
+          uid: currentUser.uid,
+          emailVerified: currentUser.emailVerified,
+          phoneNumber: currentUser.phoneNumber,
+          providerId: currentUser.providerData[0]?.providerId,
           metadata: {
-            creationTime: user.metadata.creationTime,
-            lastSignInTime: user.metadata.lastSignInTime,
+            creationTime: currentUser.metadata.creationTime,
+            lastSignInTime: currentUser.metadata.lastSignInTime,
           },
-          refreshToken: user.refreshToken,
+          refreshToken: currentUser.refreshToken,
+          loginMethod: method, // Store login method
         };
 
-        
-
-        await saveUserDetails(userDetails); // Save user details in IndexedDB
+        setUserDetailsState(details); // Update state
+        await saveUserDetails(details); // Save to IndexedDB
       } else {
         // Clear user session when logged out
         await clearUserDetails();
+        setLoginMethod(null);
+        setUserDetailsState(null);
       }
     });
 
@@ -102,8 +111,15 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   };
 
+  const setUserDetails = async (details) => {
+    const updatedDetails = { ...details, loginMethod: 'form', photoURL: "/path/to/default-black-image.png" };
+    setUserDetailsState(updatedDetails); // Update state
+    await saveUserDetails(updatedDetails); // Save to IndexedDB
+    setLoginMethod('form');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, signIn, logOut, loginMethod, setUserDetails, userDetails }}>
       {children}
     </AuthContext.Provider>
   );

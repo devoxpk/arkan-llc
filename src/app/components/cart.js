@@ -355,24 +355,28 @@ const Cart = ({cartStyle = false}) => {
                             <div style={{ fontWeight: "bolder" }} className="col">TOTAL PRICE</div>
                             <div style={{ fontWeight: "bolder" }} className="col text-right">Rs. {totalAmount + shippingAmount}</div>
                         </div>
-                       {cartItems.length>0 && <Link href='/purchase' ><button
-  className="cart-btn"
-  style={{
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'black',
-    color: 'white',
-    height: '28px',
-    borderRadius: '10px',
-    onClick: () => {
-        document.querySelector(".loader").style.display = "block";
-    }
-  }}
->
-  CHECKOUT
-</button></Link>}
+                       {cartItems.length > 0 && (
+                           <Link href='/purchase'>
+                               <button
+                                   className="cart-btn"
+                                   style={{
+                                       width: '100%',
+                                       display: 'flex',
+                                       alignItems: 'center',
+                                       justifyContent: 'center',
+                                       background: 'black',
+                                       color: 'white',
+                                       height: '28px',
+                                       borderRadius: '10px',
+                                   }}
+                                   onClick={() => {
+                                       document.querySelector(".loader").style.display = "block";
+                                   }}
+                               >
+                                   CHECKOUT
+                               </button>
+                           </Link>
+                       )}
 
                     </div>
                 </div>

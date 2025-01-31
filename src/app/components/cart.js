@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import '../css/cart.css'; // Import your CSS file
-
+import Loader from "./loader";
 import Link from 'next/link';
 let handleCart;
 let updateCartBadge;
@@ -365,7 +365,10 @@ const Cart = ({cartStyle = false}) => {
     background: 'black',
     color: 'white',
     height: '28px',
-    borderRadius: '10px'
+    borderRadius: '10px',
+    onClick: () => {
+        document.querySelector(".loader").style.display = "block";
+    }
   }}
 >
   CHECKOUT

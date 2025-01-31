@@ -5,6 +5,7 @@ import '../css/navbar.css';
 import Sizes from "./sizes";
 import Cart from './cart';
 import Chatbot from './chatbot.jsx';
+import Loader from './loader';
 import Link from 'next/link'
 
 import Image from 'next/image'
@@ -264,12 +265,12 @@ function Navbar() {
             </div>
 
             <ul className="navbar-list">
-              <li><Link href='/' legacyBehavior><a className="navbar-link" data-nav-link>Home</a></Link></li>
-              <li><Link href='/skinrecommender' legacyBehavior><a className="navbar-link" data-nav-link >Skin Recommendention</a></Link></li>
-              <li><Link href='/vton' legacyBehavior><a className="navbar-link" data-nav-link >Virtually Try On Clothes</a></Link></li>
+              <li onClick={() => document.querySelector(".loader").style.display = "block"}><Link href='/' legacyBehavior><a className="navbar-link" data-nav-link>Home</a></Link></li>
+              <li onClick={() => document.querySelector(".loader").style.display = "block"}><Link href='/skinrecommender' legacyBehavior><a className="navbar-link" data-nav-link >Skin Recommendention</a></Link></li>
+              <li onClick={() => document.querySelector(".loader").style.display = "block"}><Link href='/vton' legacyBehavior><a className="navbar-link" data-nav-link >Virtually Try On Clothes</a></Link></li>
 
-              <li><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
-              <li><Link href='/contact' legacyBehavior><a className="navbar-link" data-nav-link>Contact Us</a></Link></li>
+              <li onClick={() => document.querySelector(".loader").style.display = "block"}><Link href="/shop" legacyBehavior><a className="navbar-link" data-nav-link>Shop</a></Link></li>
+              <li onClick={() => document.querySelector(".loader").style.display = "block"}><Link href='/contact' legacyBehavior><a className="navbar-link" data-nav-link>Contact Us</a></Link></li>
               <li>
       <button
         id="navCategories"

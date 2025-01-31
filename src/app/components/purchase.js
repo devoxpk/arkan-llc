@@ -292,7 +292,7 @@ async function validatePromo(event) {
             } catch (error) {
                 console.error("Invalid NEXT_PUBLIC_OWNER_CONTACTS format:", error);
                 // Fallback to a default contact if parsing fails
-                ownerContacts = [process.env.NEXT_PUBLIC_OWNER_CONTACT, "03104760641"];
+     
             }
             const ownerMessages = ownerContacts.map(() => orderDetails);
             

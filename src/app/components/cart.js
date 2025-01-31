@@ -258,7 +258,7 @@ const Cart = ({cartStyle = false}) => {
 
      totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     const shippingAmount = 0;
-    return (
+    return (<><Loader/>
 <div
       ref={cartRef}
       id='cart-out'
@@ -379,7 +379,7 @@ const Cart = ({cartStyle = false}) => {
                 }
             </div>
         </div>
-    );
+    </>);
 };
 
 export { handleCart, updateCartBadge };

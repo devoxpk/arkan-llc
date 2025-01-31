@@ -285,7 +285,7 @@ async function validatePromo(event) {
             // Send order details to owner contacts from environment variables
             let ownerContacts = [];
             try {
-                ownerContacts = JSON.parse(process.env.NEXT_PUBLIC_OWNER_CONTACTS);
+                ownerContacts = JSON.parse(process.env.NEXT_PUBLIC_OWNER_CONTACT);
                 if (!Array.isArray(ownerContacts)) {
                     throw new Error("NEXT_PUBLIC_OWNER_CONTACTS is not a valid array.");
                 }

@@ -11,7 +11,7 @@ import deleteOrder from "../utilis/deleteOrder"; // Add deleteOrder import
 import Link from 'next/link';
 import Image from 'next/image';
 import showMessageBox from "../utilis/showMessageBox";
-import Loader from './loader'
+
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 

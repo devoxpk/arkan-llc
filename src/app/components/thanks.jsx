@@ -11,7 +11,7 @@ import deleteOrder from "../utilis/deleteOrder"; // Add deleteOrder import
 import Link from 'next/link';
 import Image from 'next/image';
 import showMessageBox from "../utilis/showMessageBox";
-
+import Loader from './loader'
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -22,6 +22,16 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     const searchParams = useSearchParams();
     const action = searchParams.get('action');
     const [order, setOrder] = useState(orderDetails); // Initialize order state
+    useEffect(() => {
+        const loaderElement = document.querySelector(".loader");
+        if (loaderElement) {
+            if (isLoading) {
+                loaderElement.style.display = "block";
+            } else {
+                loaderElement.style.display = "none";
+            }
+        }
+    }, [isLoading]);
 
     useEffect(() => {
         if (!orderDetails && error) {
@@ -119,6 +129,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     }, [docid]);
 
     const handleConfirm = async () => {
+        
         setIsLoading(true);
         try {
             // Dispatch the order and get tracking information
@@ -308,7 +319,7 @@ export default function ThanksPage({ orderDetails, error, docid }) {
     };
 
     return (
-        <>
+        <><Loader/>
             {(!orderDetails && error) ? (
                 <p>{error}</p>
             ) : (

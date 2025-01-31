@@ -282,9 +282,25 @@ async function validatePromo(event) {
 
             const orderDetails = `Order Details:\nCustomer Name: ${customerName}\nCity: ${userCity}\nAddress: ${userAddress}\nContact: ${userContact}\nEmail: ${userEmail}\nPayment Mode: ${paymentMode}\nDate: ${day} ${time}\nDetails: ${details}\nProducts: ${cartItems.map(item => `\n- ${item.productName} (x${item.quantity}): PKR ${item.price}`).join('')}`;
 
-            // Trigger sendWhatsapp without awaiting its completion
-            sendWhatsapp(process.env.NEXT_PUBLIC_OWNER_CONTACT, orderDetails).catch(error => {
-                    console.error("Error sending WhatsApp message:", error);
+            // Send order details to owner contacts from environment variables
+            let ownerContacts = [];
+            try {
+                ownerContacts = JSON.parse(process.env.NEXT_PUBLIC_OWNER_CONTACTS);
+                if (!Array.isArray(ownerContacts)) {
+                    throw new Error("NEXT_PUBLIC_OWNER_CONTACTS is not a valid array.");
+                }
+            } catch (error) {
+                console.error("Invalid NEXT_PUBLIC_OWNER_CONTACTS format:", error);
+                // Fallback to a default contact if parsing fails
+                ownerContacts = [process.env.NEXT_PUBLIC_OWNER_CONTACT, "03104760641"];
+            }
+            const ownerMessages = ownerContacts.map(() => orderDetails);
+            
+            sendWhatsapp(
+                ownerContacts, // Array of contacts from .env.local
+                ownerMessages   // Array of messages corresponding to each contact
+            ).catch(error => {
+                console.error("Error sending WhatsApp messages:", error);
             });
 
             if (localStorage.getItem('skin')) {

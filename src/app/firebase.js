@@ -1,6 +1,6 @@
 // Import required Firebase modules
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 import { getAuth } from "firebase/auth";
@@ -25,3 +25,27 @@ const storage = getStorage(app);
 // Export the Firebase app, Firestore, and Storage for use in other files
 export { app, db, storage };
 export const auth = getAuth(app);
+
+// Function to initialize chatbot roles if not present
+const initializeChatbotRoles = async () => {
+    const rolesRef = doc(db, 'chatbotRoles', 'rolesDoc');
+    const docSnap = await getDoc(rolesRef);
+    if (!docSnap.exists()) {
+        await setDoc(rolesRef, {
+            roles: [
+                {
+                    role: "user",
+                    parts: [{ text: "Hi" }]
+                },
+                {
+                    role: "model",
+                    parts: [{ text: "Hello! How can I help?" }]
+                }
+                // Add more roles as needed
+            ]
+        });
+    }
+};
+
+// Call the initialization function
+initializeChatbotRoles();

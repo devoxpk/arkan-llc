@@ -30,7 +30,7 @@ async function orderConfirmation() {
       const data = docSnap.data();
       const docId = docSnap.id;
 
-      if (!data.confirm && data.Date) {
+      if (data.Date) {
         const docDate = new Date(data.Date);
         const currentTime = new Date();
         const timeDifference = currentTime - docDate;

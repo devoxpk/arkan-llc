@@ -48,7 +48,7 @@ const emailMarketer = async () => {
       },
     };
 
-    const apiUrl = process.env.NEXT_PUBLIC_SERVER_API+`/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PRIVATE_EMAIL_PASS}&emails=${emails}&subject=TSOA%20-%20Sale%20Ending&jsonData=${encodeURIComponent(
+    const apiUrl = process.env.NEXT_PUBLIC_SERVER_API+`/send-email?ownemail=${process.env.NEXT_PUBLIC_OWNER_EMAIL}&pass=${process.env.NEXT_PUBLIC_EMAIL_PASS}&emails=${emails}&subject=Devox%20-%20Sale%20Ending&jsonData=${encodeURIComponent(
       JSON.stringify(jsonData)
     )}&type=marketing`;
 

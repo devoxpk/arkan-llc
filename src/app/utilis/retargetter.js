@@ -98,7 +98,7 @@ import {
         promoCodes[promoCode] = discount; // Map promo code to discount
   
         const promoMessage = `💥 Special Offer Just For You! 💥\n\nEnjoy ${discount} OFF on your favorite styles at DEVOX! \nUse code ${promoCode} at checkout.\n\n🛒 Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nHurry! Offer valid for a limited time. 💌`;
-        emailMessages.push(encodeURIComponent(promoMessage));
+        emailMessages.push(promoMessage); // No URI encoding
       });
   
       // Process contacts and generate promo codes
@@ -108,7 +108,7 @@ import {
         promoCodes[promoCode] = discount; // Map promo code to discount
   
         const promoMessage = `✨ Exclusive Savings Just For You! ✨\n\nYour style deserves ${discount} OFF at DEVOX. \nUse code ${promoCode} at checkout.\n\n Shop Now: ${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}\n\nAct fast—this deal won't last! 🎉`;
-        contactMessages.push(encodeURIComponent(promoMessage));
+        contactMessages.push(promoMessage); // No URI encoding
       });
   
       // Save promo codes to Firestore
@@ -134,7 +134,7 @@ import {
       // Step 6: Send WhatsApp messages
       if (unusedContacts.length > 0) {
         try {
-          await sendWhatsapp(unusedContacts, contactMessages);
+          await sendWhatsapp(unusedContacts, contactMessages); // Send as arrays
           console.log("WhatsApp marketing campaign successfully initiated.");
         } catch (error) {
           console.error("Error sending WhatsApp messages:", error);

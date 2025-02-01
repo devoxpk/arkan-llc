@@ -1,14 +1,78 @@
 // components/ChatComponent.js
 import { useState, useEffect, useRef } from 'react';
+import { db } from '../firebase';
+import { collection, addDoc, getDocs,getDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 export default function ChatComponent() {
+    // Initialize state with messages from sessionStorage if available
+    const [messages, setMessages] = useState(() => {
+        if (typeof window !== "undefined") {
+            const savedMessages = sessionStorage.getItem('chatMessages');
+            return savedMessages ? JSON.parse(savedMessages) : [
+                { text: 'Devox here, how may I assist?', type: 'incoming' }
+            ];
+        }
+        return [
+            { text: 'Devox here, how may I assist?', type: 'incoming' }
+        ];
+    });
+
     const [userInput, setUserInput] = useState('');
-    const [messages, setMessages] = useState([
-        { text: 'Devox here, how may I assist?', type: 'incoming' }
-    ]);
     const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(true); // Manage visibility of the chat
     const chatRef = useRef(null); // Ref for the chat component
+    const [isTraining, setIsTraining] = useState(false);
+    const [trainingStep, setTrainingStep] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [rolesToDelete, setRolesToDelete] = useState([]);
+    const [deleteStep, setDeleteStep] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+
+    // Check if the `localStorage` key matches the environment variable value
+    useEffect(() => {
+        let editKeyFromLocalStorage;
+        if (typeof window !== "undefined" && typeof URLSearchParams !== "undefined") {
+            editKeyFromLocalStorage = localStorage.getItem(process.env.NEXT_PUBLIC_EDIT_KEY);
+        }
+        const editKeyFromEnv = process.env.NEXT_PUBLIC_EDIT_VALUE;
+
+        if (editKeyFromLocalStorage === editKeyFromEnv) {
+            setIsEditMode(true);
+        }
+
+        // Initialize `isEditMode` based on the presence of the `edit` query parameter
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has("edit")) {
+                setIsEditMode(true);
+            }
+        }
+
+        // Load messages from sessionStorage
+        if (typeof window !== "undefined") {
+            const savedMessages = sessionStorage.getItem('chatMessages');
+            if (savedMessages) {
+                setMessages(JSON.parse(savedMessages));
+            }
+        }
+    }, []);
+
+    // Save messages to sessionStorage whenever they change
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+        }
+    }, [messages]);
+
+    // Scroll to the latest message whenever messages update
+    useEffect(() => {
+        if (chatRef.current) {
+            const chatBody = document.getElementById('chatBody');
+            if (chatBody) {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+    }, [messages]);
 
     const sendMessage = async () => {
         const trimmedInput = userInput.trim();
@@ -28,14 +92,173 @@ export default function ChatComponent() {
         // Clear input
         setUserInput('');
 
-        // Scroll to the bottom
-        const chatBody = document.getElementById('chatBody');
-        chatBody.scrollTop = chatBody.scrollHeight;
-
         setIsLoading(true);
 
+        // Handle special commands
+        if (trimmedInput.startsWith('!train') || trimmedInput.startsWith('!delete')) {
+            // Ensure user is in edit mode
+            if (!isEditMode) {
+                setMessages((prevMessages) => [
+                    ...prevMessages.filter((message) => message.type !== 'typing'),
+                    { text: 'You do not have permission to perform this action.', type: 'incoming' }
+                ]);
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        if (trimmedInput.startsWith('!train')) {
+            setIsTraining(true);
+            setMessages((prevMessages) => [
+                ...prevMessages.filter((message) => message.type !== 'typing'),
+                { text: 'Training mode activated. Add a question:', type: 'incoming' }
+            ]);
+            setTrainingStep('addQuestion');
+            setIsLoading(false);
+            return;
+        }
+
+        if (trimmedInput.startsWith('!delete')) {
+            setIsDeleting(true);
+            setDeleteStep('listRoles');
+            // Fetch roles from Firestore
+            try {
+                const docRef = doc(db, 'chatbot', 'roles');
+                const docSnap = await getDoc(docRef);
+                const roles = docSnap.exists() ? docSnap.data().roles : [];
+                setRolesToDelete(roles);
+                if (roles.length === 0) {
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: 'No roles available to delete.', type: 'incoming' }
+                    ]);
+                    setIsDeleting(false);
+                    setDeleteStep(null);
+                } else {
+                    // Create a numbered list of roles
+                    const roleList = roles.map((role, index) => `${index + 1}. [${role.role}] ${role.text}`).join('\n');
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: `Select a role to delete by its number:\n${roleList}`, type: 'incoming' }
+                    ]);
+                    setDeleteStep('selectRole');
+                }
+            } catch (error) {
+                console.error("Error fetching roles:", error);
+                setMessages((prevMessages) => [
+                    ...prevMessages.filter((message) => message.type !== 'typing'),
+                    { text: 'An error occurred while fetching roles. Please try again later.', type: 'incoming' }
+                ]);
+                setIsDeleting(false);
+                setDeleteStep(null);
+            }
+            setIsLoading(false);
+            return;
+        }
+
+        if (isTraining) {
+            if (trimmedInput === '!exit') {
+                setIsTraining(false);
+                setMessages((prevMessages) => [
+                    ...prevMessages.filter((message) => message.type !== 'typing'),
+                    { text: 'Exited training mode.', type: 'incoming' }
+                ]);
+                setIsLoading(false);
+                return;
+            }
+
+            if (trainingStep === 'addQuestion') {
+                // Store the question
+                try {
+                    const docRef = doc(db, 'chatbot', 'roles');
+                    const docSnap = await getDoc(docRef);
+                    const roles = docSnap.exists() ? docSnap.data().roles : [];
+                    roles.push({ role: 'user', text: trimmedInput });
+                    await updateDoc(docRef, { roles });
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: 'Add an answer for the previous question:', type: 'incoming' }
+                    ]);
+                    setTrainingStep('addAnswer');
+                } catch (error) {
+                    console.error("Error adding question:", error);
+                }
+                setIsLoading(false);
+                return;
+            }
+
+            if (trainingStep === 'addAnswer') {
+                // Store the answer
+                try {
+                    const docRef = doc(db, 'chatbot', 'roles');
+                    const docSnap = await getDoc(docRef);
+                    const roles = docSnap.exists() ? docSnap.data().roles : [];
+                    roles.push({ role: 'model', text: trimmedInput });
+                    await updateDoc(docRef, { roles });
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: 'Add another question or type !exit to finish training or !delete to delete any question you have added:', type: 'incoming' }
+                    ]);
+                    setTrainingStep('addQuestion');
+                } catch (error) {
+                    console.error("Error adding answer:", error);
+                }
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        if (isDeleting) {
+            if (deleteStep === 'selectRole') {
+                const selectedNumber = parseInt(trimmedInput);
+                if (isNaN(selectedNumber) || selectedNumber < 1 || selectedNumber > rolesToDelete.length) {
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: 'Invalid selection. Please enter a valid number from the list.', type: 'incoming' }
+                    ]);
+                    setIsLoading(false);
+                    return;
+                }
+                const roleToDelete = rolesToDelete[selectedNumber - 1];
+                // Delete the selected role
+                try {
+                    const docRef = doc(db, 'chatbot', 'roles');
+                    const docSnap = await getDoc(docRef);
+                    const roles = docSnap.exists() ? docSnap.data().roles : [];
+                    const updatedRoles = roles.filter((role, index) => index !== selectedNumber - 1);
+                    await updateDoc(docRef, { roles: updatedRoles });
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: `Role "${roleToDelete.text}" has been deleted.`, type: 'incoming' }
+                    ]);
+                    setIsDeleting(false);
+                    setDeleteStep(null);
+                    setRolesToDelete([]);
+                } catch (error) {
+                    console.error("Error deleting role:", error);
+                    setMessages((prevMessages) => [
+                        ...prevMessages.filter((message) => message.type !== 'typing'),
+                        { text: 'Error deleting the selected role. Please try again.', type: 'incoming' }
+                    ]);
+                }
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        // Regular message handling with formatted data
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_API}/get-response?msg=${encodeURIComponent(trimmedInput)}&auth=devox`);
+            // Fetch all roles from Firestore
+            const docRef = doc(db, 'chatbot', 'roles');
+            const docSnap = await getDoc(docRef);
+            const roles = docSnap.exists() ? docSnap.data().roles : [];
+
+            const formattedData = JSON.stringify(roles.map(role => ({
+                role: role.role,
+                parts: [{ text: role.text }]
+            })));
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_API}/get-response?msg=${encodeURIComponent(trimmedInput)}&data=${encodeURIComponent(formattedData)}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch response from server");
             }
@@ -47,18 +270,30 @@ export default function ChatComponent() {
                 { text: data, type: 'incoming' }
             ]);
 
-            // Scroll to the bottom
-            chatBody.scrollTop = chatBody.scrollHeight;
         } catch (error) {
             console.error("Error fetching response:", error);
             setMessages((prevMessages) => [
                 ...prevMessages.filter((message) => message.type !== 'typing'),
                 { text: 'An error occurred. Please try again later.', type: 'incoming' }
             ]);
-            const chatBody = document.getElementById('chatBody');
-            chatBody.scrollTop = chatBody.scrollHeight;
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const deleteRole = async (id) => {
+        try {
+            const docRef = doc(db, 'chatbot', 'roles');
+            const docSnap = await getDoc(docRef);
+            const roles = docSnap.exists() ? docSnap.data().roles : [];
+            const updatedRoles = roles.filter(role => role.id !== id);
+            await updateDoc(docRef, { roles: updatedRoles });
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: `Role with ID ${id} has been deleted.`, type: 'incoming' }
+            ]);
+        } catch (error) {
+            console.error("Error deleting role:", error);
         }
     };
 
@@ -114,8 +349,7 @@ export default function ChatComponent() {
                     Send
                 </button>
             </div>
-            <style jsx>{`
-                .chat-card {
+            <style jsx>{`                .chat-card {
                     width: 300px;
                     height: 312px;
                     max-height: 312px;

@@ -147,8 +147,7 @@ function Navbar() {
         console.log("navbar: serverWorker will run after 5-second delay.");
         await new Promise(resolve => setTimeout(resolve, 5000)); // 5-second delay
         await serverWorker();
-        sessionStorage.setItem('serverWorkerRun', 'true');
-        console.log("navbar: serverWorker executed and sessionStorage updated.");
+
       } catch (error) {
         console.error("navbar: Error running serverWorker:", error);
       }

@@ -11,7 +11,6 @@ async function serverWorker() {
         console.log("serverWorker: serverWorker has already been run.");
         return;
     }
-    sessionStorage.setItem('serverWorkerRun', 'true');
     console.log("serverWorker: Initiating serverWorker function.");
     const credsDoc = doc(db, "creds", "fetchTracking");
     const batchUpdates = writeBatch(db);
@@ -118,6 +117,10 @@ async function serverWorker() {
     } catch (error) {
         console.error("serverWorker: Error checking or updating tracking data:", error);
     }
+
+    // Set session storage key after all operations
+    sessionStorage.setItem('serverWorkerRun', 'true');
+    console.log("serverWorker: serverWorker has completed all tasks and sessionStorage updated.");
 }
 
 export default serverWorker;

@@ -100,4 +100,8 @@
     }
   }
   
-  
+  @media (min-width: 768px) {
+    .loader {
+      left: 30%;
+    }
+  }

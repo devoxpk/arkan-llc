@@ -358,8 +358,44 @@ app.get("/get-response", async (req, res) => {
     }
 });
 
+// For more information on how to call this API endpoint, refer to the documentation: 
+// https://developers.google.com/generative-ai
+
+
+
+
 
 const statusFilePath = './status.txt';
+
+// Helper function for deduplication using Map
+function deduplicateTrackingNumbers(trackingNumbers) {
+    return Array.from(new Set(trackingNumbers));
+}
+
+// Helper function to check cooldown
+function isCooldown(lastChecked) {
+    const now = Date.now();
+    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    return (now - lastChecked) < cooldownPeriod;
+}
+
+// Helper function to load status data
+async function loadStatusData() {
+    try {
+        const data = await fs.readFile(statusFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return {};
+        }
+        throw error;
+    }
+}
+
+// Helper function to save status data
+async function saveStatusData(data) {
+    await fs.writeFile(statusFilePath, JSON.stringify(data, null, 2));
+}
 
 app.get("/get-tracking", async (req, res) => {
     const trackingNumbers = req.query.tracking;
@@ -378,23 +414,31 @@ app.get("/get-tracking", async (req, res) => {
         !contacts || !Array.isArray(contacts) ||
         trackingNumbers.length !== contacts.length) {
         console.log("Input validation failed: Arrays must be the same length.");
-        console.error("Error: Input validation failed.");
         return res.status(400).json({ error: "Tracking numbers and contacts must be provided in arrays of the same length." });
     }
 
-    let statusData = fs.existsSync(statusFilePath) ? JSON.parse(fs.readFileSync(statusFilePath, 'utf-8')) : {};
+    // Deduplicate tracking numbers
+    const uniqueTrackingNumbers = deduplicateTrackingNumbers(trackingNumbers);
+    console.log("Unique tracking numbers:", uniqueTrackingNumbers);
 
     try {
-        const trackingResults = [];
+        let statusData = await loadStatusData();
         console.log("Status data loaded from file:", statusData);
 
-        for (let i = 0; i < trackingNumbers.length; i++) {
-            const trackingNumber = trackingNumbers[i];
+        const trackingResults = [];
+
+        for (let i = 0; i < uniqueTrackingNumbers.length; i++) {
+            const trackingNumber = uniqueTrackingNumbers[i];
             const contact = contacts[i];
             const domainReview = domainReviews ? domainReviews[i] : null;
 
+            // Check for cooldown
+            if (statusData[trackingNumber] && isCooldown(statusData[trackingNumber].lastChecked)) {
+                console.log(`Cooldown active for ${trackingNumber}, skipping.`);
+                continue;
+            }
+
             console.log(`Fetching tracking details for ${trackingNumber}...`);
-            console.log(`Tracking Number: ${trackingNumber}, Contact: ${contact}, Domain Review: ${domainReview}`);
 
             try {
                 const response = await axios.post(
@@ -410,34 +454,30 @@ app.get("/get-tracking", async (req, res) => {
                     }
                 );
 
-                console.log(`Response received for ${trackingNumber}:`, response.data);
-
                 const trackingDetails = response.data.Order_Details;
                 const statusHistory = response.data.Status_History;
 
                 if (!trackingDetails || trackingDetails.message === "No Records Found" || !statusHistory || statusHistory.length === 0) {
                     console.log(`No valid tracking details found for ${trackingNumber}`);
-                    console.error(`Error: No valid tracking details found for ${trackingNumber}`);
                     continue;
                 }
 
                 const latestStatus = statusHistory[statusHistory.length - 1]?.status || "Unknown status";
                 const previousStatus = statusData[trackingNumber]?.status;
                 const attempts = statusData[trackingNumber]?.attempts || 0;
+                const lastChecked = Date.now();
 
+                // Deduplicate within single request and cooldown check already done
                 if (!statusData[trackingNumber] || previousStatus !== latestStatus) {
-                    statusData[trackingNumber] = { status: latestStatus, attempts: 0 };
-
+                    statusData[trackingNumber] = { status: latestStatus, attempts: 0, lastChecked };
+                    
                     if (/refuse/i.test(latestStatus)) {
                         const customerMessage = `You have refused the order. It has been dispatched. Kindly receive the order or, if you are facing issues like fake attempts, let us know.`;
                         await sendCustomerNotification(contact, customerMessage, auth, ownerContact);
                         console.log(`Customer notified about refusal for ${trackingNumber}`);
-                        console.log(`Customer Notification: ${customerMessage}`);
 
                         const ownerMessage = `Order with tracking number ${trackingNumber} has been refused. Kindly investigate the issue.`;
                         await sendOwnerNotification(ownerMessage, auth, ownerContact);
-                        console.log(`Owner notified about refusal for ${trackingNumber}`);
-                        console.log(`Owner Notification: ${ownerMessage}`);
 
                         await axios.post(
                             "https://api.shooterdelivery.com/Apis/add-shipperadvice.php",
@@ -455,192 +495,14 @@ app.get("/get-tracking", async (req, res) => {
                             }
                         );
                         console.log(`Shipper advice sent for ${trackingNumber}`);
-                        console.log(`Shipper Advice: Customer refused the order. Investigate for fake attempts or other issues.`);
                     } else {
                         const trackingMessage = `Tracking Details:\nStatus: ${latestStatus}\nTracking Number: ${trackingNumber}`;
                         await sendCustomerNotification(contact, trackingMessage, auth, ownerContact);
                         console.log(`Customer notified with tracking details for ${trackingNumber}`);
-                        console.log(`Customer Notification: ${trackingMessage}`);
 
                         if (/deliver/i.test(latestStatus) && domainReview) {
                             const reviewMessage = `Thanks for purchasing! You can proceed to this link ${domainReview} to drop a review. Your feedback is valuable to us.`;
                             await sendCustomerNotification(contact, reviewMessage, auth, ownerContact);
-                            console.log(`Customer notified for review for ${trackingNumber}`);
-                            console.log(`Customer Notification: ${reviewMessage}`);
-                            statusData.delivered = statusData.delivered || {};
-                            statusData.delivered[trackingNumber] = { contact, status: latestStatus };
-                            delete statusData[trackingNumber];
-                        }
-                    }
-                } else {
-                    statusData[trackingNumber].attempts += 1;
-
-                    if (statusData[trackingNumber].attempts === 2) {
-                        await sendOwnerNotification(`Attempt 2: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nThe order has not progressed. Kindly report to the courier.`, auth, ownerContact);
-                        console.log(`Owner notified about attempt 2 for ${trackingNumber}`);
-                        console.log(`Owner Notification: Attempt 2: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nThe order has not progressed. Kindly report to the courier.`);
-
-                        await axios.post(
-                            "https://api.shooterdelivery.com/Apis/add-shipperadvice.php",
-                            {
-                                id: trackingNumber,
-                                shipper_advice: `Its been same tracking for 3 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} ` 
-                            },
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'Sec-Fetch-Dest': 'empty',
-                                    'Sec-Fetch-Site': 'cross-site'
-                                }
-                            }
-                        );
-                        console.log(`Shipper advice sent for ${trackingNumber}`);
-                        console.log(`Shipper Advice: Its been same tracking for 3 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} `);
-                    }
-
-                    if (statusData[trackingNumber].attempts === 4) {
-                        await sendOwnerNotification(`Attempt 4: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nNo progress on this order, please report to the courier.`, auth, ownerContact);
-                        console.log(`Owner notified about attempt 4 for ${trackingNumber}`);
-                        console.log(`Owner Notification: Attempt 4: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nNo progress on this order, please report to the courier.`);
-
-                        await axios.post(
-                            "https://api.shooterdelivery.com/Apis/add-shipperadvice.php",
-                            {
-                                id: trackingNumber,
-                                shipper_advice: `Its been same tracking for 6 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} ` 
-                            },
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'Sec-Fetch-Dest': 'empty',
-                                    'Sec-Fetch-Site': 'cross-site'
-                                }
-                            }
-                        );
-                        console.log(`Shipper advice sent for ${trackingNumber}`);
-                        console.log(`Shipper Advice: Its been same tracking for 6 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} `);
-                    }
-
-                    if (statusData[trackingNumber].attempts === 6) {
-                        await sendOwnerNotification(`Attempt 6: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nThis is the last notification, next time it will be marked as returned.`, auth, ownerContact);
-                        console.log(`Owner notified about attempt 6 for ${trackingNumber}`);
-                        console.log(`Owner Notification: Attempt 6: Order Details:\n${JSON.stringify(trackingDetails, null, 2)}\nThis is the last notification, next time it will be marked as returned.`);
-
-                        await axios.post(
-                            "https://api.shooterdelivery.com/Apis/add-shipperadvice.php",
-                            {
-                                id: trackingNumber,
-                                shipper_advice: `Its been same tracking for 9 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} ` 
-                            },
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'Sec-Fetch-Dest': 'empty',
-                                    'Sec-Fetch-Site': 'cross-site'
-                                }
-                            }
-                        );
-                        console.log(`Shipper advice sent for ${trackingNumber}`);
-                        console.log(`Shipper Advice: Its been same tracking for 9 days kindly resolve the issue for this the order isnt proceeding for this \n\n ${JSON.stringify(trackingDetails, null, 2)} `);
-                    }
-
-                    if (statusData[trackingNumber].attempts
-    const trackingNumbers = req.query.tracking;
-    const contacts = req.query.contact;
-    const domainReviews = req.query.domainReview;
-    const auth = req.query.auth;
-    const ownerContact = req.query.ownercontact;
-
-    console.log("Request received:");
-    console.log("Tracking numbers:", trackingNumbers);
-    console.log("Contacts:", contacts);
-    console.log("Auth:", auth);
-    console.log("Domain Reviews:", domainReviews);
-
-    if (!trackingNumbers || !Array.isArray(trackingNumbers) ||
-        !contacts || !Array.isArray(contacts) ||
-        trackingNumbers.length !== contacts.length) {
-        console.log("Input validation failed: Arrays must be the same length.");
-        return res.status(400).json({ error: "Tracking numbers and contacts must be provided in arrays of the same length." });
-    }
-
-    let statusData = fs.existsSync(statusFilePath) ? JSON.parse(fs.readFileSync(statusFilePath, 'utf-8')) : {};
-
-    try {
-        const trackingResults = [];
-        console.log("Status data loaded from file:", statusData);
-
-        for (let i = 0; i < trackingNumbers.length; i++) {
-            const trackingNumber = trackingNumbers[i];
-            const contact = contacts[i];
-            const domainReview = domainReviews ? domainReviews[i] : null;
-
-            console.log(`Fetching tracking details for ${trackingNumber}...`);
-
-            try {
-                const response = await axios.post(
-                    "https://api.shooterdelivery.com/Apis/fetch-order-tracking.php",
-                    { id: trackingNumber },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Sec-Fetch-Dest': 'empty',
-                            'Sec-Fetch-Site': 'cross-site'
-                        }
-                    }
-                );
-
-                const trackingDetails = response.data.Order_Details;
-                const statusHistory = response.data.Status_History;
-
-                if (!trackingDetails || trackingDetails.message === "No Records Found" || !statusHistory || statusHistory.length === 0) {
-                    console.log(`No valid tracking details found for ${trackingNumber}`);
-                    continue;
-                }
-
-                const latestStatus = statusHistory[statusHistory.length - 1]?.status || "Unknown status";
-                const previousStatus = statusData[trackingNumber]?.status;
-                const attempts = statusData[trackingNumber]?.attempts || 0;
-
-                if (!statusData[trackingNumber] || previousStatus !== latestStatus) {
-                    statusData[trackingNumber] = { status: latestStatus, attempts: 0 };
-
-                    if (/refuse/i.test(latestStatus)) {
-                        const customerMessage = `You have refused the order. It has been dispatched. Kindly receive the order or, if you are facing issues like fake attempts, let us know.`;
-                        await sendCustomerNotification(contact, customerMessage, auth, ownerContact);
-                        console.log(`Customer notified about refusal for ${trackingNumber}`);
-
-                        const ownerMessage = `Order with tracking number ${trackingNumber} has been refused. Kindly investigate the issue.`;
-                        await sendOwnerNotification(ownerMessage, auth, ownerContact);
-
-                        await axios.post(
-                            "https://api.shooterdelivery.com/Apis/add-shipperadvice.php",
-                            {
-                                id: trackingNumber,
-                                shipper_advice: `Customer refused the order. Investigate for fake attempts or other issues.`
-                            },
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'Sec-Fetch-Dest': 'empty',
-                                    'Sec-Fetch-Site': 'cross-site'
-                                }
-                            }
-                        );
-                        console.log(`Shipper advice sent for ${trackingNumber}`);
-                    } else {
-                        const trackingMessage = `Tracking Details:\nStatus: ${latestStatus}\nTracking Number: ${trackingNumber}`;
-                        await sendCustomerNotification(contact, trackingMessage, auth,ownerContact);
-                        console.log(`Customer notified with tracking details for ${trackingNumber}`);
-
-                        if (/deliver/i.test(latestStatus) && domainReview) {
-                            const reviewMessage = `Thanks for purchasing! You can proceed to this link ${domainReview} to drop a review. Your feedback is valuable to us.`;
-                            await sendCustomerNotification(contact, reviewMessage, auth,ownerContact);
                             console.log(`Customer notified for review for ${trackingNumber}`);
                             statusData.delivered = statusData.delivered || {};
                             statusData.delivered[trackingNumber] = { contact, status: latestStatus };
@@ -727,6 +589,7 @@ app.get("/get-tracking", async (req, res) => {
                     }
                 }
 
+                statusData[trackingNumber].lastChecked = Date.now();
                 trackingResults.push({ trackingNumber, trackingDetails, contact });
 
             } catch (error) {
@@ -734,7 +597,7 @@ app.get("/get-tracking", async (req, res) => {
             }
         }
 
-        fs.writeFileSync(statusFilePath, JSON.stringify(statusData, null, 2));
+        await saveStatusData(statusData);
         res.json({ trackingResults });
 
     } catch (error) {
@@ -779,18 +642,15 @@ async function sendOwnerNotification(message, auth, OWNER_PHONE_NUMBER) {
     }
 
     for (let i = 0; i < numbers.length; i++) {
-        const whatsappUrl = `https://devlinkapi.servehttp.com:8080/send-message?num=${numbers[i]}&msg=${encodeURIComponent(messages[i])}&auth=${auth}&ownerContact=${owner_phone_number}`;
+        const whatsappUrl = `https://devlinkapi.servehttp.com:8080/send-message?num=${numbers[i]}&msg=${encodeURIComponent(messages[i])}&auth=${auth}&ownerContact=${OWNER_PHONE_NUMBER}`;
         await axios.get(whatsappUrl);
     }
 }
 
 // Helper function to send notifications to customers
 async function sendCustomerNotification(contact, message, auth, ownerContact) {
-    let numbers = Array.isArray(contact) ? contact : contact;
-    let messages = Array.isArray(message) ? message : message;
-
-    if (!Array.isArray(numbers)) numbers = [numbers];
-    if (!Array.isArray(messages)) messages = [messages];
+    let numbers = Array.isArray(contact) ? contact : [contact];
+    let messages = Array.isArray(message) ? message : [message];
 
     if (numbers.length !== messages.length) {
         throw new Error("The number of messages must be equal to the number of contacts.");
@@ -963,10 +823,25 @@ app.get('/send-email', async (req, res) => {
     }
 });
 
+app.post("/change-status", (req, res) => {
+    const { trackingNumber } = req.body;
 
+    if (!trackingNumber) {
+        return res.status(400).send("Tracking number is required.");
+    }
 
+    // Load the current status data
+    let statusData = fs.existsSync(statusFilePath) ? JSON.parse(fs.readFileSync(statusFilePath, 'utf-8')) : {};
 
-
+    // Check if the tracking number exists in the status data
+    if (statusData[trackingNumber]) {
+        delete statusData[trackingNumber];
+        fs.writeFileSync(statusFilePath, JSON.stringify(statusData, null, 2));
+        return res.status(200).send(`Tracking number ${trackingNumber} deleted successfully.`);
+    } else {
+        return res.status(404).send("Tracking number not found.");
+    }
+});
 
 const options = {
     cert: fs.readFileSync('/etc/ssl/zerossl/certificate.crt'), // Updated path to the certificate file

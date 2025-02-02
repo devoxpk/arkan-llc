@@ -59,6 +59,17 @@ async function fetchStatusData() {
                 console.log(
                     `Document with tracking ${trackingNumber} added to '${statusCategory}' collection.`
                 );
+
+                // After successful execution, call the change-status API to delete the tracking number
+                await fetch(process.env.NEXT_PUBLIC_SERVER_API + "/change-status", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ trackingNumber })
+                });
+
+                console.log(`Tracking number ${trackingNumber} deleted from status data.`);
             } else {
                 console.log(
                     `Tracking number ${trackingNumber} is not in any of the expected categories.`

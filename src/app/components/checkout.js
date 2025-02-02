@@ -17,35 +17,33 @@ import { fetchSizeChart } from './sizes';
 let isAvailable;
 let initializePage;
 export default function Checkout() {
-
-
-   window.onload = function () {
-    if(typeof window !== 'undefined'){
-        const reviewPost = getQueryParameter("action");
-        if(reviewPost === "reviewPost")
-            {
-                setIsReviewVisible(true)
-            }
-    }
+function openSizeChart(){
+    fetchSizeChart(getQueryParameter("cat"),getQueryParameter('pname'));
 }
     const [renderReviews, setRenderReviews] = useState(isAvailable);
   
-
     // Use the custom hook from the context
-    const { setIsReviewVisible } = useReviewVisibility();
+    const { isReviewVisible, setIsReviewVisible } = useReviewVisibility();
 
-    // Use the custom hook
+    // New useEffect to handle URL parameter 'reviewPost'
+    useEffect(() => {
+        // Get the 'reviewPost' parameter from the URL
+        const reviewPost = getQueryParameter("reviewPost");
+        
+        // If 'reviewPost' key exists in the URL, set the review visibility to true
+        if (reviewPost !== null) {
+            setIsReviewVisible(true);
+        }
+    }, []); // Run once on component mount
 
-    // Delay the execution by 5 seconds
-
-    function openSizeChart() {
-        console.log("opening sizechart")
-        fetchSizeChart(getQueryParameter("cat"),getQueryParameter('pname'));
-    }
+    // Existing useEffect to check review availability after 5 seconds
     useEffect(() => {
         const timer = setTimeout(() => {
             isAvailable = checkReviewAvailability();
-            console.log("after 5 sec" + " " + isAvailable); // For debugging
+            console.log("after 5 sec" + " " + isAvailable);
+            if(isAvailable){
+                openSizeChart();
+            } // For debugging
             setRenderReviews(isAvailable);
         }, 5000); // 5000 milliseconds = 5 seconds
 
@@ -82,7 +80,6 @@ export default function Checkout() {
             }
         });
     }, [])
-
 
     const [cartItems, setCartItems] = useState([]);
     async function loadProductImages() {
@@ -393,12 +390,9 @@ export default function Checkout() {
         }, 5000);
     }
 
-
-
     useEffect(() => {
         initializePage = async () => {
             await addData();
-
 
             let productName = document.getElementById("productName").innerText;
 
@@ -411,25 +405,10 @@ export default function Checkout() {
 
             localStorage.setItem("filteredProduct", productName.trim());
             console.log(productName.trim());
-
-           
         };
 
         initializePage();
     }, []);
-
-
-
-
-
-
-
-
-
-   
-
-
-
 
     function getQueryParameter(name) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -437,8 +416,6 @@ export default function Checkout() {
     }
 
     const [searchParams] = useSearchParams();
-
-
 
     async function addData() {
         console.log("Add Data is Running ");
@@ -523,16 +500,9 @@ export default function Checkout() {
         }
     }
     
-
     useEffect(() => {
         initializePage()
     }, [searchParams]); // Run whenever searchParams changes
-
-
-
-
-
-
 
     return (
         <>
@@ -540,9 +510,6 @@ export default function Checkout() {
             <Sizes />
 
             <section id="prodetails" className="section-p1">
-
-
-
                 <div id="imgLoading" >
                     <div className="card">
                         <div className="card-1"></div>
@@ -560,25 +527,17 @@ export default function Checkout() {
                     </div>
                 </div>
 
-
-
-
                 <div className="single-pro-image" id="image-details" style={{ display: 'none', borderRadius: "0" }}>
                     <div className='slide'>
                         <img width="100%" id="MainImg" alt="T shirts" /></div>
-
                 </div>
 
                 <div className="single-pro-details">
                     <div id='productDetails'>
                         <h4 id="productName" style={{ color: "black" ,fontWeight:"bold" }}></h4><div style={{ display: 'flex', columnGap: "3%"}}>
-
-
                             <h2 id="productPrice" style={{ color: "black" }}></h2>
                             <h2 id="cuttedProductPrice" style={{ textDecoration: "line-through", color: "black" }}
                             ></h2></div>
-
-
                         <br />
                     </div>
                     <button style={{
@@ -657,36 +616,22 @@ export default function Checkout() {
                             // Store purchase status in localStorage
                             localStorage.setItem("purchase", "0010");
                         }}
-
->
+                    >
                         Buy it now
                     </button>
-
-
-
 
                     <br />
 
                     <Description />
 
-
-
-
-
                     <div>
-
-
                         <span
                             onClick={() => {
                                 openSizeChart();
                             }}
-
-
-
                             style={{
                                 textDecoration: "none",
                                 color: "black",
-                            
                                 display: "flex",
                                 fontSize: "18px",
                                 columnGap: "2%",
@@ -698,45 +643,39 @@ export default function Checkout() {
                                 alt="T shirts"
                                 src="/logo/sizecharticon.png"
                                 style={{ width: "10%" }}
-                               
                             />
                             SIZE GUIDE
                         </span>
 
+                        {isReviewVisible && (
+                            <Reviews
+                                productName={(function () {
+                                    const value = localStorage.getItem("filteredProduct");
+                                    console.log("Value fetched from localStorage:", value);
+                                    return value || "";
+                                })()}
+                            />
+                        )}
 
-
-
-
-                        <Reviews
-                            productName={(function () {
-                                const value = localStorage.getItem("filteredProduct");
-                                console.log("Value fetched from localStorage:", value);
-                                return value || "";
-                            })()}
-                        />
-
-                        {renderReviews && <> <br/><span
-    style={{
-        textDecoration: "underline",
-        cursor: "pointer",
-        color: "black",
-        marginLeft: "6px"
-    }}
-    onClick={handleClick}
->
-    View Reviews
-</span></>}
+                        {renderReviews && !isReviewVisible && (
+                            <>
+                                <br />
+                                <span
+                                    style={{
+                                        textDecoration: "underline",
+                                        cursor: "pointer",
+                                        color: "black",
+                                        marginLeft: "6px"
+                                    }}
+                                    onClick={handleClick}
+                                >
+                                    View Reviews
+                                </span>
+                            </>
+                        )}
                     </div>
-
-
-
-
-
                 </div>
             </section>
-
-
-
         </>
     );
 }

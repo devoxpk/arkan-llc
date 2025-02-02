@@ -33,102 +33,84 @@ const ModelAndProducts = ({ images = [] }) => {
         }
     }, []);
 
-    const handleTryOn = async () => {
-        document.querySelector(".select").style.display = 'none';
-        console.log("Try On process started.");
-        setIsLoading(true);
+const handleTryOn = async () => {
+    document.querySelector(".select").style.display = 'none';
+    console.log("Try On process started.");
+    setIsLoading(true);
 
-        try {
-            // Retrieve API keys from environment variables
-            const apiKeys = process.env.NEXT_PUBLIC_SEG_API_KEYS.split(',');
+    try {
+        // Retrieve API keys from environment variables
+        const apiKeys = process.env.NEXT_PUBLIC_SEG_API_KEYS.split(',');
 
-            const url = "https://api.segmind.com/v1/try-on-diffusion";
+        const url = "https://api.segmind.com/v1/try-on-diffusion";
 
-            // Define errors that should trigger a retry with the next API key
-            const errorsToRetry = [
-                "401 - Unauthorized",
-                "User authentication failed",
-                "404 - Not Found",
-                "The requested URL does not exist",
-                "405 - Method Not Allowed",
-                "The requested HTTP method is not allowed",
-                "406 - Not Acceptable",
-                "Not enough credits",
-                "500 - Server Error",
-                "Server had some issue with processing"
-            ];
+        if (!originalImage) {
+            showMessageBox("Error", "Please upload a model image first.", false);
+            setIsLoading(false);
+            return;
+        }
 
-            if (!originalImage) {
-                showMessageBox("Error", "Please upload a model image first.", false);
-                setIsLoading(false);
-                return;
-            }
+        if (!selectedCloth) {
+            showMessageBox("Error", "Please select a cloth image first.", false);
+            setIsLoading(false);
+            return;
+        }
 
-            if (!selectedCloth) {
-                showMessageBox("Error", "Please select a cloth image first.", false);
-                setIsLoading(false);
-                return;
-            }
+        const modelImage = originalImage.split(',')[1];
 
-            const modelImage = originalImage.split(',')[1];
+        let clothImage;
+        if (selectedCloth.vtonImage) {
+            clothImage = selectedCloth.vtonImage;
+        } else {
+            const clothImageResponse = await axios.get(selectedCloth.pic, { responseType: 'arraybuffer' });
+            clothImage = Buffer.from(clothImageResponse.data, 'binary').toString('base64');
+        }
 
-            let clothImage;
-            if (selectedCloth.vtonImage) {
-                clothImage = selectedCloth.vtonImage;
-            } else {
-                const clothImageResponse = await axios.get(selectedCloth.pic, { responseType: 'arraybuffer' });
-                clothImage = Buffer.from(clothImageResponse.data, 'binary').toString('base64');
-            }
+        const data = {
+            "model_image": modelImage,
+            "cloth_image": clothImage,
+            "category": selectedCategory,
+            "num_inference_steps": 35,
+            "guidance_scale": 2,
+            "seed": 12467,
+            "base64": false
+        };
 
-            const data = {
-                "model_image": modelImage,
-                "cloth_image": clothImage,
-                "category": selectedCategory,
-                "num_inference_steps": 35,
-                "guidance_scale": 2,
-                "seed": 12467,
-                "base64": false
-            };
-
-            let response;
-            for (let i = 0; i < apiKeys.length; i++) {
-                try {
-                    response = await axios.post(url, data, {
-                        headers: { 'x-api-key': apiKeys[i], 'Content-Type': 'application/json' },
-                        responseType: 'arraybuffer'
-                    });
-                    console.log(`API key ${apiKeys[i]} succeeded.`);
-                    break; // Exit loop if request is successful
-                } catch (error) {
-                    const errorMessage = error.response?.data || error.message;
-                    if (errorsToRetry.some(err => errorMessage.includes(err))) {
-                        console.warn(`API key ${apiKeys[i]} failed with error: ${errorMessage}. Trying next key...`);
-                        if (i === apiKeys.length - 1) {
-                            throw new Error("All API keys failed. Please try again later.");
-                        }
-                    } else {
-                        throw error; // Throw if error is not in the retry list
-                    }
+        let response;
+        for (let i = 0; i < apiKeys.length; i++) {
+            try {
+                response = await axios.post(url, data, {
+                    headers: { 'x-api-key': apiKeys[i], 'Content-Type': 'application/json' },
+                    responseType: 'arraybuffer'
+                });
+                console.log(`API key ${apiKeys[i]} succeeded.`);
+                break; // Exit loop if request is successful
+            } catch (error) {
+                console.warn(`API key ${apiKeys[i]} failed with error: ${error.message}. Trying next key...`);
+                if (i === apiKeys.length - 1) {
+                    throw new Error("All API keys failed. Please try again later.");
                 }
             }
-
-            if (response && response.data) {
-                const imageUrl = Buffer.from(response.data, 'binary').toString('base64');
-                setUploadedImage(`data:image/jpeg;base64,${imageUrl}`);
-                showMessageBox("Success", "Try-on completed successfully.", true);
-            } else {
-                showMessageBox("Error", "No image data found in the response.", false);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            showMessageBox("Error", error.message || "Error processing try-on. Please try again.", false);
-        } finally {
-            setIsLoading(false);
-            setSelectedCloth(null);
-            setSelectedCategory("Upper body");
         }
-    };
-    
+
+        if (response && response.data) {
+            const imageUrl = Buffer.from(response.data, 'binary').toString('base64');
+            setUploadedImage(`data:image/jpeg;base64,${imageUrl}`);
+            showMessageBox("Success", "Try-on completed successfully.", true);
+        } else {
+            showMessageBox("Error", "No image data found in the response.", false);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showMessageBox("Error", error.message || "Error processing try-on. Please try again.", false);
+    } finally {
+        setIsLoading(false);
+        setSelectedCloth(null);
+        setSelectedCategory("Upper body");
+    }
+};
+
+   
     useEffect(() => {
         const loader = document.querySelector('.loader');
         if (loader) {

@@ -25,11 +25,19 @@ import "../css/reviews.css";
 import { useReviewVisibility } from '../context/ReviewVisibilityContext'; // Updated import path
 
 let isReviewAvailable = false; // Shared state to track availability
-let isAvailable;
-let checkReviewAvailability = () => {
-  
-  isReviewAvailable = isAvailable;
-  return isReviewAvailable;
+let isAvailable = false; // Initialize to false
+
+const checkReviewAvailability = async (productName) => {
+  try {
+    const querySnapshot = await getDocs(
+      collection(db, "reviews", productName, "userReviews")
+    );
+    isReviewAvailable = !querySnapshot.empty;
+    return isReviewAvailable;
+  } catch (error) {
+    console.error("Error checking review availability:", error);
+    return false;
+  }
 };
 
 const Reviews = ({ productName }) => {
@@ -179,6 +187,7 @@ const Reviews = ({ productName }) => {
       setRatingCounts(ratingCountTemp);
   
       isAvailable = fetchedReviews.length > 0;
+      isReviewAvailable = isAvailable; // Ensure consistency
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -344,7 +353,7 @@ const Reviews = ({ productName }) => {
         width="14"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 5h14v14H5zM12 11.5l2.5 3h-5z"></path>
+        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2zM5 5h14v14H5zM12 11.5l2.5 3h-5z"></path>
       </svg>
       <span>Image Priority</span>
     </button>

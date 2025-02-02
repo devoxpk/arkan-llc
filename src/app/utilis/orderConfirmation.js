@@ -37,7 +37,6 @@ async function orderConfirmation() {
         const hoursDifference = timeDifference / (1000 * 60 * 60);
 
         if (hoursDifference >= 20) {
-          const formattedContact = formatContact(data.Contact);
           const attempts = (data.attempts || 0) + 1;
 
           if (attempts >= 3) {
@@ -60,7 +59,7 @@ async function orderConfirmation() {
 
           const message = `*DEVOX - ORDER CONFIRMATION*\n\n${data.Name},\n\n${attemptMessage}\n\n_______________________________\n*Order Details:*\n${productDetails}\n- Total Payment: ${totalPrice}\n- Payment Mode: ${data.paymentMode}\n- Delivery Address: ${data.Address}, ${data.City}\n_______________________________\n*To confirm your order, click the link below:*\n\n[${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/thanks/${docId}?action=confirm]\n\n*Note:* Recheck your details and confirm your order.\n\nBest regards,\nDevox Team`;
 
-          await sendData([formattedContact], [message]);
+          await sendData([data.Contact], [message]);
 
           // Update Firestore
           const docRef = doc(db, 'orders', docId);
@@ -82,16 +81,6 @@ async function sendData(contacts, messages) {
     console.log('Messages sent successfully.');
   } catch (error) {
     console.error('Error sending messages:', error);
-  }
-}
-
-function formatContact(contact) {
-  if (contact.startsWith('92')) {
-    return contact;
-  } else if (contact.startsWith('0')) {
-    return '92' + contact.slice(1);
-  } else {
-    return '92' + contact;
   }
 }
 

@@ -147,6 +147,7 @@ function Navbar() {
         console.log("navbar: serverWorker will run after 5-second delay.");
         await new Promise(resolve => setTimeout(resolve, 5000)); // 5-second delay
         await serverWorker();
+        sessionStorage.setItem('serverWorkerRun', 'true');
 
       } catch (error) {
         console.error("navbar: Error running serverWorker:", error);
@@ -157,7 +158,9 @@ function Navbar() {
   };
 
   if (typeof window !== "undefined") {
-   runServerWorker();
+  
+      runServerWorker();
+    
     console.log("navbar: Added load event listener for serverWorker.");
   }
 

@@ -1,7 +1,7 @@
 // components/ChatComponent.js
 import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, getDocs,getDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs,getDoc, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 
 export default function ChatComponent() {
     // Initialize state with messages from sessionStorage if available
@@ -9,11 +9,11 @@ export default function ChatComponent() {
         if (typeof window !== "undefined") {
             const savedMessages = sessionStorage.getItem('chatMessages');
             return savedMessages ? JSON.parse(savedMessages) : [
-                { text: 'Devox here, how may I assist?', type: 'incoming' }
+                { text: 'Smart Advisor here, how may I assist?', type: 'incoming' }
             ];
         }
         return [
-            { text: 'Devox here, how may I assist?', type: 'incoming' }
+            { text: 'Smart Advisor here, how may I assist?', type: 'incoming' }
         ];
     });
 
@@ -172,7 +172,13 @@ export default function ChatComponent() {
                 try {
                     const docRef = doc(db, 'chatbot', 'roles');
                     const docSnap = await getDoc(docRef);
-                    const roles = docSnap.exists() ? docSnap.data().roles : [];
+                    let roles = [];
+                    if (docSnap.exists()) {
+                        roles = docSnap.data().roles;
+                    } else {
+                        // Create the document if it doesn't exist
+                        await setDoc(docRef, { roles: [] });
+                    }
                     roles.push({ role: 'user', text: trimmedInput });
                     await updateDoc(docRef, { roles });
                     setMessages((prevMessages) => [
@@ -325,7 +331,7 @@ export default function ChatComponent() {
       ref={chatRef}
     >
             <div className="chat-header">
-                <h2>Devox - Assistant</h2>
+                <h2>Smart Advisor - Assistant</h2>
             </div>
             <div className="chat-body" id="chatBody">
                 {messages.map((message, index) => (

@@ -128,12 +128,19 @@ function Footer() {
             <div className="footer-brand">
             <Link href="/" legacyBehavior>
   <a className="logo">
-    <Image
-    width={100} height={0} 
-      style={{ marginTop: '-25%',height:"auto" ,width:"100%" }} 
-      src="/logo/dwlogo.png" 
-      alt="DEVOX logo" 
-    />
+  <Image
+  width={100}
+  height={0}
+  style={{
+    filter: "invert(1)", // Converts white to black
+    marginTop: "-25%",
+    height: "auto",
+    width: "100%",
+  }}
+  src="/logo/dwlogo.png"
+  alt="Anime Embroidery"
+/>
+
   </a>
 </Link>
 

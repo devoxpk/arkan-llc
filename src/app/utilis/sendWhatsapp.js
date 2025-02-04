@@ -18,26 +18,20 @@ async function sendWhatsapp(contact, msg) {
         }
     }
 
+    // If multiple contacts but only one message, duplicate the message
+    if (numbers.length > 1 && messages.length === 1) {
+        messages = Array(numbers.length).fill(messages[0]);
+    }
+
     // Ensure the numbers and messages arrays are of the same length
     if (numbers.length !== messages.length) {
         throw new Error("The number of contacts and messages must match.");
     }
 
-    // Format numbers to start with '92'
-    numbers = numbers.map(number => {
-        number = number.trim();
-        if (number.startsWith("0")) {
-            return "92" + number.slice(1);
-        } else if (!number.startsWith("92")) {
-            return "92" + number;
-        }
-        return number;
-    });
-
     // Construct and send requests for each number-message pair
     for (let i = 0; i < numbers.length; i++) {
         const formattedMessage = encodeURIComponent(messages[i].trim());
-        const url = `${baseUrl}?num=${numbers[i]}&msg=${formattedMessage}&auth=${auth}&ownerContact=${formatOwnerContact(process.env.NEXT_PUBLIC_OWNER_CONTACT)}`;
+        const url = `${baseUrl}?num=${numbers[i]}&msg=${formattedMessage}&auth=${auth}&ownerContact=${process.env.NEXT_PUBLIC_OWNER_CONTACT}`;
 
         try {
             console.log(url);
@@ -52,16 +46,6 @@ async function sendWhatsapp(contact, msg) {
             console.error("Error sending WhatsApp message:", error);
         }
     }
-}
-
-function formatOwnerContact(contact) {
-    contact = contact.trim();
-    if (contact.startsWith("0")) {
-        return "92" + contact.slice(1);
-    } else if (!contact.startsWith("92")) {
-        return "92" + contact;
-    }
-    return contact;
 }
 
 export default sendWhatsapp;

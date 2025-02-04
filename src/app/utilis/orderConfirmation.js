@@ -4,17 +4,22 @@ import sendWhatsapp from './sendWhatsapp';
 
 async function handleCancellation(docId, data) {
     try {
+      // Remove 'attempts' and 'confirm' fields from the data
+      const { attempts, confirm, ...filteredData } = data;
+
       // Add the document to the 'cancelled' collection with additional fields
       const cancelledData = {
-        ...data,
+        ...filteredData,
         cancelledReason: `Order cancelled due to no response after 3 attempts.`,
         cancelDate: new Date().toISOString(), // Add cancelDate field
       };
+     
       await setDoc(doc(db, 'cancelled', docId), cancelledData);
   
       // Delete the document from the 'orders' collection
       await deleteDoc(doc(db, 'orders', docId));
-  
+      await sendWhatsapp([data.Contact], [`*Your Order ${docId} has been cancelled due to no response after 3 attempts.*`]);
+      await sendWhatsapp([process.env.OWNER_PHONE_NUMBER], [`* Order ${docId} has been cancelled due to no response after 3 attempts you can reorder from the cancelled section in the dashboard.*`]);
       console.log(`Document ${docId} moved to 'cancelled' collection with cancelDate and deleted from 'orders'.`);
     } catch (error) {
       console.error('Error handling cancellation:', error);
@@ -54,7 +59,7 @@ async function orderConfirmation() {
           // Customize the message based on attempts
           let attemptMessage = '';
           if (attempts === 2) {
-            attemptMessage = '*Second Attempt for confirming your order*';
+            attemptMessage = '*Second Attempt for confirming your order if not confirmed within 24 hours, your order will be cancelled automatically*';
           }
 
           const message = `*DEVOX - ORDER CONFIRMATION*\n\n${data.Name},\n\n${attemptMessage}\n\n_______________________________\n*Order Details:*\n${productDetails}\n- Total Payment: ${totalPrice}\n- Payment Mode: ${data.paymentMode}\n- Delivery Address: ${data.Address}, ${data.City}\n_______________________________\n*To confirm your order, click the link below:*\n\n[${process.env.NEXT_PUBLIC_REVIEW_DOMAIN}/thanks/${docId}?action=confirm]\n\n*Note:* Recheck your details and confirm your order.\n\nBest regards,\nDevox Team`;

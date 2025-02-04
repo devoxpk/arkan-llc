@@ -9,11 +9,11 @@ export default function ChatComponent() {
         if (typeof window !== "undefined") {
             const savedMessages = sessionStorage.getItem('chatMessages');
             return savedMessages ? JSON.parse(savedMessages) : [
-                { text: 'Smart Advisor here, how may I assist?', type: 'incoming' }
+                { text: 'Devox here, how may I assist?', type: 'incoming' }
             ];
         }
         return [
-            { text: 'Smart Advisor here, how may I assist?', type: 'incoming' }
+            { text: 'Devox here, how may I assist?', type: 'incoming' }
         ];
     });
 
@@ -331,7 +331,7 @@ export default function ChatComponent() {
       ref={chatRef}
     >
             <div className="chat-header">
-                <h2>Smart Advisor - Assistant</h2>
+                <h2>Devox - Assistant</h2>
             </div>
             <div className="chat-body" id="chatBody">
                 {messages.map((message, index) => (

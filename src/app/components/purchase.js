@@ -236,7 +236,10 @@ async function validatePromo(event) {
         const userAddress = document.getElementById("userAddress").value.trim();
         const userContact = document.getElementById("userContact").value.trim();
         const userEmail = document.getElementById("userEmail").value.trim();
-
+if(userAddress === userCity || userAddress.length < 10 ){
+    showMessageBox("Invalid Address", "Please provide house no , street , town , city",false)
+    return;
+}
         if (!customerName || !userCity || !userAddress || !userContact) {
             showMessageBox("Fill Fields", "Fill all the Required Data", false);
             submitButton.innerText = "Submit";

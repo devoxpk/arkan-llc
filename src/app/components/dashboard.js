@@ -257,8 +257,8 @@ export default function DashboardComponent() {
                 } else if (collectionID === "dispatched") {
                     orderDiv.innerHTML += `<strong>Tracking ID:</strong> ${data.tracking}<br>
                         <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
-                        <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchDate}<br>
-                        <strong id="orderedDate">orderedDate:</strong> ${data.orderedDate}<br>`;
+                        <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchedDate}<br>
+                        <strong id="orderedDate">orderedDate:</strong> ${data.Date}<br>`;
 
                     if (data.tracking) {
                         try {

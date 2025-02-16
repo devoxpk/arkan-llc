@@ -127,6 +127,10 @@ const postOrder = async (docId, dashboard = false) => {
     console.log(trackingNumber);
     const message = `DEVOX,\n Thanks for confirming your order, it will be delivered within 3 working days. You can track your order from ${trackingLink}.\n Your tracking is ${trackingNumber} and you will receive daily tracking updates via WhatsApp.`;
 
+   
+    const ownermessage = `ORDER PLACED ON COURIER,\n Customer Name: ${orderData.Name},\n Contact: ${orderData.Contact},\n`;
+
+
     if (dashboard) {
       if (confirm("Do you want to send the dispatch message to the customer?")) {
         await sendWhatsapp(customerContact, [message]);
@@ -135,6 +139,7 @@ const postOrder = async (docId, dashboard = false) => {
       showMessageBox('Success', 'Order has been successfully dispatched and the customer has been notified.', true);
     } else {
       await sendWhatsapp(customerContact, [message]);
+      await sendWhatsapp(process.env.NEXT_PUBLIC_OWNER_CONTACT,[ownermessage,ownermessage])
       console.log('WhatsApp message sent');
     }
 

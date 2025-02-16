@@ -59,12 +59,7 @@ const postOrder = async (docId, dashboard = false) => {
     const orderData = orderSnap.data();
     console.log('Fetched order data:', orderData);
 
-    // Validate address
-    const addressWords = orderData.Address.split(' ').length;
-    if (addressWords < 10) {
-      alert('Invalid address! Please provide a detailed address. (House no , Street no , Block , Town , City');
-      return;
-    }
+   
 
     // Validate contact number
     if (orderData.Contact.length < 10) {

@@ -31,107 +31,127 @@ async function fetchCityId(cityName) {
     return matchedCityId;
 }
 
-const postOrder = async (docId,dashboard=false) => {
-  if(dashboard){
-    confirm('Are you sure you want to dispatch this order?');
-  }
-  
-    try {
-        console.log(`Processing dispatch for docId: ${docId}`);
-
-        // Get the order document
-        const orderRef = doc(db, 'orders', docId);
-        const orderSnap = await getDoc(orderRef);
-
-        if (!orderSnap.exists()) {
-            throw new Error('Order does not exist');
-        }
-
-        const orderData = orderSnap.data();
-        console.log('Fetched order data:', orderData);
-
-        // Check if the order is already dispatched
-        if (orderData.tracking) {
-            alert('This order is already dispatched.');
-            return;
-        }
-
-        // Post order to ShooterDelivery
-        const trackingInfo = await postToShooterDelivery(docId, orderData);
-
-        if (!trackingInfo || !trackingInfo.trackingNumber) {
-            throw new Error('Failed to retrieve tracking information');
-        }
-
-        const { trackingNumber, trackingLink } = trackingInfo;
-
-        // Calculate profit
-        const profit = orderData.productSP - orderData.productCP;
-
-        // Update order data with tracking info and profit
-        const dispatchedData = {
-            ...orderData,
-            tracking: trackingNumber,
-            trackingLink: trackingLink,
-            dispatchedDate: serverTimestamp(),
-            profit: profit,
-        };
-
-        // Move order to "dispatched" collection
-        const dispatchedRef = doc(db, 'dispatched', docId);
-        await setDoc(dispatchedRef, dispatchedData);
-
-        // Delete the order from "orders" collection
-        await deleteDoc(orderRef);
-        console.log('Order moved to dispatched collection');
-
-        // Update finance data
-        const financeRef = doc(db, 'bank', 'finance');
-        const financeSnap = await getDoc(financeRef);
-        if (financeSnap.exists()) {
-            const financeData = financeSnap.data();
-            const updatedTotalPetrol = (financeData.totalPetrol || 0) + (orderData.petrol || 0);
-            const updatedProfit = (financeData.afterProfit || 0) + profit;
-
-            await updateDoc(financeRef, {
-                totalPetrol: updatedTotalPetrol,
-                afterProfit: updatedProfit,
-            });
-            console.log('Finance data updated');
-        } else {
-            console.warn('Finance document not found');
-        }
-
-        // Decrement stock
-        decrementStock(orderData);
-
-        // Send WhatsApp message
-        const customerContact = orderData.Contact.startsWith('0') 
-            ? `92${orderData.Contact.slice(1)}`
-            : orderData.Contact;
-console.log(trackingNumber)
-        const message = `DEVOX,\n Thanks for confirming your order, it will be delivered within 3 working days. You can track your order from ${trackingLink}.\n Your tracking is ${trackingNumber} and you will receive daily tracking updates via WhatsApp.`;
-
-        if (dashboard) {
-            if (confirm("Do you want to send the dispatch message to the customer?")) {
-                await sendWhatsapp([customerContact], [message]);
-                console.log('WhatsApp message sent');
-            }
-            showMessageBox('Success', 'Order has been successfully dispatched and the customer has been notified.', true);
-        } else {
-            await sendWhatsapp([customerContact], [message]);
-            console.log('WhatsApp message sent');
-        }
-
-        // Ensure that the tracking number is returned with the correct property name
-        return {
-            trackingNumber: trackingNumber, // Adjust this if the API uses a different key
-        };
-    } catch (error) {
-        console.error('Error in postOrder:', error);
-        showMessageBox('Error', `An error occurred while dispatching the order: ${error.message}`, false);
-        throw error;
+const postOrder = async (docId, dashboard = false) => {
+  if (dashboard) {
+    const userConfirmation = confirm('Do you want to dispatch the order via courier? Click OK to proceed or Cancel to enter a tracking number manually.');
+    if (!userConfirmation) {
+      const manualTrackingNumber = prompt('Please enter the tracking number manually:');
+      if (!manualTrackingNumber) {
+        alert('Tracking number is required to proceed.');
+        return;
+      }
+      // Handle manual tracking number logic here
+      return;
     }
+  }
+
+  try {
+    console.log(`Processing dispatch for docId: ${docId}`);
+
+    // Get the order document
+    const orderRef = doc(db, 'orders', docId);
+    const orderSnap = await getDoc(orderRef);
+
+    if (!orderSnap.exists()) {
+      throw new Error('Order does not exist');
+    }
+
+    const orderData = orderSnap.data();
+    console.log('Fetched order data:', orderData);
+
+    // Validate address
+    const addressWords = orderData.Address.split(' ').length;
+    if (addressWords < 10) {
+      alert('Invalid address! Please provide a detailed address. (House no , Street no , Block , Town , City');
+      return;
+    }
+
+    // Validate contact number
+    if (orderData.Contact.length < 10) {
+      alert('Invalid contact number! Please recheck and provide a valid contact number.');
+      return;
+    }
+
+    // Check if the order is already dispatched
+    if (orderData.tracking) {
+      alert('This order is already dispatched.');
+      return;
+    }
+
+    // Post order to ShooterDelivery
+    const trackingInfo = await postToShooterDelivery(docId, orderData);
+
+    if (!trackingInfo || !trackingInfo.trackingNumber) {
+      throw new Error('Failed to retrieve tracking information');
+    }
+
+    const { trackingNumber, trackingLink } = trackingInfo;
+
+    // Calculate profit
+    const profit = orderData.productSP - orderData.productCP;
+
+    // Update order data with tracking info and profit
+    const dispatchedData = {
+      ...orderData,
+      tracking: trackingNumber,
+      trackingLink: trackingLink,
+      dispatchedDate: serverTimestamp(),
+      profit: profit,
+    };
+
+    // Move order to "dispatched" collection
+    const dispatchedRef = doc(db, 'dispatched', docId);
+    await setDoc(dispatchedRef, dispatchedData);
+
+    // Delete the order from "orders" collection
+    await deleteDoc(orderRef);
+    console.log('Order moved to dispatched collection');
+
+    // Update finance data
+    const financeRef = doc(db, 'bank', 'finance');
+    const financeSnap = await getDoc(financeRef);
+    if (financeSnap.exists()) {
+      const financeData = financeSnap.data();
+      const updatedTotalPetrol = (financeData.totalPetrol || 0) + (orderData.petrol || 0);
+      const updatedProfit = (financeData.afterProfit || 0) + profit;
+
+      await updateDoc(financeRef, {
+        totalPetrol: updatedTotalPetrol,
+        afterProfit: updatedProfit,
+      });
+      console.log('Finance data updated');
+    } else {
+      console.warn('Finance document not found');
+    }
+
+    // Decrement stock
+    decrementStock(orderData);
+
+    // Send WhatsApp message
+    const customerContact = [orderData.Contact]; // Pass as an array without formatting
+    console.log(trackingNumber);
+    const message = `DEVOX,\n Thanks for confirming your order, it will be delivered within 3 working days. You can track your order from ${trackingLink}.\n Your tracking is ${trackingNumber} and you will receive daily tracking updates via WhatsApp.`;
+
+    if (dashboard) {
+      if (confirm("Do you want to send the dispatch message to the customer?")) {
+        await sendWhatsapp(customerContact, [message]);
+        console.log('WhatsApp message sent');
+      }
+      showMessageBox('Success', 'Order has been successfully dispatched and the customer has been notified.', true);
+    } else {
+      await sendWhatsapp(customerContact, [message]);
+      console.log('WhatsApp message sent');
+    }
+
+    // Ensure that the tracking number is returned with the correct property name
+    return {
+      trackingNumber: trackingNumber, // Adjust this if the API uses a different key
+    };
+  } catch (error) {
+    console.error('Error in postOrder:', error);
+    showMessageBox('Error', `An error occurred while dispatching the order: ${error.message}`, false);
+    throw error;
+  }
 };
 
 async function postToShooterDelivery(docId, orderData) {

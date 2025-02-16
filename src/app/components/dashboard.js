@@ -6,7 +6,8 @@ import { db, storage } from '../firebase'; // Import Firestore and Storage insta
 import { doc,updateDoc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
 import { ref, getDownloadURL } from 'firebase/storage'; // Storage methods
 
-import serverWorker from '../utilis/serverworker';
+import axios from 'axios';
+
 import sendWhatsapp from '../utilis/sendWhatsapp';
 import postOrder from '../utilis/postOrder'
 function toggleSidebar() {
@@ -214,7 +215,6 @@ export default function DashboardComponent() {
 
             let newCounter = 1;
             createdCounter = 1;
-            let createdOrdersDisplayed = false;
 
             sortedDocs = querySnapshot.docs.sort((a, b) => {
                 const dateA = new Date(a.data().Date || a.data().orderedDate);
@@ -259,6 +259,35 @@ export default function DashboardComponent() {
                         <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
                         <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchDate}<br>
                         <strong id="orderedDate">orderedDate:</strong> ${data.orderedDate}<br>`;
+
+                    if (data.tracking) {
+                        try {
+                            const response = await axios.post(
+                                "https://api.shooterdelivery.com/Apis/fetch-order-tracking.php",
+                                { id: data.tracking },
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        
+                                    }
+                                }
+                            );
+
+                            const trackingDetails = response.data.Order_Details;
+                            const statusHistory = response.data.Status_History;
+
+                            if (trackingDetails && statusHistory && statusHistory.length > 0) {
+                                const latestStatus = statusHistory[statusHistory.length - 1]?.status || "Unknown status";
+                                orderDiv.innerHTML += `<span style="color:green;font-weight:bolder;"<strong>Delivery Status:</strong> ${latestStatus}</span><br>`;
+                                console.log(`Added delivery status for ${data.tracking}: ${latestStatus}`);
+                            } else {
+                                console.log(`No valid tracking details found for ${data.tracking}`);
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching tracking details for ${data.tracking}:`, error);
+                        }
+                    }
                 }
 
                 orderDiv.innerHTML += `
@@ -310,75 +339,19 @@ export default function DashboardComponent() {
                 }
             }
 
-            if (collectionID === "orders") {
-                for (const doc of sortedDocs) {
-                    const data = doc.data();
-                    if (data.productSP && data.productCP) {
-                        if (!createdOrdersDisplayed) {
-                            dataDisplay.innerHTML += `<h2 style="color:blue;">Created on Courier</h2>`;
-                            createdOrdersDisplayed = true;
-                        }
-
-                        const divID = `order-${createdCounter}`;
-                        const orderDiv = document.createElement('div');
-                        orderDiv.id = divID;
-                        orderDiv.className = 'orderids';
-
-                        if (data.logo) {
-                            orderDiv.innerHTML += `<img class="images" id="logoSrc" src="${data.logo}"><br>`;
-                        }
-
-                        orderDiv.innerHTML += `
-                            <strong style="color:green;" id="customerCount">${createdCounter}:</strong><br>
-                            <strong id="docID">Document ID:</strong> <span id="docid">${doc.id}</span><br>
-                            <strong id="customerID">Customer ID:</strong> ${data.customerID}<button class="editButton" data-doc-id="${doc.id}" data-field-name="customerID"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="Name">Name:</strong> ${data.Name}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Name"><span style="font-size:small; opacity:0.7;">✎</span></button><hr>
-                            <strong id="Address">Address:</strong> ${data.Address}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Address"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="City">City:</strong> ${data.City}<button class="editButton" data-doc-id="${doc.id}" data-field-name="City"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="Contact">Contact:</strong> ${data.Contact}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Contact"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="Details">Details:</strong> ${data.Details}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Details"><span style="font-size:small; opacity:0.7;">✎</span></button><br>
-                            <strong id="Email">Email:</strong> ${data.Email}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Email"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
-
-                        if (data.productID) {
-                            orderDiv.innerHTML += `<strong id="productID">Product ID:</strong> ${data.productID}<button class="editButton"><span style="font-size:small; opacity:0.7;">Edit</span></button>`;
-                        }
-
-                        orderDiv.innerHTML += `
-                            <div style="border: 2px solid green;background-color: lightgrey;"><strong>ProductSP : ${data.productSP}</strong>
-                            <br><strong>Petrol : ${data.petrol}</strong>
-                            <br><strong>ProductCP : ${data.productCP}</strong>
-                            <br><strong>Tracking Link : ${data.trackingLink}</strong></div>`;
-
-                        orderDiv.innerHTML += `
-                            <button class="dispatchButton">Dispatch</button>
-                            <button id="confirmedButton${createdCounter}" style="background-color:green;" class="confirmButton">Confirm</button>
-                            <button style="background-color:lightgreen;" class="delayButton">Delay/Book</button>
-                            <button style="background-color:red;" class="cancelButton">Cancel</button>
-                            <button class="deleteButton">Delete</button>
-                        </div>`;
-                        dataDisplay.appendChild(orderDiv);
-                        createdCounter++;
-                    }
-                }
-                await updateConfirm();
-                Array.from(editButtons).forEach(button => {
-                    button.style.display = 'block';
-                    button.addEventListener('click', (event) => {
-                        const docId = button.dataset.docId;
-                        const fieldName = button.dataset.fieldName;
-                        const isDropdown = button.dataset.isDropdown === 'true';
-                        editField(docId, fieldName, isDropdown, event);
-                    });
+            await updateConfirm();
+            Array.from(editButtons).forEach(button => {
+                button.style.display = 'block';
+                button.addEventListener('click', (event) => {
+                    const docId = button.dataset.docId;
+                    const fieldName = button.dataset.fieldName;
+                    const isDropdown = button.dataset.isDropdown === 'true';
+                    editField(docId, fieldName, isDropdown, event);
                 });
-                addEventListenersToButtons(querySnapshot);
-            } else if (collectionID === "dispatched") {
-                addReorderButtonEventListeners(querySnapshot, collectionID);
-                addEventListenersToButtons1(querySnapshot);
-            }
+            });
+            addEventListenersToButtons(querySnapshot);
         }
     }
-        
     const login = document.getElementById("login");
     const dispatchForm = document.getElementById("dispatchForm");
     const productSale = document.getElementById("productSale");

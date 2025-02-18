@@ -102,23 +102,6 @@ const postOrder = async (docId, dashboard = false) => {
     await deleteDoc(orderRef);
     console.log('Order moved to dispatched collection');
 
-    // Update finance data
-    const financeRef = doc(db, 'bank', 'finance');
-    const financeSnap = await getDoc(financeRef);
-    if (financeSnap.exists()) {
-      const financeData = financeSnap.data();
-      const updatedTotalPetrol = (financeData.totalPetrol || 0) + (orderData.petrol || 0);
-      const updatedProfit = (financeData.afterProfit || 0) + profit;
-
-      await updateDoc(financeRef, {
-        totalPetrol: updatedTotalPetrol,
-        afterProfit: updatedProfit,
-      });
-      console.log('Finance data updated');
-    } else {
-      console.warn('Finance document not found');
-    }
-
     // Decrement stock
     decrementStock(orderData);
 
@@ -136,7 +119,7 @@ const postOrder = async (docId, dashboard = false) => {
         await sendWhatsapp(customerContact, [message]);
         console.log('WhatsApp message sent');
       }
-      showMessageBox('Success', 'Order has been successfully dispatched and the customer has been notified.', true);
+      showMessageBox(`Tracking : ${trackingNumber}`, 'Order has been successfully dispatched and the customer has been notified.', true);
     } else {
       await sendWhatsapp(customerContact, [message]);
       await sendWhatsapp(process.env.NEXT_PUBLIC_OWNER_CONTACT,[ownermessage,ownermessage])

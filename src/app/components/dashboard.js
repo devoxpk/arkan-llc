@@ -5,7 +5,7 @@ import '../css/dashboard.css'
 import { db, storage } from '../firebase'; // Import Firestore and Storage instances
 import { doc,updateDoc, getDoc, setDoc, deleteDoc, collection, getDocs,serverTimestamp } from 'firebase/firestore'; // Firestore methods
 import { ref, getDownloadURL } from 'firebase/storage'; // Storage methods
-
+import dc from '../utilis/dc'
 import axios from 'axios';
 
 import sendWhatsapp from '../utilis/sendWhatsapp';
@@ -167,32 +167,29 @@ export default function DashboardComponent() {
         document.getElementById('financeChart').style.display = 'none';
 
         async function updateConfirm() {
-            const querySnapshot = await getDocs(collection(db, 'orders'));
+       
+            const querySnapshotOrders = await getDocs(collection(db, 'orders'));
             const confirmButtons = document.querySelectorAll('.confirmButton');
             editButtons = document.querySelectorAll('.editButton');
             if (collectionID === "dispatched") {
                 editButtons.forEach(button => button.style.display = 'none');
             }
 
+            const ordersData = querySnapshotOrders.docs.reduce((acc, docSnapshot) => {
+                acc[docSnapshot.id] = docSnapshot.data();
+                return acc;
+            }, {});
+
             confirmButtons.forEach(confirmBtn => {
                 let docElement = confirmBtn.closest('div').querySelector('#docid');
                 if (docElement) {
                     const docid = docElement.innerText.trim();
-                    let found = false;
-                    querySnapshot.forEach(docSnapshot => {
-                        if (docSnapshot.id === docid) {
-                            found = true;
-                            const data = docSnapshot.data();
-                            if (data && data.confirm) {
-                                confirmBtn.innerText = data.confirm;
-                                confirmBtn.style.backgroundColor = 'darkblue';
-                            } else {
-                                console.log('No confirm field found in the document.');
-                            }
-                        }
-                    });
-                    if (!found) {
-                        console.log('No such document!');
+                    const data = ordersData[docid];
+                    if (data && data.confirm) {
+                        confirmBtn.innerText = data.confirm;
+                        confirmBtn.style.backgroundColor = 'darkblue';
+                    } else {
+                        console.log('No confirm field found in the document.');
                     }
                 } else {
                     console.log('Element with ID "docid" not found in the parent div.');
@@ -212,6 +209,16 @@ export default function DashboardComponent() {
             const dataDisplay = document.getElementById('dataDisplay');
             dataDisplay.style.display = 'block';
             dataDisplay.innerHTML = "";
+
+            const automateDeliveryBtn = document.createElement('button');
+            automateDeliveryBtn.textContent = 'Automate Deliveries';
+            automateDeliveryBtn.style.backgroundColor = 'white';
+            automateDeliveryBtn.style.color = 'black';
+            automateDeliveryBtn.style.border = '1px solid black';
+            automateDeliveryBtn.style.borderRadius = '5px';
+            automateDeliveryBtn.style.marginBottom = '10px';
+            automateDeliveryBtn.addEventListener('click', automateDelivery);
+            dataDisplay.appendChild(automateDeliveryBtn);
 
             let newCounter = 1;
             createdCounter = 1;
@@ -255,7 +262,7 @@ export default function DashboardComponent() {
                 if (collectionID === "orders") {
                     orderDiv.innerHTML += `<strong id="Date">Date:</strong> ${data.Date || data.orderedDate}<button class="editButton" data-doc-id="${doc.id}" data-field-name="Date"><span style="font-size:small; opacity:0.7;">✎</span></button><br>`;
                 } else if (collectionID === "dispatched") {
-                    orderDiv.innerHTML += `<strong>Tracking ID:</strong> ${data.tracking}<br>
+                    orderDiv.innerHTML += `<strong>Tracking ID:</strong> <span id="trackingNo">${data.tracking}</span><br>
                         <strong>Tracking Link:</strong> <a href="${data.trackingLink}" target="_blank">${data.trackingLink}</a><br>
                         <strong id="dispatchDate">dispatchedDate:</strong> ${data.dispatchedDate}<br>
                         <strong id="orderedDate">orderedDate:</strong> ${data.Date}<br>`;
@@ -269,7 +276,6 @@ export default function DashboardComponent() {
                                     headers: {
                                         'Content-Type': 'application/json',
                                         'Accept': 'application/json',
-                                        
                                     }
                                 }
                             );
@@ -279,7 +285,7 @@ export default function DashboardComponent() {
 
                             if (trackingDetails && statusHistory && statusHistory.length > 0) {
                                 const latestStatus = statusHistory[statusHistory.length - 1]?.status || "Unknown status";
-                                orderDiv.innerHTML += `<span style="color:green;font-weight:bolder;"<strong>Delivery Status:</strong> ${latestStatus}</span><br>`;
+                                orderDiv.innerHTML += `<span style="color:green;font-weight:bolder;"<strong>Delivery Status:</strong><span id="deliveryStatus"> ${latestStatus}</span></span><br>`;
                                 console.log(`Added delivery status for ${data.tracking}: ${latestStatus}`);
                             } else {
                                 console.log(`No valid tracking details found for ${data.tracking}`);
@@ -338,6 +344,7 @@ export default function DashboardComponent() {
                     </div>`;
                 }
             }
+
 
             await updateConfirm();
             Array.from(editButtons).forEach(button => {
@@ -1722,114 +1729,194 @@ function incrementStock(orderData) {
     }
     }
     
+     async function automateDelivery() {
+        console.log("Automating delivery processing ... ");
+        let counter = 1;
+        while (true) {
+            console.log(`Processing order number: ${counter}`);
+            const orderDiv = document.getElementById(`order-${counter}`);
+            if (!orderDiv) {
+                console.log("No more orders to process. Exiting loop.");
+                break;
+            }
     
+            const deliveryStatusElement = orderDiv.querySelector('#deliveryStatus');
+            if (deliveryStatusElement) {
+                console.log(`Delivery status for order ${counter}: ${deliveryStatusElement.textContent}`);
+                if (deliveryStatusElement.textContent.toLowerCase().includes('delivered')) {
+                    const trackingNoElement = orderDiv.querySelector('#trackingNo');
+                    if (trackingNoElement) {
+                        const trackingNumber = trackingNoElement.textContent.trim();
+                        console.log(`Tracking number for order ${counter}: ${trackingNumber}`);
     
-    function delivered(orderData, orderDocID) {
-    var confirmed = confirm("Are you sure?");
-    if(confirmed){
-    const deliveredForm = document.getElementById("deliveredForm");
-    const deliverButton = document.getElementById("delivered");
+                        // Retrieve orderDocID and orderData
+                        const orderDocIDElement = orderDiv.querySelector('#docid');
+                        if (orderDocIDElement) {
+                            const orderDocID = orderDocIDElement.textContent.trim();
+                            console.log(`Order document ID for order ${counter}: ${orderDocID}`);
     
-    // Display the delivered form initially
-    deliveredForm.style.display = 'block';
+                            try {
+                                const orderDocSnapshot = await getDoc(doc(db, "dispatched", orderDocID));
+                                if (orderDocSnapshot.exists()) {
+                                    const orderData = orderDocSnapshot.data();
+                                    console.log(`Order data for order ${counter}:`, orderData);
     
-    const deliverHandler = async () => {
-    try {
-        const docRefDispatched = doc(db, "dispatched", orderDocID);
-        const docRefDelivered = doc(db, "delivered", orderDocID);
-        const docRefFinance = doc(db, "bank", "finance");
-        const dispatch = document.getElementById("dispatch");
-        const productDeliveryInput = document.getElementById("productDelivery");
-        const productDelivery = parseFloat(productDeliveryInput.value) || 0;
-    
-        if (isNaN(productDelivery)) {
-            alert("Please enter a valid delivery amount.");
-            return;
+                                    const deliveryCharges = await dc(trackingNumber);
+                                    console.log(`Delivery charges for order ${counter}: ${deliveryCharges}`);
+                                    await delivered({
+                                        ...orderData,
+                                        delivery: deliveryCharges
+                                    }, orderDocID, true, deliveryCharges); // Pass true for auto
+                                } else {
+                                    console.log(`No order data found for order ${counter}.`);
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching delivery charges for order ${counter}:`, error);
+                            }
+                        } else {
+                            console.log(`No document ID found for order ${counter}.`);
+                        }
+                    } else {
+                        console.log(`No tracking number found for order ${counter}.`);
+                    }
+                } else {
+                    console.log(`Order ${counter} is not delivered yet.`);
+                }
+            } else {
+                console.log(`No delivery status found for order ${counter}.`);
+            }
+            counter++;
         }
+    }
+
+    async function delivered(orderData, orderDocID, auto = false, deliveryCharges) {
+        console.log(`Starting delivery process for order ${orderDocID}`);
+        var confirmed = auto || confirm("Are you sure?");
+        if (confirmed) {
+            const deliveredForm = document.getElementById("deliveredForm");
+            const deliverButton = document.getElementById("delivered");
     
-        const petrolAmount = orderData.petrol || 0;
+            // Display the delivered form initially
+            if (!auto) {
+                deliveredForm.style.display = 'block';
+            } else {
+                orderData.delivery = deliveryCharges;
+            }
     
-        // Deduct delivery charges from profit
-        const profitPetrol = orderData.profit - petrolAmount;
-        const profitAfterDelivery = profitPetrol - productDelivery;
+            const deliverHandler = async () => {
+                try {
+                    console.log(`Delivering order ${orderDocID}`);
+                    const docRefDispatched = doc(db, "dispatched", orderDocID);
+                    const docRefDelivered = doc(db, "delivered", orderDocID);
+                    const docRefFinance = doc(db, "bank", "finance");
+                    const productDeliveryInput = document.getElementById("productDelivery");
+                  
+                    const productDelivery = auto ? deliveryCharges : parseFloat(productDeliveryInput.value) || 0;
     
-        // Update the orderData object with the new profit value
-        orderData.afterProfit = profitAfterDelivery;
+                    if (isNaN(productDelivery)) {
+                        alert("Please enter a valid delivery amount.");
+                        return;
+                    }
     
-        // Check and replace undefined values with empty strings
-        const sanitizedOrderData = Object.fromEntries(
-            Object.entries(orderData).map(([key, value]) => [key, value === undefined ? "" : value])
-        );
+                    const petrolAmount = orderData.petrol || 0;
     
-        // Set data in delivered collection
-        await setDoc(docRefDelivered, sanitizedOrderData);
+                    // Deduct delivery charges from profit
+                    const profitPetrol = orderData.profit - petrolAmount;
+                    const profitAfterDelivery = profitPetrol - productDelivery;
     
-        // Delete the document from dispatched collection
-        await deleteDoc(docRefDispatched);
+                    // Update the orderData object with the new profit value
+                    orderData.afterProfit = profitAfterDelivery;
     
-        // Update finance document with profit after delivery
-        const financeSnapshot = await getDoc(docRefFinance);
-        const currentAfterProfit = financeSnapshot.data().afterProfit || 0;
-        const updatedAfterProfit = currentAfterProfit + profitAfterDelivery;
+                    // Check and replace undefined values with empty strings
+                    const sanitizedOrderData = Object.fromEntries(
+                        Object.entries(orderData).map(([key, value]) => [key, value === undefined ? "" : value])
+                    );
     
-        await updateDoc(docRefFinance, { afterProfit: updatedAfterProfit, totalDelivery: financeSnapshot.data().totalDelivery + productDelivery || 0, totalDelivered: financeSnapshot.data().totalDelivered + 1 });
+                    // Set data in delivered collection
+                    await setDoc(docRefDelivered, sanitizedOrderData);
+                    console.log(`Order ${orderDocID} set in delivered collection`);
     
-    const tp = orderData.productSP - orderData.productCP;
-        const currentTotalProfit = financeSnapshot.data().totalProfit || 0;
-        const updatedTotalProfit = currentTotalProfit + tp;  
+                    // Delete the document from dispatched collection
+                    await deleteDoc(docRefDispatched);
+                    console.log(`Order ${orderDocID} deleted from dispatched collection`);
     
-        // Update the finance document
-        await updateDoc(docRefFinance, { totalProfit: updatedTotalProfit });
+                    // Update finance document with profit after delivery
+                    const financeSnapshot = await getDoc(docRefFinance);
+                    const currentAfterProfit = Number(financeSnapshot.data().afterProfit) || 0;
+                    const updatedAfterProfit = currentAfterProfit + profitAfterDelivery;
     
-        // Display an alert if petrol amount is greater than 0
-        if (petrolAmount > 0) {
-            alert(`You have to pay ${petrolAmount} for petrol.`);
+                    const currentTotalDelivery = Number(financeSnapshot.data().totalDelivery) || 0;
+                    const updatedTotalDelivery = currentTotalDelivery + productDelivery;
+    
+                    const currentTotalDelivered = Number(financeSnapshot.data().totalDelivered) || 0;
+                    const updatedTotalDelivered = currentTotalDelivered + 1;
+    
+                    await updateDoc(docRefFinance, { 
+                        afterProfit: updatedAfterProfit, 
+                        totalDelivery: updatedTotalDelivery, 
+                        totalDelivered: updatedTotalDelivered 
+                    });
+                    console.log(`Finance document updated for order ${orderDocID}`);
+    
+                    const tp = orderData.productSP - orderData.productCP;
+                    const currentTotalProfit = Number(financeSnapshot.data().totalProfit) || 0;
+                    const updatedTotalProfit = currentTotalProfit + tp;  
+    
+                    // Update the finance document
+                    await updateDoc(docRefFinance, { totalProfit: updatedTotalProfit });
+                    console.log(`Total profit updated for order ${orderDocID}`);
+    
+                    // Display an alert if petrol amount is greater than 0
+                    if (petrolAmount > 0) {
+                        alert(`You have to pay ${petrolAmount} for petrol.`);
+                    }
+    
+                    const sheetData = {
+                        CUSTOMERID: orderData.customerID || "", 
+                        CSTNAME: orderData.Name || "",
+                        PRODUCT_NAME: orderData.productName || "",
+                        PRODUCT_CP: orderData.productCP || "",
+                        PRODUCT_SP: orderData.productSP || "",
+                        PROFIT: orderData.profit || "",
+                        LOSS: orderData.loss || "",
+                        PETROL: orderData.petrol || "",
+                        DELIVERY: productDelivery || "",
+                        CARD: orderData.card || "",
+                        OTHERS: orderData.others || "",
+                        AFTER_PROFIT: orderData.afterProfit || "",
+                        CITY: orderData.City || "",
+                        DATE: orderData.orderedDate || "",
+                        QUANTITY: orderData.Quantity || ""
+                    };
+    
+                    await fetch(process.env.NEXT_PUBLIC_SHEET_SALES, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(sheetData),
+                    });
+                    if(!auto){
+                        alert("Congratulations on a successful delivery!");
+    
+                        productDeliveryInput.value = "";
+                        deliveredForm.style.display = 'none';
+
+                        deliverButton.removeEventListener('click', deliverHandler);
+                    }
+                } catch (error) {
+                    console.error("Error delivering order: ", error);
+                    alert(`An error occurred while delivering: ${error.message}`);
+                }
+            };
+            if(auto){
+                await deliverHandler();
+            }
+            // Remove existing event listeners and add a new one
+            deliverButton.removeEventListener('click', deliverHandler);
+            deliverButton.addEventListener('click', deliverHandler);
         }
-    
-        const sheetData = {
-            CUSTOMERID: orderData.customerID || "", 
-            CSTNAME: orderData.Name || "",
-            PRODUCT_NAME: orderData.productName || "",
-            PRODUCT_CP: orderData.productCP || "",
-            PRODUCT_SP: orderData.productSP || "",
-            PROFIT: orderData.profit || "",
-            LOSS: orderData.loss || "",
-            PETROL: orderData.petrol || "",
-            DELIVERY: productDelivery || "",
-            CARD: orderData.card || "",
-            OTHERS: orderData.others || "",
-            AFTER_PROFIT: orderData.afterProfit || "",
-            CITY: orderData.City || "",
-            DATE: orderData.orderedDate || "",
-            QUANTITY: orderData.Quantity || ""
-        };
-    
-        await fetch(process.env.NEXT_PUBLIC_SHEET_SALES, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(sheetData),
-        });
-    
-        alert("Congratulations on a successful delivery!");
-    
-        productDeliveryInput.value = "";
-        deliveredForm.style.display = 'none';
-        deliverButton.removeEventListener('click', deliverHandler);
-    
-    } catch (error) {
-        console.error("Error delivering order: ", error);
-        alert(`An error occurred while delivering: ${error.message}`);
     }
-    };
-    
-    // Remove existing event listeners and add a new one
-    deliverButton.removeEventListener('click', deliverHandler);
-    deliverButton.addEventListener('click', deliverHandler);
-    }
-    }
-    
     
     function returned(orderData, orderDocID) {
     var confirmed = confirm("Are you sure?");
@@ -2119,10 +2206,29 @@ function incrementStock(orderData) {
     function addReorderButtonEventListeners(querySnapshot, collectionName) {
         const reorderButtons = document.querySelectorAll('.reorderButton');
     
-        reorderButtons.forEach((reorderButton, index) => {
+        reorderButtons.forEach((reorderButton) => {
             reorderButton.addEventListener('click', () => {
-                const currentData = querySnapshot.docs[index].data();
-                const orderDocID = querySnapshot.docs[index].id;
+                // Find the closest parent div that contains the document ID
+                const orderDiv = reorderButton.closest('.orderids');
+                if (!orderDiv) {
+                    console.error('Order div not found');
+                    return;
+                }
+    
+                // Get the orderDocID from the span inside the orderDiv
+                const orderDocIDElement = orderDiv.querySelector('#docid');
+                if (!orderDocIDElement) {
+                    console.error('Document ID not found');
+                    return;
+                }
+                const orderDocID = orderDocIDElement.textContent.trim();
+    
+                // Retrieve currentData using the extracted orderDocID
+                const currentData = querySnapshot.docs.find(doc => doc.id === orderDocID)?.data();
+                if (!currentData) {
+                    console.error('No data found for the given document ID');
+                    return;
+                }
     
                 reorderOrder(currentData, orderDocID, collectionName);
             });
@@ -2533,5 +2639,7 @@ function incrementStock(orderData) {
    </>
   );
 }
+
+
 
 

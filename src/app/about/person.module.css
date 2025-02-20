@@ -1,0 +1,139 @@
+.container {
+  text-align: center;
+  padding: 20px 10px;
+}
+
+.team {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.person {
+ 
+  padding: 10px;
+ 
+  width: 120px;
+  text-align: center;
+}
+
+.person img {
+  width: 100%;
+  
+  margin-bottom: 5px;
+}
+
+.container h2 {
+  font-size: 1.2em;
+  font-weight: lighter;
+  margin-bottom: 5px;
+  font-family: auto;
+}
+
+.container p {
+    margin-bottom: 10px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .team {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .person {
+    width: 45%;
+    max-width: 150px;
+  }
+}
+.person h3 {
+ font-weight: bolder;
+}
+.person p {
+    font-weight: lighter;
+    font-size: 15px;
+}
+@media (min-width: 769px) {
+  .team {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .person {
+    width: 22%;
+    max-width: 150px;
+  }
+}
+
+/* Styles for edit mode inputs */
+.input {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+/* Styles for buttons */
+.button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 10px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.deleteButton {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #da190b;
+}
+
+.deleteButton:active {
+  transform: scale(0.98);
+}
+
+/* Styles for the add form */
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Styles for the file input */
+.fileInput {
+  padding: 6px;
+} 

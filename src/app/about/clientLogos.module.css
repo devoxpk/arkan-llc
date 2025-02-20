@@ -1,0 +1,115 @@
+/* Styles for the ClientLogosComponent */
+
+.container {
+  text-align: center;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  margin-top: 10%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive grid */
+  gap: 20px;
+  justify-items: center;
+  align-items: center;
+}
+
+.logo {
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.logoContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.editButton {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.editButton:hover {
+  background-color: #e60000;
+}
+
+.editInput {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid white; /* White border */
+  border-radius: 5px;
+  background-color: transparent; /* Transparent background */
+  color: white; /* White text */
+  text-align: center; /* Center text */
+  width: 50px; /* Shorter width */
+}
+
+.submitButton {
+  margin-top: 5px;
+  padding: 3px 6px;
+  background-color: #008CBA;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+  background-color: #005f6a;
+}
+
+.addImageContainer {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fileInput {
+  display: none; /* Hide the file input */
+}
+
+.addButton {
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.addButton:hover {
+  background-color: #45a049;
+}
+
+.plusIcon {
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.plusIcon:hover {
+  color: #4CAF50;
+}
+
+/* Optional: Style for logging or feedback messages */
+.log {
+  color: #ff0000;
+  font-size: 14px;
+  margin-top: 10px;
+} 

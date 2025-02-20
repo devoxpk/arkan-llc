@@ -1,0 +1,48 @@
+
+.container {
+  padding: 20px;
+  text-align: left;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.paragraph {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.button {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 20px;
+  width:335px;
+}
+
+.contactInfo {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.contactInfo div {
+  margin: 10px;
+}
+
+.heading {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .contactInfo {
+    flex-direction: column;
+    align-items: left;
+  }
+} 

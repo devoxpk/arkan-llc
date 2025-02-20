@@ -1,0 +1,71 @@
+.container {
+  
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 50px;
+  font-family: Arial, sans-serif;
+  background-image: url('/heroes/hero1.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.heading {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.paragraph {
+  font-size: 1.2em;
+  line-height: 1.5;
+  margin: 20px 0;
+}
+
+.input, .textarea {
+  width: 100%;
+  max-width: 600px;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color:white;
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 1em;
+  color: white;
+  background-color: #007BFF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .heading {
+    font-size: 1.2em;
+  }
+
+  .paragraph {
+    font-size: 1em;
+  }
+}

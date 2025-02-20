@@ -1,0 +1,66 @@
+.heading {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.textContent {
+  font-size: 0.9rem;
+  color: #333;
+}
+ 
+.serviceCard {
+  display: flex;
+  flex-direction: column;
+  
+  margin: 1rem auto;
+  flex: 1 1 100%; /* Full width for mobile */
+  
+  max-width: 100%; /* Full width for mobile */
+}
+.serviceCard{
+  align-items: center;
+}
+.heading{
+  align-items: center;
+  display: flex
+;
+  flex-direction: column;
+}
+.textContent{
+  align-items: center;
+  display: flex
+;
+padding: 8px;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+
+  .serviceCard {
+    flex: 1 1 calc(25% - 2rem); /* 4 in a row for min width 768 */
+    max-width: calc(25% - 2rem); /* 4 in a row for min width 768 */
+  }
+}
+
+.reverse {
+  flex-direction: column-reverse;
+}
+
+.serviceCard img {
+  width: 100%;
+  max-width: 60px;
+  
+  border-radius: 5px;
+}
+
+@media (min-width: 768px) {
+  .serviceCard img {
+    max-width: 120px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .serviceCard img {
+    max-width: 140px;
+  }
+}

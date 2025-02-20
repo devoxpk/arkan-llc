@@ -1,42 +1,262 @@
-/* Import Outfit font globally */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
-
-
-/* Import Ionicons globally */
-@import url('https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css');
-
-/* Tailwind CSS setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Styles */
+:root {
+  --background: white;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Outfit', Arial, Helvetica, sans-serif; /* Set Outfit as the primary font */
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Reset and basic styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f0f0f0;
+  color: black;
+  font-size: 17px;
+}
+
+main {
+  padding: 5rem 1rem;
+}
+
+.testimonial {
+  background: black;
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  width: 100vw;
+  position: relative;
+  left: -16px;
+}
+
+.admin-service-manager {
+  padding: 20px;
+  background-color: #f9f9f9;
+  max-width: 800px;
+  margin: 50px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-service-manager h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Service List Styling */
+.service-list {
+  margin-top: 30px;
+}
+
+.service-item {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 6px;
+  background-color: #fff;
+}
+
+.service-item img.service-image {
+  max-width: 200px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Edit Icon Styling */
+.edit-icon {
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  color: #555;
+}
+
+.edit-icon:hover {
+  color: #000;
+}
+
+/* Inline Editing Fields */
+.admin-service-manager .field {
+  margin-bottom: 15px;
+}
+
+.admin-service-manager .field strong {
+  margin-right: 10px;
+}
+
+.admin-service-manager .service-item .field input[type="text"],
+.admin-service-manager .service-item .field textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.admin-service-manager .service-item .field input[type="file"] {
+  margin-top: 5px;
+}
+
+.admin-service-manager .service-item .field button {
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.admin-service-manager .service-item .field button:hover {
+  background-color: #45a049;
+}
+
+/* Delete Button Styling */
+.delete-button {
+  padding: 8px 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+.add-service-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  max-width: 500px;
+  width: 90%;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-service-form h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #333333;
+}
+
+.add-service-form div {
+  margin-bottom: 1rem;
+}
+
+.add-service-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555555;
+}
+
+.add-service-form input[type="text"],
+.add-service-form textarea,
+.add-service-form input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.add-service-form input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.add-service-form img {
+  display: block;
+  margin-top: 0.5rem;
+  max-width: 100px;
+  border-radius: 4px;
+}
+
+.add-service-form button {
+ 
+  padding: 0.75rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.add-service-form button:disabled {
+  background-color: #9e9e9e;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .add-service-form {
+    padding: 1rem;
+  }
+
+  .add-service-form h2 {
+    font-size: 1.25rem;
+  }
+
+  .add-service-form button {
+    font-size: 0.9rem;
   }
 }
 
-/* Fade-in animation for the page */
-html {
-  opacity: 0;
-  background-color: black;
-  animation: fadeInBlack 1.5s ease-in forwards;
+.add-service-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
-@keyframes fadeInBlack {
-  0% {
-    opacity: 0;
-    background-color: black;
-  }
-  100% {
-    opacity: 1;
-    background-color: transparent;
+.add-service-button:hover {
+  background-color: #45a049;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555555;
+}
+
+.close-button:hover {
+  color: #000000;
+}
+
+@media (min-width: 768px) {
+  #services {
+    display: flex;
   }
 }
